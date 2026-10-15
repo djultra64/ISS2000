@@ -1,0 +1,6 @@
+{
+  "N64Recomp": {"url": "https://github.com/N64Recomp/N64Recomp", "commit": "ffb39cdad1da5de07eaaa48bd1db4a89a7986771", "license": "MIT"},
+  "N64ModernRuntime": {"url": "https://github.com/N64Recomp/N64ModernRuntime", "commit": "cdf5abbd5026fef5c364c676e4667c45e42b6863", "license": "GPL-3.0"},
+  "RT64": {"url": "https://github.com/rt64/rt64", "commit": "43373749dac9bbc1b653e6a02aed40a9e1783bed", "license": "MIT"},
+  "spimdisasm": {"url": "https://github.com/Decompollaborate/spimdisasm", "commit": "4b5d4c68eeb9f9eae14b3bb713971433ae2c3c43", "license": "MIT"}
+}

@@ -113,7 +113,7 @@ def read_source(source: Path, expected_size: int) -> bytes:
             raise RomError('Input has unsupported size')
         with source.open('rb') as stream:
             return stream.read(expected_size+1)
-    except (OSError, zipfile.BadZipFile, RuntimeError, NotImplementedError) as exc:
+    except (OSError, zipfile.BadZipFile, zlib.error, RuntimeError, NotImplementedError) as exc:
         raise RomError(f'Cannot read ROM: {exc}') from exc
 
 

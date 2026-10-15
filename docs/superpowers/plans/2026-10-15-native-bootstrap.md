@@ -10,6 +10,8 @@
 
 **Spec:** `../specs/2026-10-15-iss2000-design.md`
 
+**Execution checkpoint:** importer, controlled tool build, deterministic entry/buffer generation and native diagnostics are implemented. Tasks 1–3 deliver a verified bootstrap checkpoint. Task 4 reached a reproducible resident-map translation failure at external target `0x801B050C`; full-runtime integration remains open. See `docs/milestones/M0.md` and `HANDOFF.md` for actual results and continuation. The later user instruction discontinues active cross-ROM comparison; analyze ISS2000 directly.
+
 ## Global Constraints
 
 - USA rev0 canonical SHA-256 `e18e87c062a66002c0cbd7e2dd793ef755609e70675d5679df0396d4b6c67850`.

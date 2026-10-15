@@ -1,0 +1,18 @@
+{
+  "purpose": "Original entry and buffer profile diagnostics; excludes game/OS initialization",
+  "rom_start": 4096,
+  "vram_start": 2147484672,
+  "size": 608,
+  "functions": [
+    {"name": "func_80000400", "vram": 2147484672, "size": 64},
+    {"name": "func_80000500", "vram": 2147484928, "size": 352}
+  ],
+  "continuation_boundary": "0x800007B8",
+  "bss_start": "0x800A0600",
+  "bss_end_exclusive": "0x801AFD80",
+  "stack_pointer": "0x800CEC50",
+  "profile_function": "0x80000500",
+  "profile_pointer": "0x800A0914",
+  "profile_flag_offset": 18,
+  "buffer_table": "0x801A3048"
+}

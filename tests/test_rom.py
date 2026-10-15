@@ -92,6 +92,19 @@ class ImportTests(unittest.TestCase):
             import_rom(source, self.target, manifest(image()))
         self.assertFalse(self.target.exists())
 
+    def test_corrupt_deflate_payload_reports_rom_error_without_output(self):
+        source = self.root/'corrupt.zip'
+        with zipfile.ZipFile(source, 'w', compression=zipfile.ZIP_DEFLATED) as archive:
+            archive.writestr('rom.z64', image())
+        contents = bytearray(source.read_bytes())
+        name_size, extra_size = struct.unpack_from('<HH', contents, 26)
+        # Deflate BTYPE=3 is reserved; ZIP central-directory metadata stays valid.
+        contents[30+name_size+extra_size] = 0x07
+        source.write_bytes(contents)
+        with self.assertRaises(RomError):
+            import_rom(source, self.target, manifest(image()))
+        self.assertFalse(self.target.parent.exists())
+
     def test_failed_revision_does_not_mutate_destination_tree(self):
         self.source.write_bytes(image()[:-4]+b'FAIL')
         with self.assertRaises(RomError):

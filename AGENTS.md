@@ -2,7 +2,9 @@
 
 Read the approved design under `docs/superpowers/specs` and the current milestone
 record before changing code. Work on `codex/` branches. Run `git status --short`
-first; preserve existing work. Other game projects are read-only references.
+first; preserve existing work. Other recomps are workflow/structure references
+only. Do not actively compare their game binaries or transfer game-specific
+patches. Analyze ISS2000 directly; upstream tools may be reused read-only.
 
 Use `djultra64 <329694832+djultra64@users.noreply.github.com>` for own commits.
 Preserve real upstream authorship and notices. Documentation is English.
