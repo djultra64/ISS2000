@@ -9,9 +9,18 @@ The target is the original USA English/Spanish N64 game, with proper 16:9, rende
 - Deterministic normalization of big-endian, byte-swapped and little-endian ROM images, including ZIP import. Exact supported revision checking; no overwriting existing files.
 - Controlled build of the pinned N64Recomp with artifact receipts checked before generation.
 - Original entry function and buffer setup translated into native C and executed on the host. BSS clearing, surrounding memory, stack, dispatch boundary, and standard/expanded buffer choices are verified.
-- Broader resident-code research finds 2,072 candidate functions; full translation currently stops on an unmapped direct call to `0x801B050C`. The external-code load map remains unresolved. No unknown OS routine is silently treated as successful.
+- Resident-code research finds 2,072 candidate functions. Four overlapping DMA load ranges are recovered; a partial 2,080-candidate map adds eight overlay functions, resolves `0x801B050C` and stops at `0x8023E684`. The full load map and runtime lifetimes remain unresolved. No unknown OS routine is silently treated as successful.
 
 See [M0 evidence and limitations](docs/milestones/M0.md) and [runtime research](docs/research/runtime-integration.md).
+
+## Local working folder
+
+The canonical checkout is `/home/alfredo/Documents/ChatGPT/ISS2000` (the system
+also resolves it as `/var/home/alfredo/Documents/ChatGPT/ISS2000`). The original ZIP,
+private ROM, compiler source and rebuilt diagnostic are retained here. Previous
+build caches and receipts are historical evidence under ignored
+`.local/pre-relocation-20261015/`; use the fresh `.local/toolchain` and
+`.local/clean-native-build` directories for current work.
 
 ## Private inputs
 

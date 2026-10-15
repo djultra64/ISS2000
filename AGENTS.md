@@ -1,5 +1,9 @@
 # ISS2000
 
+Canonical working folder: `/home/alfredo/Documents/ChatGPT/ISS2000`.
+Keep the repository, private inputs and build outputs here. Historical worktrees
+under `.local/pre-relocation-20261015/` are evidence, not active checkouts.
+
 Read the approved design under `docs/superpowers/specs` and the current milestone
 record before changing code. Work on `codex/` branches. Run `git status --short`
 first; preserve existing work. Other recomps are workflow/structure references
