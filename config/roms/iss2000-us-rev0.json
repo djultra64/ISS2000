@@ -1,0 +1,9 @@
+{
+  "revision_id": "iss2000-us-rev0",
+  "size": 16777216,
+  "sha256": "e18e87c062a66002c0cbd7e2dd793ef755609e70675d5679df0396d4b6c67850",
+  "sha1": "e7bd36c410ce881d8b8dc853cb4b7b7961bf6a62",
+  "cartridge_id": "NISE",
+  "revision": 0,
+  "entry_point": 2147484672
+}

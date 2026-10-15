@@ -1,0 +1,12 @@
+.local/
+.superpowers/
+__pycache__/
+*.pyc
+build/
+*.zip
+*.z64
+*.v64
+*.n64
+*.sav
+*.sra
+*.eep
