@@ -1,5 +1,7 @@
-"""Original project work: djultra64. Bounded encoded-menu text over synthetic RAM."""
+"""Original project work: djultra64. Guarded encoded text in synthetic RAM and opt-in original PAL fixtures."""
 from pathlib import Path
+import hashlib
+import os
 import shutil
 import subprocess
 import tempfile
@@ -13,6 +15,8 @@ SOURCE=r'''
 #include <algorithm>
 #include <cassert>
 #include <cstring>
+#include <fstream>
+#include <iterator>
 #include <string>
 #include <vector>
 using namespace iss2000;
@@ -21,7 +25,48 @@ void word(Bytes& r,size_t p,uint32_t value){std::memcpy(r.data()+p,&value,4);}
 void put(Bytes& r,size_t p,const Bytes& data){for(size_t n=0;n<data.size();++n)r[(p+n)^3]=data[n];}
 Bytes get(const Bytes& r,size_t p,size_t size){Bytes result(size);for(size_t n=0;n<size;++n)result[n]=r[(p+n)^3];return result;}
 int main(int argc,char** argv){
- assert(argc==2);const std::string mode=argv[1];
+ assert(argc>=2);const std::string mode=argv[1];
+ if(mode=="pal_warnings"){
+  assert(argc==3);std::ifstream input(argv[2],std::ios::binary);assert(input);
+  const Bytes rom((std::istreambuf_iterator<char>(input)),std::istreambuf_iterator<char>());
+  assert(rom.size()==0x1000000);
+  struct Message{size_t rom,source,size,edit,pointer;};
+  // Actual aligned pointer-table targets, not preceding alignment spaces.
+  const Message messages[]{{0x514E10,0x2DD8C0,86,52,0x5147FC},{0x51507C,0x2DDB2C,69,35,0x514828},{0x5150C4,0x2DDB74,68,34,0x514830}};
+  // Independently transcribed original font asset0D glyph order.
+  const std::string glyphs=" 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.";
+  const std::array<std::string_view,5> names{"A","B","Cross","Right stick","Unbound"};
+  Bytes ram(0x800000,0xA5);EncodedPromptGuard guard(pal_en_encoded_prompt_layout());
+  ram[(0x2000+5)^3]=0;
+  for(const auto& m:messages){
+   const auto pointer=(uint32_t(rom[m.pointer])<<24)|(uint32_t(rom[m.pointer+1])<<16)|(uint32_t(rom[m.pointer+2])<<8)|rom[m.pointer+3];
+   assert(pointer==(0x80000000|m.source));
+   const Bytes original(rom.begin()+m.rom,rom.begin()+m.rom+m.size);
+   assert(original[m.size-2]==0xFF && original.back()==0x11);
+   put(ram,m.source,original);word(ram,0x2014,0x80000000|uint32_t(m.source));
+   auto original_ram=ram;
+   for(auto physical:names){
+    const auto text=physical=="Unbound"?std::string("Control unbound"):"Press "+std::string(physical)+" to proceed.";
+    Bytes encoded(30,0);assert(text.size()<=encoded.size());
+    for(size_t n=0;n<text.size();++n){const auto pos=glyphs.find(text[n]);assert(pos!=std::string::npos);encoded[n]=uint8_t(pos);}
+    auto expected=original_ram;put(expected,m.source+m.edit,encoded);
+    assert(guard.prepare(ram,0x80002000,{physical,"unused","unused"}));
+    // All message controls, other text, neighboring sources and physical RAM
+    // outside this exact printable run must remain byte-identical.
+    assert(ram==expected);
+   }
+   assert(!guard.prepare(ram,0x80002000,{"Name exceeding original capacity","unused","unused"}));
+   assert(ram==original_ram);
+   assert(guard.prepare(ram,0x80002000,{"B","unused","unused"}));
+   // A foreign change anywhere in the full message revokes ownership.
+   ram[m.source^3]^=1;auto foreign=ram;
+   assert(!guard.prepare(ram,0x80002000,{"A","unused","unused"}));assert(ram==foreign);
+   put(ram,m.source,original);word(ram,0x2014,0x80000000|uint32_t(m.source-1));
+   auto wrong_source=ram;assert(!guard.prepare(ram,0x80002000,{"A","unused","unused"}));assert(ram==wrong_source);
+  }
+  return 0;
+ }
+ assert(argc==2);
  Bytes ram(0x800000,0xA5),original(40,0);
  // Prefix includes color, two-byte glyph and newline; suffix includes newline/end.
  const Bytes prefix{0xFF,0x03,0x0B,0xF6,0x20,0xFF,0x10,0};
@@ -100,3 +145,10 @@ class EncodedPromptTests(unittest.TestCase):
  def test_unsupported_or_oversized_labels_restore_only_owned_bytes(self):self.run_case('unsupported')
  def test_edit_cannot_claim_second_byte_of_an_original_control(self):self.run_case('control_operand')
  def test_global_hook_requires_explicit_configuration(self):self.run_case('disabled')
+
+ @unittest.skipUnless(os.environ.get('ISS2000_PAL_ROM'),'set ISS2000_PAL_ROM for private original-message integration')
+ def test_original_pal_warning_instructions_follow_physical_names_without_changing_controls(self):
+  rom=Path(os.environ['ISS2000_PAL_ROM'])
+  self.assertEqual(hashlib.sha256(rom.read_bytes()).hexdigest(),'6ce6739b8ead149857c9442178a1ecd9b7f6d15b93a582c7208ca85d493817bf')
+  result=subprocess.run([str(self.binary),'pal_warnings',str(rom)],capture_output=True,text=True)
+  self.assertEqual(result.returncode,0,result.stderr)

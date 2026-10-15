@@ -6,6 +6,7 @@
 #include "renderer_settings.hpp"
 #include "runtime/transform_runtime.hpp"
 #include "runtime/rt64_transform_bridge.hpp"
+#include "runtime/rt64_presentation_policy.hpp"
 #include <mutex>
 #include <algorithm>
 #include <array>
@@ -148,8 +149,9 @@ class RT64Context final:public ultramodern::renderer::RendererContext {
         auto& u=app->userConfig;
         // RT64 owns the sole perspective correction. Guest projection matrices
         // remain 4:3; native visibility hooks widen only horizontal bounds.
-        // Preserve the original centered coordinate system for 2D HUD origins.
-        u.extAspectRatio=RT64::UserConfiguration::AspectRatio::Original;
+        // Untagged rectangles retain their centered coordinate system. Only
+        // reviewed HUD scopes opt into explicit left/right screen origins.
+        u.extAspectRatio=RT64::UserConfiguration::AspectRatio::Expand;
         u.antialiasing=static_cast<RT64::UserConfiguration::Antialiasing>(c.msaa_option);
         u.internalColorFormat=c.hpfb_option==ultramodern::renderer::HighPrecisionFramebuffer::On?RT64::UserConfiguration::InternalColorFormat::High:c.hpfb_option==ultramodern::renderer::HighPrecisionFramebuffer::Off?RT64::UserConfiguration::InternalColorFormat::Standard:RT64::UserConfiguration::InternalColorFormat::Automatic;
         const auto chosen=render_settings();
@@ -157,11 +159,16 @@ class RT64Context final:public ultramodern::renderer::RendererContext {
         u.resolutionMultiplier=resolution_multiplier(chosen,native_height);
         applied_settings=chosen;
         u.downsampleMultiplier=1;
+        // Sprite strips must share their original texel origins at fractional
+        // PAL output scales. The default low-resolution screen-grid snapping
+        // shifts separate identity-scale tiles by different source fractions.
+        u.upscale2D=RT64::UserConfiguration::Upscale2D::All;
         u.aspectRatio=chosen.aspect_ratio==AspectRatio::Wide16x9?RT64::UserConfiguration::AspectRatio::Manual:RT64::UserConfiguration::AspectRatio::Original;
         u.aspectTarget=chosen.aspect_ratio==AspectRatio::Wide16x9?16.0/9.0:4.0/3.0;
         u.refreshRate=chosen.refresh_rate==RenderRefresh::Original?RT64::UserConfiguration::RefreshRate::Original:RT64::UserConfiguration::RefreshRate::Manual;
         u.refreshRateTarget=chosen.refresh_rate==RenderRefresh::Hz120?120:60;
         u.displayBuffering=RT64::UserConfiguration::DisplayBuffering::Triple;
+        app->enhancementConfig.presentation.mode=rt64_presentation_mode(chosen.refresh_rate);
     }
     void refresh_settings(){
         const auto& vi=app->state->viHistory.top().vi;
@@ -170,6 +177,7 @@ class RT64Context final:public ultramodern::renderer::RendererContext {
         if(chosen!=applied_settings || resolution_multiplier(chosen,native_height)!=app->userConfig.resolutionMultiplier){
             config(ultramodern::renderer::get_graphics_config());
             app->updateUserConfig(true);
+            app->updateEnhancementConfig();
         }
         if(iss2000_render_evidence_enabled()){
             std::lock_guard lock(app->sharedQueueResources->configurationMutex);
@@ -202,7 +210,6 @@ public:
         app=std::make_unique<RT64::Application>(core,settings);
         const auto& c=ultramodern::renderer::get_graphics_config();config(c);
         app->userConfig.developerMode=developer;app->userConfig.graphicsAPI=RT64::UserConfiguration::GraphicsAPI::Vulkan;
-        app->enhancementConfig.presentation.mode=RT64::EnhancementConfiguration::Presentation::Mode::Console;
         auto result=app->setup(0);
         switch(result){
         case RT64::Application::SetupResult::Success:setup_result=ultramodern::renderer::SetupResult::Success;break;
@@ -246,7 +253,7 @@ public:
     bool update_config(const ultramodern::renderer::GraphicsConfig& old,const ultramodern::renderer::GraphicsConfig& next)override{
         if(old==next)return false;config(next);
         if(old.wm_option!=next.wm_option)app->setFullScreen(next.wm_option==ultramodern::renderer::WindowMode::Fullscreen);
-        app->updateUserConfig(true);if(old.msaa_option!=next.msaa_option)app->updateMultisampling();return true;
+        app->updateUserConfig(true);app->updateEnhancementConfig();if(old.msaa_option!=next.msaa_option)app->updateMultisampling();return true;
     }
     void enable_instant_present()override{
         app->enhancementConfig.presentation.mode=RT64::EnhancementConfiguration::Presentation::Mode::PresentEarly;app->updateEnhancementConfig();

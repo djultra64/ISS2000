@@ -1,19 +1,19 @@
 # International Superstar Soccer 2000 — native recompilation
 
-Original project work: **djultra64**. Work in progress: **native runtime integration**; no title screen or playable match verified yet.
+Original project work: **djultra64**. Work in progress: **PAL English native port**; release 1.0 is not complete.
 
-The target is the original USA English/Spanish N64 game, with proper 16:9, rendering up to 4K, interpolated presentation up to 120 fps, guest Expansion Pak memory and controller rumble. The native development build now reaches original graphics/audio initialization and ROM load requests with 8 MiB runtime memory. Enhanced rendering and a controllable match remain unverified.
+The active base is the original Europe English/German revision 0, running in English, to retain its original Career mode. The goals are proper 16:9, resolution options from 720p to 4K, interpolated presentation up to 120 fps, 8 MiB Expansion Pak memory, rumble and remapping by logical action. The preserved USA English/Spanish work is a historical diagnostic reference; its addresses and saves are not interchangeable with PAL.
 
 ## Current results
 
-- Deterministic normalization of big-endian, byte-swapped and little-endian ROM images, including ZIP import. Exact supported revision checking; no overwriting existing files.
-- Controlled build of the pinned N64Recomp with artifact receipts checked before generation.
-- Original entry function and buffer setup translated into native C and executed on the host. BSS clearing, surrounding memory, stack, dispatch boundary, and standard/expanded buffer choices are verified.
-- Instruction-derived research identifies 82 raw loads and 66 provisional CPU sections. A private diagnostic build compiles 12,155 original function bodies and resolves active aliases from actual DMA transfers. The strict compiler still rejects unresolved `0x801EFED0`; diagnostic lookup compilation is explicitly recorded and unknown runtime calls remain fatal.
-- SDL window/audio/input and RT64 adapters are integrated. Visible Linux tests reached original resource loading and exposed missing host-service boundaries, currently under investigation. See `HANDOFF.md` for the latest precise evidence.
-- First-run ROM selection imports verified canonical data beside the executable. Portable Linux/Windows packaging tools exist; final packages and Windows execution have not been verified.
+- Visible Linux PAL runs reach the original introduction, nine-entry main menu including Career, a controllable match, pause, replay and natural halftime. A completed match and Career progression/save-and-reload acceptance remain pending.
+- Original PAL CPU code is compiled into 12,170 native function bodies, with 67 registered CPU sections, 54 reviewed host-service bindings and the retained original Pak routine. Active overlay selection follows original loads; unknown calls remain fatal.
+- Full-width 16:9 sky, clean ball/arrow sprites and clean KICK OFF/player-name sprites have visible evidence in captures 110, 113 and 114. Later HUD alignment and final original-engine Remap composition fixes compile but still need visible acceptance. There is no independent controls overlay.
+- Logical actions, Xbox/PlayStation/Nintendo family handling, per-port preferences and persistent Controller Paks are implemented. Real controller prompts/actions and rumble still need hardware checks. Original Pak creation/reopening is observed; that does not establish a saved Career change surviving restart.
+- The last complete configured integration suite passed **283 tests, zero skips**, before the latest HUD/glyph changes. Later focused checks passed **7 HUD/remap/VI tests and 15 glyph tests**. These counts describe separate runs, not a newer complete-suite result.
+- ROM import checks exact identity and preserves existing files. Portable build/package preparation and the direct function-lookup bridge exist; final packages and actual Windows compilation/execution remain unverified. Actual 120 Hz presentation, fractional gameplay interpolation and all requested output resolutions still require acceptance.
 
-See [M0 evidence and limitations](docs/milestones/M0.md) and [runtime research](docs/research/runtime-integration.md).
+See the [1.0 acceptance record](docs/releases/1.0-acceptance.md) and [current handoff](HANDOFF.md) for the latest evidence. The [M0 milestone](docs/milestones/M0.md) and earlier US research describe historical checkpoints.
 
 ## Native execution model
 
@@ -23,22 +23,39 @@ The current importer stores a canonical ROM as the private resource container. S
 
 ## Local working folder
 
-The canonical checkout is `/home/alfredo/Documents/ChatGPT/ISS2000` (the system
-also resolves it as `/var/home/alfredo/Documents/ChatGPT/ISS2000`). The original ZIP,
-private ROM, compiler source and rebuilt diagnostic are retained here. Previous
-build caches and receipts are historical evidence under ignored
-`.local/pre-relocation-20261015/`; use the fresh `.local/toolchain` and
-`.local/clean-native-build` directories for current work.
+The canonical checkout is `/var/home/alfredo/Documents/ChatGPT/ISS2000`; the system also resolves `/home/alfredo/Documents/ChatGPT/ISS2000` to it. Prefer the actual `/var/home` path for importer/build provenance checks. Private PAL code and metadata are under `.local/pal-map-bound-01` and `.local/pal-native-metadata-02`; the current Linux development game build is `.local/pal-game-build`. Ignored historical US builds and receipts remain preserved.
 
 ## Private inputs
 
-Supply your own USA revision 0 ROM. Canonical SHA-256:
+Supply your own **Europe English/German revision 0** ROM, cartridge identifier `NISX`, 16,777,216 canonical bytes. The active English profile is `iss2000-pal-en-de-rev0`, with canonical SHA-256:
 
-`e18e87c062a66002c0cbd7e2dd793ef755609e70675d5679df0396d4b6c67850`
+`6ce6739b8ead149857c9442178a1ecd9b7f6d15b93a582c7208ca85d493817bf`
 
-ROMs, original assets, generated game code and binaries are not distributed in this source checkpoint. Keep them under ignored `.local/`. Other recomp projects are workflow references, not comparison targets.
+The development input is `.local/inputs/pal-en-de/rom.z64`. Audit an existing input with the explicit profile:
 
-## Reproduce the diagnostic on Linux
+```sh
+python3 -m tools.rom "/path/to/your PAL ROM or ZIP" --revision iss2000-pal-en-de-rev0
+```
+
+To import, add `--output` with a fresh destination. The command refuses existing outputs. The low-level importer's omitted-profile default remains US for backward compatibility; pass the PAL profile explicitly. The native game build defaults to the PAL profile and verifies that its map and metadata describe the same exact ROM.
+
+The preserved US revision 0 input is `.local/rom.z64`, cartridge identifier `NISE`, SHA-256 `e18e87c062a66002c0cbd7e2dd793ef755609e70675d5679df0396d4b6c67850`. Keep regional ROMs and saves separate; no automatic conversion is implemented. The attached PAL edition is English/German; Spanish support is not inherited from US.
+
+ROMs, extracted assets, generated original code, binaries, saves and captures are private and are not distributed in the source checkpoint. Other recomp projects are workflow references, not comparison targets. Future selectable roster/team/flag/kit packs remain a [proposal](docs/research/roster-pack-plan.md); no pack loader or selector is implemented.
+
+## Current PAL development build
+
+The native game requires independently prepared pinned runtime/RT64 archives, original audio code, PAL CPU sources and matching metadata. These are private prerequisites, not included with this repository. In an already configured development checkout, build the game with:
+
+```sh
+cmake --build .local/pal-game-build --target iss2000 -j4
+```
+
+See [PAL code mapping](docs/research/pal-code-map.md), [runtime lookup/build requirements](docs/runtime-lookup-bridge.md) and `HANDOFF.md` before preparing a fresh configuration. A successful link or unit suite does not replace visible gameplay acceptance. Disable input fixtures and render-evidence instrumentation for final binaries; no final package is approved by this checkpoint.
+
+## Historical US boot diagnostic on Linux
+
+This section preserves the early **US-only** bootstrap reproduction. It does not generate the current PAL game or describe its acceptance status.
 
 Requires Python 3.11 or newer, CMake 3.20 or newer, Ninja and a C/C++ compiler with C++20 support. Verified here with Python 3.14 and GCC 15.2.1. The following commands run from the repository root. Paths with spaces must stay quoted. No Python packages are required for the core importer/generator/tests.
 
@@ -73,9 +90,9 @@ Run `python3 -m unittest discover -s tests -v` for unit checks without private i
 
 AI tools assisted research, implementation, testing and documentation under djultra64's direction. Independent code review identified a build-provenance weakness and a corrupt-ZIP error path; both have regression checks. The evidence record distinguishes observed behavior from unimplemented targets.
 
-## Faced challenges
+## Research and remaining validation
 
-The original supplied ROM uses byte-swapped order despite its `.n64` suffix. Resident code references addresses outside the initial code map, so translating the initial block is insufficient. CPU and RSP code must also be separated correctly. Host memory macros require sign-extended guest addresses, a boundary checked by the native integration test.
+Both supplied regional inputs required byte-order normalization. Their resident/overlay maps, host-service boundaries, timekeeping and save identities were recovered separately. Original PAL simulation keeps its regional timestep compensation, while presentation settings remain separate; see [simulation pace](docs/research/pal-simulation-pace.md) and [match-clock evidence](docs/research/pal-match-clock.md). The [Career acceptance route](docs/research/pal-career-acceptance.md) records the genuine menu/save path still to be tested. No RAM-forced progression or invented save data counts as acceptance.
 
 ## Attribution
 

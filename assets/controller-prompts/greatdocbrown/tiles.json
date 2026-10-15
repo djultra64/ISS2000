@@ -1,0 +1,1638 @@
+{
+  "schema_version": 1,
+  "artwork": "Official flat relief variants; directional symbols are shared author-created Switch artwork.",
+  "tiles": [
+    {
+      "family": "Xbox",
+      "label": "X",
+      "sheet": "gdb-xbox-2.png",
+      "rect": [
+        16,
+        32,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Xbox",
+      "label": "A",
+      "sheet": "gdb-xbox-2.png",
+      "rect": [
+        16,
+        48,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Xbox",
+      "label": "Y",
+      "sheet": "gdb-xbox-2.png",
+      "rect": [
+        16,
+        64,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Xbox",
+      "label": "B",
+      "sheet": "gdb-xbox-2.png",
+      "rect": [
+        16,
+        80,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Xbox",
+      "label": "LT",
+      "sheet": "gdb-xbox-2.png",
+      "rect": [
+        336,
+        48,
+        16,
+        16
+      ],
+      "aliases": [
+        "Left trigger"
+      ]
+    },
+    {
+      "family": "Xbox",
+      "label": "RT",
+      "sheet": "gdb-xbox-2.png",
+      "rect": [
+        336,
+        64,
+        16,
+        16
+      ],
+      "aliases": [
+        "Right trigger"
+      ]
+    },
+    {
+      "family": "Xbox",
+      "label": "LB",
+      "sheet": "gdb-xbox-2.png",
+      "rect": [
+        336,
+        80,
+        16,
+        16
+      ],
+      "aliases": [
+        "leftshoulder"
+      ]
+    },
+    {
+      "family": "Xbox",
+      "label": "RB",
+      "sheet": "gdb-xbox-2.png",
+      "rect": [
+        336,
+        96,
+        16,
+        16
+      ],
+      "aliases": [
+        "rightshoulder"
+      ]
+    },
+    {
+      "family": "Xbox",
+      "label": "Xbox",
+      "sheet": "gdb-xbox-2.png",
+      "rect": [
+        336,
+        112,
+        16,
+        16
+      ],
+      "aliases": [
+        "guide"
+      ]
+    },
+    {
+      "family": "Xbox",
+      "label": "LS",
+      "sheet": "gdb-xbox-2.png",
+      "rect": [
+        216,
+        32,
+        16,
+        16
+      ],
+      "aliases": [
+        "Left stick",
+        "leftstick"
+      ]
+    },
+    {
+      "family": "Xbox",
+      "label": "RS",
+      "sheet": "gdb-xbox-2.png",
+      "rect": [
+        280,
+        32,
+        16,
+        16
+      ],
+      "aliases": [
+        "Right stick",
+        "rightstick"
+      ]
+    },
+    {
+      "family": "Xbox",
+      "label": "View",
+      "sheet": "gdb-xbox-2.png",
+      "rect": [
+        16,
+        96,
+        16,
+        16
+      ],
+      "aliases": [
+        "back"
+      ]
+    },
+    {
+      "family": "Xbox",
+      "label": "Menu",
+      "sheet": "gdb-xbox-2.png",
+      "rect": [
+        16,
+        112,
+        16,
+        16
+      ],
+      "aliases": [
+        "start"
+      ]
+    },
+    {
+      "family": "Nintendo",
+      "label": "B",
+      "sheet": "gdb-switch-2.png",
+      "rect": [
+        16,
+        32,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Nintendo",
+      "label": "A",
+      "sheet": "gdb-switch-2.png",
+      "rect": [
+        16,
+        48,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Nintendo",
+      "label": "Y",
+      "sheet": "gdb-switch-2.png",
+      "rect": [
+        16,
+        64,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Nintendo",
+      "label": "X",
+      "sheet": "gdb-switch-2.png",
+      "rect": [
+        16,
+        80,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Nintendo",
+      "label": "ZL",
+      "sheet": "gdb-switch-2.png",
+      "rect": [
+        304,
+        48,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Nintendo",
+      "label": "ZR",
+      "sheet": "gdb-switch-2.png",
+      "rect": [
+        304,
+        64,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Nintendo",
+      "label": "L",
+      "sheet": "gdb-switch-2.png",
+      "rect": [
+        304,
+        80,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Nintendo",
+      "label": "R",
+      "sheet": "gdb-switch-2.png",
+      "rect": [
+        304,
+        96,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Nintendo",
+      "label": "Left stick",
+      "sheet": "gdb-switch-2.png",
+      "rect": [
+        184,
+        32,
+        16,
+        16
+      ],
+      "aliases": [
+        "LS",
+        "leftstick"
+      ]
+    },
+    {
+      "family": "Nintendo",
+      "label": "Right stick",
+      "sheet": "gdb-switch-2.png",
+      "rect": [
+        248,
+        32,
+        16,
+        16
+      ],
+      "aliases": [
+        "RS",
+        "rightstick"
+      ]
+    },
+    {
+      "family": "Nintendo",
+      "label": "+",
+      "sheet": "gdb-switch-2.png",
+      "rect": [
+        112,
+        128,
+        16,
+        16
+      ],
+      "aliases": [
+        "Plus",
+        "start"
+      ]
+    },
+    {
+      "family": "Nintendo",
+      "label": "-",
+      "sheet": "gdb-switch-2.png",
+      "rect": [
+        112,
+        144,
+        16,
+        16
+      ],
+      "aliases": [
+        "Minus",
+        "back"
+      ]
+    },
+    {
+      "family": "Nintendo",
+      "label": "Home",
+      "sheet": "gdb-switch-2.png",
+      "rect": [
+        144,
+        32,
+        16,
+        16
+      ],
+      "aliases": [
+        "guide"
+      ]
+    },
+    {
+      "family": "Nintendo",
+      "label": "Capture",
+      "sheet": "gdb-switch-2.png",
+      "rect": [
+        128,
+        32,
+        16,
+        16
+      ],
+      "aliases": [
+        "misc1"
+      ]
+    },
+    {
+      "family": "PlayStation",
+      "label": "Triangle",
+      "sheet": "gdb-playstation-3.png",
+      "rect": [
+        16,
+        160,
+        16,
+        16
+      ],
+      "aliases": [
+        "△"
+      ]
+    },
+    {
+      "family": "PlayStation",
+      "label": "Circle",
+      "sheet": "gdb-playstation-3.png",
+      "rect": [
+        16,
+        176,
+        16,
+        16
+      ],
+      "aliases": [
+        "○"
+      ]
+    },
+    {
+      "family": "PlayStation",
+      "label": "Cross",
+      "sheet": "gdb-playstation-3.png",
+      "rect": [
+        16,
+        192,
+        16,
+        16
+      ],
+      "aliases": [
+        "×"
+      ]
+    },
+    {
+      "family": "PlayStation",
+      "label": "Square",
+      "sheet": "gdb-playstation-3.png",
+      "rect": [
+        16,
+        208,
+        16,
+        16
+      ],
+      "aliases": [
+        "□"
+      ]
+    },
+    {
+      "family": "PlayStation",
+      "label": "L2",
+      "sheet": "gdb-playstation-3.png",
+      "rect": [
+        128,
+        80,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "PlayStation",
+      "label": "R2",
+      "sheet": "gdb-playstation-3.png",
+      "rect": [
+        128,
+        96,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "PlayStation",
+      "label": "L1",
+      "sheet": "gdb-playstation-3.png",
+      "rect": [
+        128,
+        112,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "PlayStation",
+      "label": "R1",
+      "sheet": "gdb-playstation-3.png",
+      "rect": [
+        128,
+        128,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "PlayStation",
+      "label": "L3",
+      "sheet": "gdb-playstation-3.png",
+      "rect": [
+        80,
+        304,
+        16,
+        16
+      ],
+      "aliases": [
+        "Left stick",
+        "leftstick"
+      ]
+    },
+    {
+      "family": "PlayStation",
+      "label": "R3",
+      "sheet": "gdb-playstation-3.png",
+      "rect": [
+        192,
+        304,
+        16,
+        16
+      ],
+      "aliases": [
+        "Right stick",
+        "rightstick"
+      ]
+    },
+    {
+      "family": "PlayStation",
+      "label": "Share",
+      "sheet": "gdb-playstation-3.png",
+      "rect": [
+        16,
+        240,
+        16,
+        16
+      ],
+      "aliases": [
+        "back"
+      ]
+    },
+    {
+      "family": "PlayStation",
+      "label": "Options",
+      "sheet": "gdb-playstation-3.png",
+      "rect": [
+        16,
+        256,
+        16,
+        16
+      ],
+      "aliases": [
+        "start"
+      ]
+    },
+    {
+      "family": "PlayStation",
+      "label": "Start",
+      "sheet": "gdb-playstation-3.png",
+      "rect": [
+        272,
+        320,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "PlayStation",
+      "label": "Touchpad",
+      "sheet": "gdb-playstation-3.png",
+      "rect": [
+        20,
+        48,
+        24,
+        16
+      ],
+      "aliases": [
+        "touchpad"
+      ]
+    },
+    {
+      "family": "Xbox",
+      "label": "D-pad up",
+      "sheet": "gdb-switch-2.png",
+      "rect": [
+        16,
+        96,
+        16,
+        16
+      ],
+      "aliases": [
+        "D↑",
+        "dpup"
+      ]
+    },
+    {
+      "family": "Xbox",
+      "label": "D-pad right",
+      "sheet": "gdb-switch-2.png",
+      "rect": [
+        16,
+        112,
+        16,
+        16
+      ],
+      "aliases": [
+        "D→",
+        "dpright"
+      ]
+    },
+    {
+      "family": "Xbox",
+      "label": "D-pad down",
+      "sheet": "gdb-switch-2.png",
+      "rect": [
+        16,
+        128,
+        16,
+        16
+      ],
+      "aliases": [
+        "D↓",
+        "dpdown"
+      ]
+    },
+    {
+      "family": "Xbox",
+      "label": "D-pad left",
+      "sheet": "gdb-switch-2.png",
+      "rect": [
+        16,
+        144,
+        16,
+        16
+      ],
+      "aliases": [
+        "D←",
+        "dpleft"
+      ]
+    },
+    {
+      "family": "PlayStation",
+      "label": "D-pad up",
+      "sheet": "gdb-switch-2.png",
+      "rect": [
+        16,
+        96,
+        16,
+        16
+      ],
+      "aliases": [
+        "D↑",
+        "dpup"
+      ]
+    },
+    {
+      "family": "PlayStation",
+      "label": "D-pad right",
+      "sheet": "gdb-switch-2.png",
+      "rect": [
+        16,
+        112,
+        16,
+        16
+      ],
+      "aliases": [
+        "D→",
+        "dpright"
+      ]
+    },
+    {
+      "family": "PlayStation",
+      "label": "D-pad down",
+      "sheet": "gdb-switch-2.png",
+      "rect": [
+        16,
+        128,
+        16,
+        16
+      ],
+      "aliases": [
+        "D↓",
+        "dpdown"
+      ]
+    },
+    {
+      "family": "PlayStation",
+      "label": "D-pad left",
+      "sheet": "gdb-switch-2.png",
+      "rect": [
+        16,
+        144,
+        16,
+        16
+      ],
+      "aliases": [
+        "D←",
+        "dpleft"
+      ]
+    },
+    {
+      "family": "Nintendo",
+      "label": "D-pad up",
+      "sheet": "gdb-switch-2.png",
+      "rect": [
+        16,
+        96,
+        16,
+        16
+      ],
+      "aliases": [
+        "D↑",
+        "dpup"
+      ]
+    },
+    {
+      "family": "Nintendo",
+      "label": "D-pad right",
+      "sheet": "gdb-switch-2.png",
+      "rect": [
+        16,
+        112,
+        16,
+        16
+      ],
+      "aliases": [
+        "D→",
+        "dpright"
+      ]
+    },
+    {
+      "family": "Nintendo",
+      "label": "D-pad down",
+      "sheet": "gdb-switch-2.png",
+      "rect": [
+        16,
+        128,
+        16,
+        16
+      ],
+      "aliases": [
+        "D↓",
+        "dpdown"
+      ]
+    },
+    {
+      "family": "Nintendo",
+      "label": "D-pad left",
+      "sheet": "gdb-switch-2.png",
+      "rect": [
+        16,
+        144,
+        16,
+        16
+      ],
+      "aliases": [
+        "D←",
+        "dpleft"
+      ]
+    },
+    {
+      "family": "Keyboard",
+      "label": "Q",
+      "sheet": "gdb-keyboard-2.png",
+      "rect": [
+        64,
+        48,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Keyboard",
+      "label": "W",
+      "sheet": "gdb-keyboard-2.png",
+      "rect": [
+        80,
+        48,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Keyboard",
+      "label": "E",
+      "sheet": "gdb-keyboard-2.png",
+      "rect": [
+        96,
+        48,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Keyboard",
+      "label": "R",
+      "sheet": "gdb-keyboard-2.png",
+      "rect": [
+        112,
+        48,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Keyboard",
+      "label": "T",
+      "sheet": "gdb-keyboard-2.png",
+      "rect": [
+        128,
+        48,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Keyboard",
+      "label": "Y",
+      "sheet": "gdb-keyboard-2.png",
+      "rect": [
+        144,
+        48,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Keyboard",
+      "label": "U",
+      "sheet": "gdb-keyboard-2.png",
+      "rect": [
+        160,
+        48,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Keyboard",
+      "label": "I",
+      "sheet": "gdb-keyboard-2.png",
+      "rect": [
+        176,
+        48,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Keyboard",
+      "label": "O",
+      "sheet": "gdb-keyboard-2.png",
+      "rect": [
+        192,
+        48,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Keyboard",
+      "label": "P",
+      "sheet": "gdb-keyboard-2.png",
+      "rect": [
+        208,
+        48,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Keyboard",
+      "label": "A",
+      "sheet": "gdb-keyboard-2.png",
+      "rect": [
+        64,
+        64,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Keyboard",
+      "label": "S",
+      "sheet": "gdb-keyboard-2.png",
+      "rect": [
+        80,
+        64,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Keyboard",
+      "label": "D",
+      "sheet": "gdb-keyboard-2.png",
+      "rect": [
+        96,
+        64,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Keyboard",
+      "label": "F",
+      "sheet": "gdb-keyboard-2.png",
+      "rect": [
+        112,
+        64,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Keyboard",
+      "label": "G",
+      "sheet": "gdb-keyboard-2.png",
+      "rect": [
+        128,
+        64,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Keyboard",
+      "label": "H",
+      "sheet": "gdb-keyboard-2.png",
+      "rect": [
+        144,
+        64,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Keyboard",
+      "label": "J",
+      "sheet": "gdb-keyboard-2.png",
+      "rect": [
+        160,
+        64,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Keyboard",
+      "label": "K",
+      "sheet": "gdb-keyboard-2.png",
+      "rect": [
+        176,
+        64,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Keyboard",
+      "label": "L",
+      "sheet": "gdb-keyboard-2.png",
+      "rect": [
+        192,
+        64,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Keyboard",
+      "label": "Z",
+      "sheet": "gdb-keyboard-2.png",
+      "rect": [
+        64,
+        80,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Keyboard",
+      "label": "X",
+      "sheet": "gdb-keyboard-2.png",
+      "rect": [
+        80,
+        80,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Keyboard",
+      "label": "C",
+      "sheet": "gdb-keyboard-2.png",
+      "rect": [
+        96,
+        80,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Keyboard",
+      "label": "V",
+      "sheet": "gdb-keyboard-2.png",
+      "rect": [
+        112,
+        80,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Keyboard",
+      "label": "B",
+      "sheet": "gdb-keyboard-2.png",
+      "rect": [
+        128,
+        80,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Keyboard",
+      "label": "N",
+      "sheet": "gdb-keyboard-2.png",
+      "rect": [
+        144,
+        80,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Keyboard",
+      "label": "M",
+      "sheet": "gdb-keyboard-2.png",
+      "rect": [
+        160,
+        80,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Keyboard",
+      "label": "1",
+      "sheet": "gdb-keyboard-2.png",
+      "rect": [
+        64,
+        32,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Keyboard",
+      "label": "2",
+      "sheet": "gdb-keyboard-2.png",
+      "rect": [
+        80,
+        32,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Keyboard",
+      "label": "3",
+      "sheet": "gdb-keyboard-2.png",
+      "rect": [
+        96,
+        32,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Keyboard",
+      "label": "4",
+      "sheet": "gdb-keyboard-2.png",
+      "rect": [
+        112,
+        32,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Keyboard",
+      "label": "5",
+      "sheet": "gdb-keyboard-2.png",
+      "rect": [
+        128,
+        32,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Keyboard",
+      "label": "6",
+      "sheet": "gdb-keyboard-2.png",
+      "rect": [
+        144,
+        32,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Keyboard",
+      "label": "7",
+      "sheet": "gdb-keyboard-2.png",
+      "rect": [
+        160,
+        32,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Keyboard",
+      "label": "8",
+      "sheet": "gdb-keyboard-2.png",
+      "rect": [
+        176,
+        32,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Keyboard",
+      "label": "9",
+      "sheet": "gdb-keyboard-2.png",
+      "rect": [
+        192,
+        32,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Keyboard",
+      "label": "0",
+      "sheet": "gdb-keyboard-2.png",
+      "rect": [
+        208,
+        32,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Keyboard",
+      "label": "F1",
+      "sheet": "gdb-keyboard-2.png",
+      "rect": [
+        64,
+        16,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Keyboard",
+      "label": "F2",
+      "sheet": "gdb-keyboard-2.png",
+      "rect": [
+        80,
+        16,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Keyboard",
+      "label": "F3",
+      "sheet": "gdb-keyboard-2.png",
+      "rect": [
+        96,
+        16,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Keyboard",
+      "label": "F4",
+      "sheet": "gdb-keyboard-2.png",
+      "rect": [
+        112,
+        16,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Keyboard",
+      "label": "F5",
+      "sheet": "gdb-keyboard-2.png",
+      "rect": [
+        128,
+        16,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Keyboard",
+      "label": "F6",
+      "sheet": "gdb-keyboard-2.png",
+      "rect": [
+        144,
+        16,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Keyboard",
+      "label": "F7",
+      "sheet": "gdb-keyboard-2.png",
+      "rect": [
+        160,
+        16,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Keyboard",
+      "label": "F8",
+      "sheet": "gdb-keyboard-2.png",
+      "rect": [
+        176,
+        16,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Keyboard",
+      "label": "F9",
+      "sheet": "gdb-keyboard-2.png",
+      "rect": [
+        192,
+        16,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Keyboard",
+      "label": "F10",
+      "sheet": "gdb-keyboard-2.png",
+      "rect": [
+        208,
+        16,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Keyboard",
+      "label": "F11",
+      "sheet": "gdb-keyboard-2.png",
+      "rect": [
+        224,
+        16,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Keyboard",
+      "label": "F12",
+      "sheet": "gdb-keyboard-2.png",
+      "rect": [
+        240,
+        16,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Keyboard",
+      "label": "Escape",
+      "sheet": "gdb-keyboard-2.png",
+      "rect": [
+        32,
+        16,
+        16,
+        16
+      ],
+      "aliases": [
+        "Esc"
+      ]
+    },
+    {
+      "family": "Keyboard",
+      "label": "Return",
+      "sheet": "gdb-keyboard-2.png",
+      "rect": [
+        244,
+        64,
+        24,
+        16
+      ],
+      "aliases": [
+        "Enter"
+      ]
+    },
+    {
+      "family": "Keyboard",
+      "label": "Up",
+      "sheet": "gdb-keyboard-2.png",
+      "rect": [
+        320,
+        80,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Keyboard",
+      "label": "Left",
+      "sheet": "gdb-keyboard-2.png",
+      "rect": [
+        304,
+        96,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Keyboard",
+      "label": "Down",
+      "sheet": "gdb-keyboard-2.png",
+      "rect": [
+        320,
+        96,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Keyboard",
+      "label": "Right",
+      "sheet": "gdb-keyboard-2.png",
+      "rect": [
+        336,
+        96,
+        16,
+        16
+      ],
+      "aliases": []
+    },
+    {
+      "family": "Xbox",
+      "label": "R←",
+      "sheet": "gdb-xbox-2.png",
+      "rect": [
+        280,
+        32,
+        16,
+        16
+      ],
+      "derivative": "right-stick-direction",
+      "direction": {
+        "sheet": "gdb-switch-2.png",
+        "rect": [
+          16,
+          144,
+          16,
+          16
+        ]
+      }
+    },
+    {
+      "family": "Xbox",
+      "label": "R→",
+      "sheet": "gdb-xbox-2.png",
+      "rect": [
+        280,
+        32,
+        16,
+        16
+      ],
+      "derivative": "right-stick-direction",
+      "direction": {
+        "sheet": "gdb-switch-2.png",
+        "rect": [
+          16,
+          112,
+          16,
+          16
+        ]
+      }
+    },
+    {
+      "family": "Xbox",
+      "label": "R↑",
+      "sheet": "gdb-xbox-2.png",
+      "rect": [
+        280,
+        32,
+        16,
+        16
+      ],
+      "derivative": "right-stick-direction",
+      "direction": {
+        "sheet": "gdb-switch-2.png",
+        "rect": [
+          16,
+          96,
+          16,
+          16
+        ]
+      }
+    },
+    {
+      "family": "Xbox",
+      "label": "R↓",
+      "sheet": "gdb-xbox-2.png",
+      "rect": [
+        280,
+        32,
+        16,
+        16
+      ],
+      "derivative": "right-stick-direction",
+      "direction": {
+        "sheet": "gdb-switch-2.png",
+        "rect": [
+          16,
+          128,
+          16,
+          16
+        ]
+      }
+    },
+    {
+      "family": "PlayStation",
+      "label": "R←",
+      "sheet": "gdb-xbox-2.png",
+      "rect": [
+        280,
+        32,
+        16,
+        16
+      ],
+      "derivative": "right-stick-direction",
+      "direction": {
+        "sheet": "gdb-switch-2.png",
+        "rect": [
+          16,
+          144,
+          16,
+          16
+        ]
+      }
+    },
+    {
+      "family": "PlayStation",
+      "label": "R→",
+      "sheet": "gdb-xbox-2.png",
+      "rect": [
+        280,
+        32,
+        16,
+        16
+      ],
+      "derivative": "right-stick-direction",
+      "direction": {
+        "sheet": "gdb-switch-2.png",
+        "rect": [
+          16,
+          112,
+          16,
+          16
+        ]
+      }
+    },
+    {
+      "family": "PlayStation",
+      "label": "R↑",
+      "sheet": "gdb-xbox-2.png",
+      "rect": [
+        280,
+        32,
+        16,
+        16
+      ],
+      "derivative": "right-stick-direction",
+      "direction": {
+        "sheet": "gdb-switch-2.png",
+        "rect": [
+          16,
+          96,
+          16,
+          16
+        ]
+      }
+    },
+    {
+      "family": "PlayStation",
+      "label": "R↓",
+      "sheet": "gdb-xbox-2.png",
+      "rect": [
+        280,
+        32,
+        16,
+        16
+      ],
+      "derivative": "right-stick-direction",
+      "direction": {
+        "sheet": "gdb-switch-2.png",
+        "rect": [
+          16,
+          128,
+          16,
+          16
+        ]
+      }
+    },
+    {
+      "family": "Nintendo",
+      "label": "R←",
+      "sheet": "gdb-xbox-2.png",
+      "rect": [
+        280,
+        32,
+        16,
+        16
+      ],
+      "derivative": "right-stick-direction",
+      "direction": {
+        "sheet": "gdb-switch-2.png",
+        "rect": [
+          16,
+          144,
+          16,
+          16
+        ]
+      }
+    },
+    {
+      "family": "Nintendo",
+      "label": "R→",
+      "sheet": "gdb-xbox-2.png",
+      "rect": [
+        280,
+        32,
+        16,
+        16
+      ],
+      "derivative": "right-stick-direction",
+      "direction": {
+        "sheet": "gdb-switch-2.png",
+        "rect": [
+          16,
+          112,
+          16,
+          16
+        ]
+      }
+    },
+    {
+      "family": "Nintendo",
+      "label": "R↑",
+      "sheet": "gdb-xbox-2.png",
+      "rect": [
+        280,
+        32,
+        16,
+        16
+      ],
+      "derivative": "right-stick-direction",
+      "direction": {
+        "sheet": "gdb-switch-2.png",
+        "rect": [
+          16,
+          96,
+          16,
+          16
+        ]
+      }
+    },
+    {
+      "family": "Nintendo",
+      "label": "R↓",
+      "sheet": "gdb-xbox-2.png",
+      "rect": [
+        280,
+        32,
+        16,
+        16
+      ],
+      "derivative": "right-stick-direction",
+      "direction": {
+        "sheet": "gdb-switch-2.png",
+        "rect": [
+          16,
+          128,
+          16,
+          16
+        ]
+      }
+    }
+  ]
+}

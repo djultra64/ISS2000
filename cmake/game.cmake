@@ -105,6 +105,7 @@ add_executable(iss2000
   "${ISS2000_NATIVE_METADATA}/native_metadata.cpp" "${ISS2000_NATIVE_METADATA}/native_bindings.cpp" "${ISS2000_NATIVE_METADATA}/native_retained.cpp"
   "${ISS2000_AUDIO_GENERATED}" $<TARGET_OBJECTS:iss2000_original>)
 add_dependencies(iss2000 iss2000_verify_native_inputs)
+target_sources(iss2000 PRIVATE src/runtime/game_controls_menu.cpp)
 target_include_directories(iss2000 PRIVATE
   "${CMAKE_SOURCE_DIR}/src" "${ISS2000_N64RECOMP_SOURCE}/include"
   "${ISS2000_RUNTIME_SOURCE}/librecomp/include" "${ISS2000_RUNTIME_SOURCE}/ultramodern/include"
@@ -151,6 +152,51 @@ if(ISS2000_ROM_REVISION STREQUAL "iss2000-pal-en-de-rev0")
   # Defining every event symbol in this object prevents events.cpp.o from the
   # upstream static archive from being extracted; pinned checkout stays pristine.
   target_sources(iss2000 PRIVATE "${ISS2000_PAL_TIMING}/events.cpp")
+  set(ISS2000_PAL_ROM "${CMAKE_SOURCE_DIR}/.local/inputs/pal-en-de/rom.z64" CACHE FILEPATH "Private exact PAL ROM used to verify original rendering source generation")
+  set(ISS2000_PAL_DETAIL "${CMAKE_CURRENT_BINARY_DIR}/pal-max-detail-v1")
+  set(ISS2000_PAL_DETAIL_COMMAND "${Python3_EXECUTABLE}" -m tools.prepare_pal_max_detail
+    --rom "${ISS2000_PAL_ROM}"
+    --models-source "${ISS2000_GAME_GENERATED}/func_800300D0_resident.c"
+    --shadows-source "${ISS2000_GAME_GENERATED}/func_80037498_resident.c"
+    --output "${ISS2000_PAL_DETAIL}")
+  execute_process(COMMAND ${ISS2000_PAL_DETAIL_COMMAND}
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}" RESULT_VARIABLE pal_detail_result)
+  if(NOT pal_detail_result EQUAL 0)
+    message(FATAL_ERROR "Could not prepare the pinned PAL maximum-detail model and shadow sources")
+  endif()
+  add_custom_target(iss2000_verify_pal_detail COMMAND ${ISS2000_PAL_DETAIL_COMMAND}
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}" VERBATIM)
+  add_dependencies(iss2000 iss2000_verify_pal_detail)
+  target_sources(iss2000 PRIVATE "${ISS2000_PAL_DETAIL}/pal_max_detail_models.cpp"
+    "${ISS2000_PAL_DETAIL}/pal_max_detail_shadows.cpp")
+  set(ISS2000_PAL_RUMBLE_UI "${CMAKE_CURRENT_BINARY_DIR}/pal-rumble-ui-v1")
+  set(ISS2000_PAL_RUMBLE_UI_COMMAND "${Python3_EXECUTABLE}" -m tools.prepare_pal_rumble_ui
+    --rom "${ISS2000_PAL_ROM}" --generated "${ISS2000_GAME_GENERATED}"
+    --output "${ISS2000_PAL_RUMBLE_UI}")
+  execute_process(COMMAND ${ISS2000_PAL_RUMBLE_UI_COMMAND}
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}" RESULT_VARIABLE pal_rumble_ui_result)
+  if(NOT pal_rumble_ui_result EQUAL 0)
+    message(FATAL_ERROR "Could not prepare the pinned PAL Rumble notice continuations")
+  endif()
+  add_custom_target(iss2000_verify_pal_rumble_ui COMMAND ${ISS2000_PAL_RUMBLE_UI_COMMAND}
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}" VERBATIM)
+  add_dependencies(iss2000 iss2000_verify_pal_rumble_ui)
+  foreach(pal_rumble_ui_entry IN ITEMS 802B5574 802BA770 802BE1B8 802C6D34 803D2F34)
+    target_sources(iss2000 PRIVATE "${ISS2000_PAL_RUMBLE_UI}/pal_rumble_ui_${pal_rumble_ui_entry}.cpp")
+  endforeach()
+  set(ISS2000_PAL_SKY "${CMAKE_CURRENT_BINARY_DIR}/pal-wide-sky-v1")
+  set(ISS2000_PAL_SKY_COMMAND "${Python3_EXECUTABLE}" -m tools.prepare_pal_sky
+    --rom "${ISS2000_PAL_ROM}" --source "${ISS2000_GAME_GENERATED}/func_80035CC0_resident.c"
+    --output "${ISS2000_PAL_SKY}")
+  execute_process(COMMAND ${ISS2000_PAL_SKY_COMMAND}
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}" RESULT_VARIABLE pal_sky_result)
+  if(NOT pal_sky_result EQUAL 0)
+    message(FATAL_ERROR "Could not prepare the pinned PAL widescreen sky")
+  endif()
+  add_custom_target(iss2000_verify_pal_sky COMMAND ${ISS2000_PAL_SKY_COMMAND}
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}" VERBATIM)
+  add_dependencies(iss2000 iss2000_verify_pal_sky)
+  target_sources(iss2000 PRIVATE src/runtime/pal_sky_widescreen.cpp src/runtime/pal_hud_widescreen.cpp "${ISS2000_PAL_SKY}/pal_wide_sky.cpp")
   set(ISS2000_PAL_VI "${CMAKE_CURRENT_BINARY_DIR}/pal-rt64-vi-v1")
   set(ISS2000_PAL_VI_COMMAND "${Python3_EXECUTABLE}" -m tools.prepare_rt64_vi
     --source "${ISS2000_RT64_SOURCE}/src/hle/rt64_vi.cpp" --output "${ISS2000_PAL_VI}")

@@ -1,0 +1,38 @@
+{
+  "artist": "greatdocbrown",
+  "project_url": "https://greatdocbrown.itch.io/gamepad-ui",
+  "license": "CC0-1.0",
+  "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "retrieved": "2026-10-15",
+  "download_route": "Official itch.io free-download endpoint; no third-party mirrors",
+  "files": {
+    "gdb-switch-2.png": {
+      "bytes": 30549,
+      "sha256": "7a6aec560b5ec1d0b687c110dcf305075e8a6fb31b3fb54a4bc5f5d6a5c6f5c5"
+    },
+    "gdb-xbox-2.png": {
+      "bytes": 38797,
+      "sha256": "efddfa9252c0b3ac20c07f2b07c2d7b8ae209de4e17f80b0e4081af1a9cecf77"
+    },
+    "gdb-playstation-3.png": {
+      "bytes": 54570,
+      "sha256": "cf054306e26fbce7c9d7e960f0e9a9011804fa3a4b87ddc64427e347138140d2"
+    },
+    "gdb-keyboard-2.png": {
+      "bytes": 22612,
+      "sha256": "76667a5df663df494c9b6b87beda1c1f3d7fef8b47fc41688b12062290dafb66"
+    },
+    "gdb-gamepad-2(all files).zip": {
+      "bytes": 207157,
+      "sha256": "b021b7faac46b35ff89ce925817ad3a02c9603498510b26e5d369547f1701bcd"
+    }
+  },
+  "derivatives": [
+    {
+      "name": "right-stick-direction",
+      "recipe": "Shared unbranded R-marked stick crop from Xbox sheet (280,32,16,16), nearest-neighbor fitted12x12 at0,0; direction crop from Switch sheet16x16 fitted8x8 at8,8; alpha-composite on transparent16x16. No redrawing.",
+      "source_rectangles": "tiles.json records both exact official source rectangles",
+      "original_integration": "djultra64"
+    }
+  ]
+}

@@ -49,13 +49,19 @@ std::string name(std::string_view physical){
 }
 EncodedPromptLayout pal_en_encoded_prompt_layout(){
     // Exact whole-message hashes from original PAL data, not inferred US offsets.
-    // Both source extents terminate at the original FF11; editable ranges contain
+    // All source extents terminate at the original FF11; editable ranges contain
     // letters/spaces only. No original asset bytes are embedded here.
     return {{
         {0x1EEF18,114,"7b7805919bd1bb1df64d63d80d47ca48a2262033fe7ce2c214bde56a95d865b0",{{80,30,0,"Press "," to proceed."}}},
         {0x1EEF8C,116,"4f9d9f404a5cd92b6b57ac25b1ac863e1299888d5f828150ef91c6bd4c4910d1",{{82,30,0,"Press "," to proceed."}}},
         {0x1F2304,78,"093e503c0ae212b0a895b90d47d8c46e47981bfef030179be1973461dc9e2512",{{51,23,2,"Press ","."}}},
-        {0x1F23BC,37,"a14bdb78a497f5e528a5f05db791da611ff26fe06b0b7e7ec341fa1103432352",{{0,15,2,"Use ",""}}}
+        {0x1F23BC,37,"a14bdb78a497f5e528a5f05db791da611ff26fe06b0b7e7ec341fa1103432352",{{0,15,2,"Use ",""}}},
+        // Data-only PAL overlay: ROM514950 -> guest802DD400. Source pointers
+        // are original table entries5147FC/514828/514830; no alignment padding
+        // preceding those actual targets is part of the guarded message.
+        {0x2DD8C0,86,"83b627ece320dade69ad01d2b8fb420edd363ef8e747b6e2fe2213e382888bac",{{52,30,0,"Press "," to proceed."}}},
+        {0x2DDB2C,69,"8d057ca0a914891920b0ec232acfead532118e40c0a1c45bcd81c98e744f7af0",{{35,30,0,"Press "," to proceed."}}},
+        {0x2DDB74,68,"1bf17b202b95be48ce49fd8273856b7bfcb903aafa8a1966711fcafddc1ce71d",{{34,30,0,"Press "," to proceed."}}}
     }};
 }
 EncodedPromptGuard::EncodedPromptGuard(EncodedPromptLayout layout):layout_(std::move(layout)),cache_(layout_.messages.size()){

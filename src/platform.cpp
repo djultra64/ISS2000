@@ -9,6 +9,7 @@
 #include "runtime/pak_services.hpp"
 #include "runtime/settings_dialog.hpp"
 #include "runtime/input_preferences.hpp"
+#include "runtime/game_controls_input.hpp"
 #include <librecomp/game.hpp>
 #include "runtime/audio_fifo.hpp"
 #include <algorithm>
@@ -33,6 +34,8 @@ AudioFrameClock audio_clock;
 uint64_t output_frames_emitted{};
 uint64_t output_frames_consumed{};
 std::mutex input_mutex;
+ControlsMenuInputRouter controls_menu_router;
+std::atomic<bool> controls_menu_release{false};
 std::atomic<uint8_t*> guest_memory{};
 struct Port {
     SDL_GameController* controller{};
@@ -90,6 +93,13 @@ void add_controllers() {
     }
 }
 void update(void*) {
+    // Menu -> input is the only lock order. active() is an atomic visibility read;
+    // the remaining menu snapshots are taken before acquiring input_mutex.
+    auto& controls_menu=game_controls_menu();
+    ControlsMenuInputFrame menu_frame;
+    menu_frame.active=controls_menu.active();
+    if(menu_frame.active){menu_frame.port=controls_menu.port();menu_frame.capturing=controls_menu.capturing();}
+    Family menu_family=Family::Xbox;
     bool settings_requested=false;
     bool preferences_changed=false;
     Family previous_family=Family::Automatic;
@@ -102,9 +112,26 @@ void update(void*) {
         if(event.type==SDL_QUIT) { stop_motors(); ultramodern::quit(); }
         if(event.type==SDL_WINDOWEVENT && event.window.event==SDL_WINDOWEVENT_FOCUS_LOST) stop_motors();
         if(event.type==SDL_KEYDOWN && !event.key.repeat) {
-            if(event.key.keysym.scancode==SDL_SCANCODE_ESCAPE) { stop_motors(); ultramodern::quit(); }
-            if(event.key.keysym.scancode==SDL_SCANCODE_F7)settings_requested=true;
-            if(event.key.keysym.scancode==SDL_SCANCODE_F6) {
+            const auto key=event.key.keysym.scancode;
+            const bool menu_visible=menu_frame.active||controls_menu.active();
+            if(key==SDL_SCANCODE_ESCAPE){
+                if(menu_visible){menu_frame.escape=true;menu_frame.keyboard_command=ControlsMenuCommand::Cancel;}
+                else if(!controls_menu_release.load()){stop_motors();ultramodern::quit();}
+            }
+            if(menu_visible){
+                switch(key){
+                case SDL_SCANCODE_Z:menu_frame.keyboard_command=ControlsMenuCommand::Accept;break;
+                case SDL_SCANCODE_X:menu_frame.keyboard_command=ControlsMenuCommand::Cancel;break;
+                case SDL_SCANCODE_UP:menu_frame.keyboard_command=ControlsMenuCommand::Up;break;
+                case SDL_SCANCODE_DOWN:menu_frame.keyboard_command=ControlsMenuCommand::Down;break;
+                case SDL_SCANCODE_PAGEUP:menu_frame.keyboard_command=ControlsMenuCommand::PreviousPage;break;
+                case SDL_SCANCODE_PAGEDOWN:menu_frame.keyboard_command=ControlsMenuCommand::NextPage;break;
+                case SDL_SCANCODE_BACKSPACE:case SDL_SCANCODE_DELETE:menu_frame.keyboard_command=ControlsMenuCommand::RestoreDefault;break;
+                default:break;
+                }
+            }
+            if(!menu_visible&&!controls_menu_release.load()&&key==SDL_SCANCODE_F7)settings_requested=true;
+            if(!menu_visible&&!controls_menu_release.load()&&key==SDL_SCANCODE_F6) {
                 if(!preferences_changed)previous_family=ports[0].manual;
                 preferences_changed=true;
                 ports[0].manual=static_cast<Family>((static_cast<int>(ports[0].manual)+1)%4);
@@ -124,10 +151,28 @@ void update(void*) {
             for(auto& p:ports) if(p.controller && SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(p.controller))==id) p.keyboard=false;
         }
     }
-    const auto* keyboard=SDL_GetKeyboardState(nullptr);
+    int keyboard_count=0;
+    const auto* keyboard=SDL_GetKeyboardState(&keyboard_count);
+    for(int k=0;k<keyboard_count;++k)menu_frame.any_input|=keyboard[k]!=0;
     const bool focused=(SDL_GetWindowFlags(game_window)&SDL_WINDOW_INPUT_FOCUS)!=0;
+    menu_frame.focused=focused;
+    menu_frame.keyboard_active=menu_frame.port==0&&(ports[0].keyboard||!ports[0].controller);
     for(size_t i=0;i<ports.size();++i) {
         auto& p=ports[i]; p.buttons=0; p.x=0; p.y=0; p.connected=p.controller || i==0;
+        auto& sample=menu_frame.controllers[i];
+        sample.preferences.manual_family=p.manual;sample.preferences.bindings=p.bindings;
+        if(p.controller){
+            for(unsigned b=0;b<unsigned(SDL_CONTROLLER_BUTTON_MAX);++b)
+                if(SDL_GameControllerGetButton(p.controller,SDL_GameControllerButton(b)))sample.held|=uint32_t(1)<<b;
+            sample.x=SDL_GameControllerGetAxis(p.controller,SDL_CONTROLLER_AXIS_LEFTX)/32767.f;
+            sample.y=-SDL_GameControllerGetAxis(p.controller,SDL_CONTROLLER_AXIS_LEFTY)/32767.f;
+            for(int a=0;a<SDL_CONTROLLER_AXIS_MAX;++a){
+                const auto v=int(SDL_GameControllerGetAxis(p.controller,SDL_GameControllerAxis(a)));
+                menu_frame.any_input|=a>=SDL_CONTROLLER_AXIS_TRIGGERLEFT?v>10000:std::abs(v)>4915;
+            }
+        }
+        menu_frame.any_input|=sample.held!=0;
+        if(i==menu_frame.port)menu_family=p.manual==Family::Automatic?p.detected:p.manual;
         if(!focused) {p.rumble=false; continue;}
         if(i==0 && (p.keyboard || !p.controller)) {
             for(size_t a=0;a<keys.size();++a) if(keyboard[keys[a]]) p.buttons|=masks[a];
@@ -144,28 +189,49 @@ void update(void*) {
             if(axis_fallback(Action::CUp,p.bindings[size_t(Action::CUp)])&&cy<-.4f)p.buttons|=8;
             if(axis_fallback(Action::CDown,p.bindings[size_t(Action::CDown)])&&cy>.4f)p.buttons|=4;
         }
-        if(accessories[i]!=PakAccessory::Rumble)p.rumble=false;
+        if(accessories[i]!=PakAccessory::Rumble||menu_frame.active||controls_menu_release.load())p.rumble=false;
         if(p.controller && p.rumble_capable && SDL_GetTicks64()>=p.rumble_refresh) {
             SDL_GameControllerRumble(p.controller,p.rumble?0xA000:0,p.rumble?0xA000:0,p.rumble?150:0);p.rumble_refresh=SDL_GetTicks64()+50;
         }
     }
+    const auto menu_result=controls_menu_router.route(menu_frame);
+    const bool suppress=menu_result.suppress||controls_menu.active();
+    controls_menu_release.store(suppress,std::memory_order_release);
+    if(suppress){for(auto& p:ports){p.buttons=0;p.x=0;p.y=0;}stop_motors();}
     std::array<bool,4> connected{};
     for(size_t i=0;i<ports.size();++i)connected[i]=ports[i].connected;
     if(settings_requested){for(auto& p:ports){p.buttons=0;p.x=0;p.y=0;}stop_motors();}
     lock.unlock();
     for(unsigned i=0;i<connected.size();++i)set_pak_port_connected(i,connected[i]);
+    if(menu_frame.active&&menu_result.deliver){
+        controls_menu.update(menu_result.command,menu_result.held,menu_result.keyboard_navigation?Family::Keyboard:menu_family,
+            [](unsigned selected,const PortPreferences& draft){
+                // Fresh snapshot preserves edits to every other port. Persist before apply.
+                auto preferences=capture_input_preferences();preferences.ports.at(selected)=draft;
+                save_input_preferences(recomp::get_config_path(),preferences);apply_input_preferences(preferences);return true;
+            });
+    }
     if(preferences_changed){
         try{save_input_preferences(recomp::get_config_path(),capture_input_preferences());}
         catch(const std::exception& error){set_family(0,previous_family);SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,"Controller preferences",error.what(),game_window);}
     }
-    if(settings_requested)show_settings_dialog(game_window,recomp::get_config_path());
+    if(settings_requested&&!controls_menu.active())show_settings_dialog(game_window,recomp::get_config_path());
 }
 void poll() {} // Main-thread SDL event loop maintains snapshots for the guest threads.
 bool get_input(int n,uint16_t* buttons,float* x,float* y) {
-    std::lock_guard lock(input_mutex); if(n<0||n>=4||!ports[n].connected)return false;
-    *buttons=ports[n].buttons; *x=ports[n].x; *y=ports[n].y; return true;
+    const bool menu_active=game_controls_menu().active();
+    if(menu_active)controls_menu_release.store(true,std::memory_order_release);
+    std::lock_guard lock(input_mutex);if(n<0||n>=4||!ports[n].connected)return false;
+    // Recheck the atomic flag: the guest may open the menu after our first read.
+    if(menu_active||game_controls_menu().active()||controls_menu_release.load(std::memory_order_acquire)){
+        *buttons=0;*x=0;*y=0;return true;
+    }
+    *buttons=ports[n].buttons;*x=ports[n].x;*y=ports[n].y;return true;
 }
-void rumble(int n,bool enabled) { std::lock_guard lock(input_mutex); if(n>=0&&n<4)ports[n].rumble=enabled; }
+void rumble(int n,bool enabled) {
+    const bool suppress=game_controls_menu().active()||controls_menu_release.load();
+    std::lock_guard lock(input_mutex);if(n>=0&&n<4)ports[n].rumble=enabled&&!suppress;
+}
 ultramodern::input::connected_device_info_t device(int n) {
     bool connected=false,capable=false;
     {std::lock_guard lock(input_mutex);

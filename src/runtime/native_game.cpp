@@ -17,6 +17,9 @@
 #include "runtime/marker_aspect.hpp"
 #include "runtime/transform_runtime.hpp"
 #include "runtime/pal_game_layout.hpp"
+#include "runtime/game_controls_menu.hpp"
+#include "runtime/pal_sky_widescreen.hpp"
+#include "runtime/pal_hud_widescreen.hpp"
 #include "renderer_settings.hpp"
 #include "platform.hpp"
 #include <librecomp/game.hpp>
@@ -40,6 +43,23 @@ extern "C" void func_801E68F0_overlay_287ab0_801db100(uint8_t*,recomp_context*);
 extern "C" void func_801E78F4_overlay_287ab0_801db100(uint8_t*,recomp_context*);
 extern "C" void func_802B718C_overlay_386080_802b57e0(uint8_t*,recomp_context*);
 extern "C" void func_802388C8_overlay_4a6820_80230590(uint8_t*,recomp_context*);
+extern "C" void func_8023A510_overlay_4a6820_80230590(uint8_t*,recomp_context*);
+extern "C" void func_802C49B8_overlay_40c7a0_802c3490(uint8_t*,recomp_context*);
+extern "C" void func_802C48F4_overlay_40c7a0_802c3490(uint8_t*,recomp_context*);
+extern "C" void iss2000_pal_wide_sky(uint8_t*,recomp_context*);
+extern "C" void iss2000_pal_max_detail_models(uint8_t*,recomp_context*);
+extern "C" void iss2000_pal_max_detail_shadows(uint8_t*,recomp_context*);
+extern "C" void func_80048660_resident(uint8_t*,recomp_context*);
+extern "C" void func_802B5574_overlay_3fc9f0_802b35b0(uint8_t*,recomp_context*);
+extern "C" void iss2000_pal_skip_rumble_802B5574(uint8_t*,recomp_context*);
+extern "C" void func_802BA770_overlay_401910_802b8500(uint8_t*,recomp_context*);
+extern "C" void iss2000_pal_skip_rumble_802BA770(uint8_t*,recomp_context*);
+extern "C" void func_802BE1B8_overlay_401910_802b8500(uint8_t*,recomp_context*);
+extern "C" void iss2000_pal_skip_rumble_802BE1B8(uint8_t*,recomp_context*);
+extern "C" void func_802C6D34_overlay_40c7a0_802c3490(uint8_t*,recomp_context*);
+extern "C" void iss2000_pal_skip_rumble_802C6D34(uint8_t*,recomp_context*);
+extern "C" void func_803D2F34_overlay_57f870_803d1a30(uint8_t*,recomp_context*);
+extern "C" void iss2000_pal_skip_rumble_803D2F34(uint8_t*,recomp_context*);
 #else
 extern "C" void iss2000_original_80060550(uint8_t*,recomp_context*);
 #endif
@@ -98,6 +118,59 @@ void enter_game(uint8_t* rdram,recomp_context* ctx){
     std::fprintf(stderr,"[Boot] Executing original ISS2000 entry at 80000400\n");
     generated_entrypoint()(rdram,ctx);
 }
+#ifdef ISS2000_PAL_ENGLISH
+bool original_controller_screen(uint8_t* ram){
+    if(registry.find(0x802C49B8)!=&func_802C49B8_overlay_40c7a0_802c3490 ||
+       registry.find(0x802C48F4)!=&func_802C48F4_overlay_40c7a0_802c3490)return false;
+    auto word=[&](uint32_t offset){uint32_t value;std::memcpy(&value,ram+offset,4);return value;};
+    // Original scheduler 801B3750 initializes 220 nodes of 0x74 bytes;
+    // 801B36E0 walks this list and clears the transient current-node pointer.
+    uint32_t node=word(0x77390);
+    std::array<bool,220> seen{};
+    bool found=false;
+    while(node){
+        if(node<0x801E7070 || node>=0x801ED420 || (node-0x801E7070)%0x74)return false;
+        const auto index=(node-0x801E7070)/0x74;
+        if(index>=seen.size() || seen[index])return false;
+        seen[index]=true;
+        if(word((node&0x7FFFFF)+0xC)==0x802C48F4)found=true;
+        node=word(node&0x7FFFFF);
+    }
+    return found;
+}
+void select_original_controller_action(uint8_t* ram,recomp_context* ctx){
+    const unsigned port=ram[0x2D21EF^3];
+    const bool open=original_controller_screen(ram) && port<4 &&
+        ram[(0x2D21E0+port)^3]==1 && ram[(0x2D21F0+port)^3]==0;
+    // Type-row Accept is an original no-op; retain the whole original call.
+    func_802C49B8_overlay_40c7a0_802c3490(ram,ctx);
+    if(open){const auto prefs=platform::port_preferences();game_controls_menu().open(port,prefs[port]);}
+}
+void draw_original_controller_menu(uint8_t* ram,recomp_context* ctx){
+    // 80000BB8 encloses the complete original frame render. All twelve queued
+    // UI lists and the intervening direct sprite passes must finish first.
+    run_original_guest(0x80000BB8,ram,ctx);
+    auto& menu=game_controls_menu();
+    if(!original_controller_screen(ram))return;
+    if(menu.active()){
+        const auto lines=menu.lines(platform::controller_family(int(menu.port())));
+        draw_pal_engine_text({ram,0x800000},*ctx,lines,registry.find(0x80048660),registry.find(0x800019FC));
+        return;
+    }
+    const auto help=platform::controls_help(0);
+    auto name=help.prompts[0].name;
+    if(name=="+")name="Plus";
+    else if(name=="-")name="Minus";
+    for(auto& c:name)if(c=='-')c=' ';
+    const std::array<EngineTextLine,1> hint{{{16,212,"P1 Type. "+name+" opens Remap."}}};
+    draw_pal_engine_text({ram,0x800000},*ctx,hint,registry.find(0x80048660));
+}
+void draw_widescreen_sky(uint8_t* ram,recomp_context* ctx){
+    PalSkyWriteScope scope({ram,0x800000},platform::render_settings().aspect_ratio==AspectRatio::Wide16x9);
+    if(scope)iss2000_pal_wide_sky(ram,ctx);
+    else run_original_guest(0x80035CC0,ram,ctx);
+}
+#endif
 void track_matrix_arena(uint8_t* rdram,recomp_context* ctx){
     run_original_guest(guest.arena,rdram,ctx);
     observe_transform_frame({rdram,0x800000});
@@ -154,10 +227,49 @@ void register_physical_title(uint8_t* rdram,recomp_context* ctx){
 }
 void draw_physical_prompt(uint8_t* rdram,recomp_context* ctx){
     const auto help=platform::controls_help(0);
-    prepare_prompt_textures(rdram,ctx->r4,{help.prompts[0].glyph,help.prompts[1].glyph});
+    const std::array<PromptGlyphRequest,2> glyphs{{
+        {static_cast<PromptGlyphFamily>(help.prompts[0].family),help.prompts[0].glyph},
+        {static_cast<PromptGlyphFamily>(help.prompts[1].family),help.prompts[1].glyph}}};
+#ifdef ISS2000_PAL_ENGLISH
+    const std::array<platform::Action,4> actions{platform::Action::CLeft,platform::Action::CRight,
+        platform::Action::CUp,platform::Action::CDown};
+    std::array<platform::Prompt,4> physical;
+    std::array<PromptGlyphRequest,4> directions;
+    for(unsigned i=0;i<4;++i){
+        physical[i]=platform::prompt(0,actions[i]);
+        directions[i]={static_cast<PromptGlyphFamily>(physical[i].family),physical[i].glyph};
+    }
+    const auto result=prepare_physical_prompt_sprite(rdram,ctx->r4,glyphs,directions,
+        PromptGlyphRequest{static_cast<PromptGlyphFamily>(help.prompts[2].family),help.prompts[2].glyph});
+    if(result.status==PromptSpriteStatus::TextFallback){
+        std::array<EngineTextLine,4> lines;
+        if(result.line_count==0 || result.line_count>lines.size() ||
+           registry.find(0x80048660)!=&func_80048660_resident){
+            runtime_message("The original font is unavailable for this remapped control prompt.");std::exit(1);
+        }
+        for(unsigned i=0;i<result.line_count;++i)
+            lines[i]={result.lines[i].x,result.lines[i].y,result.lines[i].text};
+        if(!draw_pal_engine_text({rdram,0x800000},*ctx,{lines.data(),result.line_count},registry.find(0x80048660))){
+            runtime_message("The original game could not safely draw the remapped control prompt.");std::exit(1);
+        }
+        return;
+    }
+    PalHudScope hud({rdram,0x800000},platform::render_settings().aspect_ratio==AspectRatio::Wide16x9,
+        PalHudDraw::Sprite,ctx->r4);
+#else
+    prepare_prompt_textures(rdram,ctx->r4,glyphs);
+#endif
     run_original_guest(guest.button_prompt,rdram,ctx);
 }
 #ifdef ISS2000_PAL_ENGLISH
+void draw_widescreen_score_flags(uint8_t* rdram,recomp_context* ctx){
+    // The enclosing compositor installs an original centered scissor first.
+    // Scope each flag emitter after that setup so it cannot overwrite ours.
+    const bool flag_call=uint32_t(ctx->r4)==0x8009E0C8u && uint32_t(ctx->r5)<2;
+    PalHudScope hud({rdram,0x800000},flag_call && platform::render_settings().aspect_ratio==AspectRatio::Wide16x9,
+        PalHudDraw::ScoreFlags);
+    run_original_guest(0x8023A510,rdram,ctx);
+}
 // Each original setter still updates its complete hierarchical stage context.
 // Same-value resets invalidate IDs as well as numerical scene changes.
 template<uint32_t Address> void transition_stage(uint8_t* rdram,recomp_context* ctx){
@@ -187,6 +299,8 @@ void draw_encoded_physical_prompt(uint8_t* rdram,recomp_context* ctx){
     const auto help=platform::controls_help(0);
     prepare_encoded_menu_prompt({rdram,0x800000},ctx->r4,
         {help.prompts[0].name,help.prompts[1].name,help.prompts[2].name});
+    PalHudScope hud({rdram,0x800000},platform::render_settings().aspect_ratio==AspectRatio::Wide16x9,
+        PalHudDraw::Text,ctx->r4);
     run_original_guest(0x80048660u,rdram,ctx);
 }
 void initialize_ntsc_match_clock(uint8_t* rdram,recomp_context* ctx){
@@ -328,7 +442,25 @@ extern "C" recomp_func_t* __wrap_get_function(int32_t address){
     // Exact supported ROM digest also binds ROM42C8..4470 to the reviewed callback.
     const auto& guest=iss2000::active_guest_addresses();
 #ifdef ISS2000_PAL_ENGLISH
+    if(uint32_t(address)==0x802B5574u && iss2000::registry.find(uint32_t(address))==&func_802B5574_overlay_3fc9f0_802b35b0)
+        return &iss2000_pal_skip_rumble_802B5574;
+    if(uint32_t(address)==0x802BA770u && iss2000::registry.find(uint32_t(address))==&func_802BA770_overlay_401910_802b8500)
+        return &iss2000_pal_skip_rumble_802BA770;
+    if(uint32_t(address)==0x802BE1B8u && iss2000::registry.find(uint32_t(address))==&func_802BE1B8_overlay_401910_802b8500)
+        return &iss2000_pal_skip_rumble_802BE1B8;
+    if(uint32_t(address)==0x802C6D34u && iss2000::registry.find(uint32_t(address))==&func_802C6D34_overlay_40c7a0_802c3490)
+        return &iss2000_pal_skip_rumble_802C6D34;
+    if(uint32_t(address)==0x803D2F34u && iss2000::registry.find(uint32_t(address))==&func_803D2F34_overlay_57f870_803d1a30)
+        return &iss2000_pal_skip_rumble_803D2F34;
+    if(uint32_t(address)==0x800300D0u)return &iss2000_pal_max_detail_models;
+    if(uint32_t(address)==0x80037498u)return &iss2000_pal_max_detail_shadows;
+    if(uint32_t(address)==0x80035CC0u)return &iss2000::draw_widescreen_sky;
+    if(uint32_t(address)==0x80000BB8u)return &iss2000::draw_original_controller_menu;
+    if(uint32_t(address)==0x802C49B8u && iss2000::registry.find(uint32_t(address))==&func_802C49B8_overlay_40c7a0_802c3490)
+        return &iss2000::select_original_controller_action;
     if(uint32_t(address)==0x80048660u)return &iss2000::draw_encoded_physical_prompt;
+    if(uint32_t(address)==0x8023A510u && iss2000::registry.find(uint32_t(address))==&func_8023A510_overlay_4a6820_80230590)
+        return &iss2000::draw_widescreen_score_flags;
     if(uint32_t(address)==0x800036ACu)return &iss2000::transition_stage<0x800036AC>;
     if(uint32_t(address)==0x80003710u)return &iss2000::transition_stage<0x80003710>;
     if(uint32_t(address)==0x800037BCu)return &iss2000::transition_stage<0x800037BC>;

@@ -213,14 +213,14 @@ Windows executable and DLL destinations now reject reserved device names,
 including `CON.exe` and `NUL.dll`, before creating output. All14 synthetic
 packaging tests pass. These tests create temporary layouts only.
 
-The prepared [runtime lookup bridge](runtime-lookup-bridge.md) still needs final
-native integration before Windows compilation: a fresh runtime archive with only
-`overlays.cpp` renaming its upstream lookup symbol, the project exporting actual
-`get_function`, and removal of GNU `--wrap=get_function` for that bridge mode.
-The current Linux binary uses the GNU wrapper. A target-wide rename would also
-rename runtime callers and bypass the registry, so it is not interchangeable
-with the prepared source-specific hook. No Windows machine or Windows compiler
-was used for this preparation.
+The [runtime lookup bridge](runtime-lookup-bridge.md) now has an integrated
+DIRECT mode for Windows: a fresh runtime archive renames the upstream symbol in
+`overlays.cpp` alone, the project exports actual `get_function`, and GNU
+`--wrap=get_function` is excluded. The runtime bridge receipt and source hash are
+checked before application configuration. The Linux WRAP mode remains separate.
+Synthetic link tests verify the source-specific rename and reject mixed modes;
+they do not establish a successful Windows build. No Windows machine or Windows
+compiler was used for this preparation.
 
 ## Build metadata and guarded production preparation
 
@@ -310,3 +310,35 @@ and39 notices, and invokes the guarded PAL package API. `data/` and `screenshots
 start empty. It creates no archive and launches no executable. Visible ROM-first
 import, input, rendering, sound and save acceptance still belong to the root
 verification work. Windows compilation remains a later separate action.
+
+
+## Final Windows source preparation
+
+Private scripts and authentic SDK inputs are prepared under
+`.local/windows-preparation-01`; its README records exact final commands and
+remaining SDK/toolchain inputs. Nothing in that preparation reserves or powers
+on the machine. Root must complete Linux acceptance and explicitly start the
+final Windows stage under the maquinita workflow before executing them.
+
+The project now owns SDL main startup and obtains the Windows HWND and actual
+owning thread through SDL's versioned native-window interface. The Windows link
+block explicitly retains RT64's SDK/DXC links and the native dialog COM/shell
+links that were lost when flattening upstream static archives. Host synthetic
+compilation/configuration tests cover these changes; the actual Windows compiler
+and runtime are still pending.
+
+The final scripts use x64 Visual Studio SDK plus clang-cl, DIRECT runtime lookup,
+PAL original sources and input testing disabled. A private RT64 source derivative
+receipts the approved official DXIL validator replacement while leaving the
+pinned dependency intact. They select vendor SDL2, the DXC compiler/validator and
+specific VS C++ runtime DLLs, inspect their import closure, and require authentic
+selected runtime notice text. Current38 Windows dependency notice inputs are
+pinned privately; the installed VS runtime notice is a final-stage input.
+The portable package contains no original ROM, research assets, saves or another
+game's binaries. The separate **private build-input transfer** includes exactly
+the hash-pinned user-owned PAL ROM at `.local/inputs/pal-en-de/rom.z64`, because
+the reviewed sky source generator verifies it at compile time. This archive
+must remain private and must never be copied into a release folder or published.
+The recipe's `--check` mode validates current inputs without freezing an archive;
+`--archive` is reserved for the final authorized transfer. The build explicitly
+selects metadata02 with54 bindings and passes `ISS2000_PAL_ROM`.

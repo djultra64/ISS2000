@@ -317,5 +317,7 @@ A focused compiled test uses the actual pinned RT64 `VI` implementation: its
 unadapted version reproduces the wrong address, while the private adaptation
 resolves the exact registered buffer, preserves the raw origin, and returns
 50/25 and 60/30 for PAL and NTSC factors. This is a host VI test, not a game
-execution or a claim that the visible corruption is already corrected. Root's
-next visible acceptance run must establish the latter.
+execution. Root subsequently observed clean original PAL intro rendering in
+visible boot06, captured as `.local/captures/67-pal-video-corrected.png`. That
+establishes the visible corruption correction for the observed intro; it does
+not establish field interpolation or complete gameplay acceptance.

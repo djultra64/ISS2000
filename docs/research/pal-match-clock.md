@@ -130,3 +130,52 @@ wall-clock duration agrees at the original 5:6 update-rate ratio. For example,
 the 180-count option takes 4,650 corrected PAL calls versus 5,580 original US
 calls. At 25/30 updates per second, each is 186 seconds; these representative
 rates explain the ratio and do not establish the game's actual fixed cadence.
+
+## Original added time and half-end gates
+
+Static follow-up explains the visible PAL first-half clock remaining at `0:00`
+before the natural halftime transition. The original game maintains two clocks:
+
+| PAL field | Original use |
+| --- | --- |
+| `0x8012DDD6` / `0x8012DDD8` | Displayed remaining seconds / subcounter |
+| `0x8012DDDA` / `0x8012DDDC` | Secondary remaining seconds / subcounter, used by half-end logic |
+| `0x8012DDDE` / `0x8012DDE0` | Corresponding elapsed-seconds totals |
+
+In original tick `0x801DC14C`, the secondary clock advances only when byte
+`0x8009DF78 < 2` and word `0x800C1A10 & 0x40` is clear. The displayed clock's
+later path does not use those two gates. Thus excluded play states accumulate
+positive secondary time while the HUD continues toward zero. This is original
+timekeeping, not a host-created fixed added-time allowance. Its wall-clock
+length depends on preceding play states and future clock-eligible updates;
+there is no verified universal number of real seconds after visible zero.
+
+The original half-end consumer is `0x80250F90`, in the CPU section loaded from
+ROM `0x4A6820` to guest `0x80230590`. Caller `0x801E64A8` reaches it at
+`0x801E656C` only when byte `0x8013B44C == 4`. Its entry can first defer on
+cooldown halfword `0x8026BE04` (decremented only in state zero). It then requires
+halfword `0x800C1A7A == 0`, signed mode byte `0x8012DE74` outside `{4,9}`,
+and state byte `0x8009DF78` outside `1..10` and unequal to `16`.
+
+The decisive clock check at `0x8025103C..0x80251058` requires **both secondary
+remaining seconds and its subcounter to be zero**. It does not use the displayed
+clock as the completion condition. The original secondary clock reloads 25 even
+on its final seconds decrement, so its final subcounter must also drain. The
+local NTSC correction changes neither this condition nor either seconds field.
+
+Before starting the transition, if its transition counter `0x8026BE00` is zero,
+the consumer can defer while `abs(float[0x800C19B4]) > 300.0`. It increments
+halfword `0x8026BE06` and proceeds at 250 such eligible calls, or earlier when
+the coordinate condition clears. The absolute-value helper is original resident
+`0x8000A384`. This is a bounded coordinate-dependent extra delay, distinct from
+the preceding secondary-clock catch-up; the static code alone does not justify
+converting its 250 calls into a measured real duration. For match context byte
+`0x8009E028` equal to zero or two, the transition commits state `11` at
+`0x80251174..0x8025117C`; other contexts follow original full-time/extra-time
+branches. No transition or timer was forced during this investigation.
+
+Private `.local/pal-half-end-01/report.json` pins the original tick, consumer,
+caller and absolute-value helper body hashes, the threshold instruction and
+counter bound. Root's separate visible run subsequently reached natural
+halftime (capture `125`), consistent with these original gates. That observation
+does not establish completion of a full match.
