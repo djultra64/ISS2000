@@ -146,3 +146,104 @@ exclusions for translation exploration only. No original instruction was patched
 and no unknown function was replaced with a success stub. The eight generated
 functions were not compiled, linked or executed in a game runtime. Other aliases
 at the same RAM base are not yet included.
+
+## Reviewed switch function extents
+
+Visible boot09 exposed a static function-boundary error in overlay
+`overlay_456350_802a3860`: a bounded twelve-case original switch had been split
+at the first case's return. The compiler stops reading table entries when a
+target falls outside the supplied function extent, so only the first case was
+emitted. The captured RAM table matched the original ROM, and the active index
+was 5. This was a mapping error, not missing original instructions or evidence
+for a successful-return replacement.
+
+`tools.map_game` now accepts explicit section-local `function_spans` records
+containing `vram`, `size`, and an evidence description. They may merge only
+complete, contiguous analyzed functions inside classified CPU text. Partial
+overlaps, gaps, missing starts, missing evidence, and overlapping spans fail.
+Other ROM aliases retain their independent function entries. Privileged status
+is preserved. This does not patch instructions or relax the compiler's fatal
+switch default.
+
+Three exact owners have reviewed spans:
+
+| ROM owner / guest load base | Function start | Reviewed size | Guarded cases |
+| --- | --- | --- | --- |
+| `0x456350` / `0x802A3860` | `0x802A81F4` | `0x134` | 12 |
+| `0x472920` / `0x802A3860` | `0x802ABEE8` | `0xC8` | 12 |
+| `0x518F80` / `0x80410000` | `0x80416634` | `0x50` | 6 |
+
+Each span includes the complete original terminal case arms. No aligned direct
+`jal` references to the removed case-subentry boundaries were found anywhere
+in the original ROM. The private proof and original table contents remain in
+`.local/jump-table-boot09/` and `.local/switch-audit-01/`.
+
+The private audit inspected all 332 emitted switches in `runtime-map-03`.
+It recovered 328 simple unsigned same-register bounds and found the latter two
+truncations above. Four remaining guard patterns were reviewed separately:
+a backward receive-loop guard, a shared branch-delay guard, a variable-shift
+instruction using a constant shift amount, and a guard farther from the table.
+All four emitted their complete bounded tables; no extra merges were justified.
+After the two additional approved spans, the same audit reports zero concrete
+truncations in `runtime-map-04`. This covers the currently emitted switches and
+the reviewed patterns, not every possible indirect branch, unknown overlay,
+or runtime reachability condition.
+
+Fresh private generations preserve the prior outputs:
+
+| Output | Candidate functions | Generated C bodies | Native metadata |
+| --- | --- | --- | --- |
+| `runtime-map-03` | 12,210 | 12,145 | `native-metadata-07`: 66 sections, 53 services |
+| `runtime-map-04` | 12,199 | 12,134 | `native-metadata-08`: 66 sections, 53 services |
+
+The smaller counts reflect removed false case-arm function boundaries and the
+current union of privileged and reviewed service exclusions. The receipt-checked
+diagnostic compiler still resolves calls through runtime lookup; unknown or
+inactive targets remain fatal. The unmodified strict compiler still rejects
+unresolved target `0x801EFED0`, so diagnostic generation is not a claim that
+all static call ownership is resolved. Both maps retain all original bounded
+switch cases and fatal defaults. Mapper validation has 14 focused synthetic
+regressions; code generation and metadata checks do not establish game progress
+or replace the separate visible execution record.
+
+### Original SDK service retention after boot 11
+
+`runtime-map-04` excludes reviewed host services. Consequently its metadata08
+public `func_80060550_resident` symbol is a host wrapper, even though an earlier
+map contains the original translated SDK body under that same name. The
+Controller Pak bridge must use the unique symbol `iss2000_original_80060550`
+from generated `native_retained.cpp`. Native metadata09 retains this original
+body in addition to the existing 66 sections and 53 reviewed host services.
+
+Provenance was checked against the historical generation receipt, rather than
+assuming the old file was unchanged: `runtime-map-02/summary.json` records
+`functions/func_80060550_resident.c` SHA-256
+`7ff4ec2f4967d94dc6cdfe473583c061415bc6558acf06ac11522a1488584050`,
+which matches the current private source exactly. That receipt records ROM
+SHA-256 `e18e87c062a66002c0cbd7e2dd793ef755609e70675d5679df0396d4b6c67850`
+and lookup diagnostic compiler base commit
+`ffb39cdad1da5de07eaaa48bd1db4a89a7986771`, executable SHA-256
+`5bc40c405f7fc7728163cadb98839f7e7a449fa7a074df03a2e3bb11e06916e7`.
+The compiler changes call dispatch to lookup; it does not change guest
+instructions. The body covers exactly guest `0x80060550..0x80060748`
+(end exclusive), 504 bytes at ROM `0x61150`; original body SHA-256 is
+`5686e4fa285a3a643b8feaf5fc31a40c7dc35bed710e23578cce007dc0ec42e7`.
+
+Generate into a fresh private directory from the canonical root:
+
+```sh
+python -m tools.prepare_native \
+  --rom .local/game-build/data/iss2000-us.z64 \
+  --sections .local/runtime-map-04/section-analysis.json \
+  --runtime-symbols config/recomp/runtime-symbols.json \
+  --retained-source .local/runtime-map-02/functions/func_80060550_resident.c \
+  --output .local/native-metadata-09
+```
+
+The required-source flag and translated source digest are pinned in the reviewed
+binding. Omission or a substituted host wrapper fails before output creation.
+The target compiles `native_metadata.cpp`, `native_bindings.cpp`, and
+`native_retained.cpp`. An isolated compile/link regression supplies both the
+unique original entry and a different absent-device wrapper, proving that
+retention calls the intended original body. This is a synthetic unit test and
+does not substitute for root's visible save/load verification.

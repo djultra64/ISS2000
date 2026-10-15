@@ -1,0 +1,27 @@
+{
+  "revision_id": "iss2000-pal-en-de-rev0",
+  "rom_sha256": "6ce6739b8ead149857c9442178a1ecd9b7f6d15b93a582c7208ca85d493817bf",
+  "patches": [
+    {
+      "source": "func_80255A6C_overlay_4a6820_80230590.c",
+      "source_sha256": "46c3cad600bc826b734bf1c4bb089b5202be06931cef02900f1fc22f1d854191",
+      "instruction_pc": "0x80255B74",
+      "float_register": 2,
+      "purpose": "Local offscreen-marker aspect; preserve original projection and every other instruction"
+    },
+    {
+      "source": "func_802554EC_overlay_4a6820_80230590.c",
+      "source_sha256": "3c87c112b54b3a5d4ff023ec3ab9667f76c7612b3ef489664bca92b9095f99cd",
+      "instruction_pc": "0x802555E8",
+      "float_register": 20,
+      "purpose": "Local offscreen-marker aspect; preserve original projection and every other instruction"
+    },
+    {
+      "source": "func_80044814_resident.c",
+      "source_sha256": "0ce8c752b30315523dc2621d66251f2313271a2f8fe58bff95340530490c55a6",
+      "instruction_pc": "0x80044994",
+      "float_register": 14,
+      "purpose": "Local offscreen-marker aspect; preserve original projection and every other instruction"
+    }
+  ]
+}

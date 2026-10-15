@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "attribution": "djultra64",
+  "audio": {
+    "source_sha256": "2b8084da8a2d7103385e823a1ce27b30bf8cd101f4e73fe8809d57b0b7c99f09",
+    "source_symbol": "iss2000_audio_ucode",
+    "generator": "Pinned RSPRecomp from N64Recomp",
+    "generator_binary_sha256": "b0234c19e9124d42117b8d479ae1cee06976f3db78f6b8ea39944e33d0995fd1",
+    "rsp_text_address": "0x1080",
+    "evidence": "docs/research/native-build-inputs.md; docs/research/pal-runtime.md; original PAL/US full audio program bytes are identical",
+    "revisions": {
+      "iss2000-us-rev0": {
+        "rom_sha256": "e18e87c062a66002c0cbd7e2dd793ef755609e70675d5679df0396d4b6c67850",
+        "program_rom_offset": "0x6c370",
+        "program_guest_address": "0x8006b770",
+        "program_size": 3624,
+        "program_sha256": "412e079b861dcf551dbf27e2372e044abc2686d5a7d9cd878573f29fc0394db1"
+      },
+      "iss2000-pal-en-de-rev0": {
+        "rom_sha256": "6ce6739b8ead149857c9442178a1ecd9b7f6d15b93a582c7208ca85d493817bf",
+        "program_rom_offset": "0x6cbf0",
+        "program_guest_address": "0x8006bff0",
+        "program_size": 3624,
+        "program_sha256": "412e079b861dcf551dbf27e2372e044abc2686d5a7d9cd878573f29fc0394db1"
+      }
+    }
+  }
+}

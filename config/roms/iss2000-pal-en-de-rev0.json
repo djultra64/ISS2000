@@ -1,0 +1,14 @@
+{
+  "revision_id": "iss2000-pal-en-de-rev0",
+  "size": 16777216,
+  "sha256": "6ce6739b8ead149857c9442178a1ecd9b7f6d15b93a582c7208ca85d493817bf",
+  "sha1": "e7078e5f1e899382b1cc145df43ee8cfaa924297",
+  "cartridge_id": "NISX",
+  "revision": 0,
+  "entry_point": 2147484672,
+  "languages": [
+    "en",
+    "de"
+  ],
+  "default_language": "en"
+}

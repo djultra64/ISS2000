@@ -14,11 +14,23 @@ import zipfile
 import zlib
 
 ROOT = Path(__file__).resolve().parents[1]
-MANIFEST = ROOT/'config/roms/iss2000-us-rev0.json'
+DEFAULT_REVISION = 'iss2000-us-rev0'
+SUPPORTED_REVISIONS = ('iss2000-us-rev0', 'iss2000-pal-en-de-rev0')
+MANIFEST = ROOT/'config/roms'/f'{DEFAULT_REVISION}.json'
 
 
 class RomError(ValueError):
     """Input is unsupported or output would replace existing data."""
+
+
+def load_manifest(revision_id: str = DEFAULT_REVISION) -> dict:
+    """Select exact input identity explicitly; never infer a runtime from size/title."""
+    if revision_id not in SUPPORTED_REVISIONS:
+        raise RomError('Unsupported ROM profile: '+str(revision_id))
+    expected = json.loads((ROOT/'config/roms'/f'{revision_id}.json').read_text())
+    if expected.get('revision_id') != revision_id:
+        raise RomError('ROM profile identity does not match its filename')
+    return expected
 
 
 def normalize(data: bytes) -> bytes:
@@ -77,9 +89,9 @@ def cic6102_checksum(data: bytes) -> tuple[int, int]:
     return t6 ^ t4 ^ t3, t5 ^ t2 ^ t1
 
 
-def audit(data: bytes) -> dict:
+def audit(data: bytes, manifest: dict | None = None) -> dict:
     canonical = normalize(data)
-    result = validate(canonical)
+    result = validate(canonical, manifest)
     stored = struct.unpack_from('>II', canonical, 0x10)
     computed = cic6102_checksum(canonical)
     result['checksum'] = {'algorithm': 'CIC-6102', 'stored': [f'{v:08X}' for v in stored],
@@ -145,13 +157,15 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('source', type=Path)
     parser.add_argument('--output', type=Path)
+    parser.add_argument('--revision', choices=SUPPORTED_REVISIONS, default=DEFAULT_REVISION)
     args = parser.parse_args()
     try:
+        expected = load_manifest(args.revision)
         if args.output:
-            result = import_rom(args.source, args.output)
-            result.update(audit(args.output.read_bytes()))
+            result = import_rom(args.source, args.output, expected)
+            result.update(audit(args.output.read_bytes(), expected))
         else:
-            result = audit(read_source(args.source, json.loads(MANIFEST.read_text())['size']))
+            result = audit(read_source(args.source, expected['size']), expected)
         print(json.dumps(result, indent=2, sort_keys=True))
     except (RomError, OSError) as exc:
         print(f'ROM error: {exc}', file=sys.stderr)

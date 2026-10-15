@@ -1,17 +1,25 @@
 # International Superstar Soccer 2000 — native recompilation
 
-Original project work: **djultra64**. Work in progress: **native entry and buffer-profile diagnostics**, not a playable game.
+Original project work: **djultra64**. Work in progress: **native runtime integration**; no title screen or playable match verified yet.
 
-The target is the original USA English/Spanish N64 game, with proper 16:9, rendering up to 4K, interpolated presentation up to 120 fps, guest Expansion Pak memory and controller rumble. These enhancements are not yet implemented in a running game. The diagnostic allocates 8 MiB and executes the original standard/expanded buffer-selection routine; automatic Expansion Pak detection is not yet integrated.
+The target is the original USA English/Spanish N64 game, with proper 16:9, rendering up to 4K, interpolated presentation up to 120 fps, guest Expansion Pak memory and controller rumble. The native development build now reaches original graphics/audio initialization and ROM load requests with 8 MiB runtime memory. Enhanced rendering and a controllable match remain unverified.
 
 ## Current results
 
 - Deterministic normalization of big-endian, byte-swapped and little-endian ROM images, including ZIP import. Exact supported revision checking; no overwriting existing files.
 - Controlled build of the pinned N64Recomp with artifact receipts checked before generation.
 - Original entry function and buffer setup translated into native C and executed on the host. BSS clearing, surrounding memory, stack, dispatch boundary, and standard/expanded buffer choices are verified.
-- Resident-code research finds 2,072 candidate functions. Four overlapping DMA load ranges are recovered; a partial 2,080-candidate map adds eight overlay functions, resolves `0x801B050C` and stops at `0x8023E684`. The full load map and runtime lifetimes remain unresolved. No unknown OS routine is silently treated as successful.
+- Instruction-derived research identifies 82 raw loads and 66 provisional CPU sections. A private diagnostic build compiles 12,155 original function bodies and resolves active aliases from actual DMA transfers. The strict compiler still rejects unresolved `0x801EFED0`; diagnostic lookup compilation is explicitly recorded and unknown runtime calls remain fatal.
+- SDL window/audio/input and RT64 adapters are integrated. Visible Linux tests reached original resource loading and exposed missing host-service boundaries, currently under investigation. See `HANDOFF.md` for the latest precise evidence.
+- First-run ROM selection imports verified canonical data beside the executable. Portable Linux/Windows packaging tools exist; final packages and Windows execution have not been verified.
 
 See [M0 evidence and limitations](docs/milestones/M0.md) and [runtime research](docs/research/runtime-integration.md).
+
+## Native execution model
+
+Original MIPS CPU instructions are translated to C and compiled for the PC. The CPU does not interpret MIPS instructions at runtime. The original loader still requests cartridge ranges for resources and overlay data; their executable counterparts are already native functions selected by the active-load registry. Reading cartridge bytes is data access, not CPU emulation.
+
+The current importer stores a canonical ROM as the private resource container. Separate texture/model/audio extraction is not implemented. First launch asks for the user’s own ROM; no original assets are included in the source package.
 
 ## Local working folder
 

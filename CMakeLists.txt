@@ -22,3 +22,8 @@ enable_testing()
 add_test(NAME original_entry_diagnostic COMMAND iss2000-diagnostic)
 add_test(NAME rejects_unknown_continuation COMMAND iss2000-diagnostic --reject-continuation)
 set_tests_properties(rejects_unknown_continuation PROPERTIES WILL_FAIL TRUE)
+
+option(ISS2000_BUILD_GAME "Build the native development game launcher" OFF)
+if(ISS2000_BUILD_GAME)
+  include(cmake/game.cmake)
+endif()

@@ -1,0 +1,550 @@
+{
+  "schema_version": 1,
+  "rom_sha256": "6ce6739b8ead149857c9442178a1ecd9b7f6d15b93a582c7208ca85d493817bf",
+  "upstream_runtime_commit": "cdf5abbd5026fef5c364c676e4667c45e42b6863",
+  "provenance": "PAL ISS2000 English/German rev0 original instructions, original PAL call graph, reviewed generic N64ModernRuntime ABI; full-body cross-region comparison uses only the authorized ISS2000 US input. No other game binary or fabricated OS success.",
+  "bindings": [
+    {
+      "address": "0x80062310",
+      "name": "osInitialize",
+      "runtime_symbol": "osInitialize_recomp",
+      "rom_offset": "0x62f10",
+      "size": 560,
+      "sha256": "6fbcad542f0431db18e3d3381d6982130aaa1e34311ba5399528e787589efe8c",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Complete unique PAL body matches the reviewed ISS2000 US function with unchanged opcodes, registers, ABI field offsets, constants and relative branches; every differing call target is checked against the PAL callee body/call graph. Initializes FPU, exception vectors and boot globals; PAL boot calls at 0x80000830. Guest osTvType must be zero, selecting 49,656,530 Hz clock at 0x80099A68."
+    },
+    {
+      "address": "0x8005E280",
+      "name": "osCreateThread",
+      "runtime_symbol": "osCreateThread_recomp",
+      "rom_offset": "0x5ee80",
+      "size": 208,
+      "sha256": "65e4b079c17b129a4c05d77a98302a3b8d2ed91646af3d2fb54d3769a0f99eeb",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Complete unique PAL body matches the reviewed ISS2000 US function with unchanged opcodes, registers, ABI field offsets, constants and relative branches; every differing call target is checked against the PAL callee body/call graph. Six-argument OSThread initializer: id+0x14, priority+4, PC+0x11C, args+0x38/3C, SP+0xF0/F4; PAL boot call 0x80000878 uses id1, entry0x80000898, priority9."
+    },
+    {
+      "address": "0x8005E440",
+      "name": "osStartThread",
+      "runtime_symbol": "osStartThread_recomp",
+      "rom_offset": "0x5f040",
+      "size": 288,
+      "sha256": "d338871234ed8246c4870f8d2f819cf8cdba8b23f0f47a4edc0e431cec5843de",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Complete unique PAL body matches the reviewed ISS2000 US function with unchanged opcodes, registers, ABI field offsets, constants and relative branches; every differing call target is checked against the PAL callee body/call graph. Examines OSThread state+0x10, enqueues runnable thread; PAL boot call0x80000880."
+    },
+    {
+      "address": "0x8005E350",
+      "name": "osGetThreadPri",
+      "runtime_symbol": "osGetThreadPri_recomp",
+      "rom_offset": "0x5ef50",
+      "size": 32,
+      "sha256": "b84f5d69297521ed9b70d4f8f6eb0749ed62c62aba4c00195adbdae25c0607ff",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Complete unique PAL body matches the reviewed ISS2000 US function with unchanged opcodes, registers, ABI field offsets, constants and relative branches; every differing call target is checked against the PAL callee body/call graph. Returns thread+4, selecting running thread for null."
+    },
+    {
+      "address": "0x8005E370",
+      "name": "osSetThreadPri",
+      "runtime_symbol": "osSetThreadPri_recomp",
+      "rom_offset": "0x5ef70",
+      "size": 208,
+      "sha256": "5294ca128babbc89f6adde89285992b216b2d3baf826fcb5fde4b25c6771ac3e",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Complete unique PAL body matches the reviewed ISS2000 US function with unchanged opcodes, registers, ABI field offsets, constants and relative branches; every differing call target is checked against the PAL callee body/call graph. Writes priority+4 and requeues/yields as required; null selects running thread."
+    },
+    {
+      "address": "0x800584E0",
+      "name": "osCreatePiManager",
+      "runtime_symbol": "osCreatePiManager_recomp",
+      "rom_offset": "0x590e0",
+      "size": 400,
+      "sha256": "e80695d4fc96d31844237eaa44b5d613e55da0769890961fe67f308479359e02",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Complete unique PAL body matches the reviewed ISS2000 US function with unchanged opcodes, registers, ABI field offsets, constants and relative branches; every differing call target is checked against the PAL callee body/call graph. Queue/buffer/capacity initializer and PI event8 manager; PAL boot0x800008C0 passes priority150/capacity400."
+    },
+    {
+      "address": "0x80058440",
+      "name": "osSetIntMask",
+      "runtime_symbol": "osSetIntMask_recomp",
+      "rom_offset": "0x59040",
+      "size": 160,
+      "sha256": "ab6c8495e2e08b9cc99d4fad2328db57858bb567c1cb499be948c590e1efe464",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Complete unique PAL body matches the reviewed ISS2000 US function with unchanged opcodes, registers, ABI field offsets, constants and relative branches; every differing call target is checked against the PAL callee body/call graph. CP0 Status and MI_INTR_MASK read/write; returns previous combined interrupt mask."
+    },
+    {
+      "address": "0x8005A410",
+      "name": "osInvalDCache",
+      "runtime_symbol": "osInvalDCache_recomp",
+      "rom_offset": "0x5b010",
+      "size": 176,
+      "sha256": "8ae1ab78f7b451eff125bd297f76cbcc5f2e3c7a54c6c1497d3f3c0b281f886f",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Complete unique PAL body matches the reviewed ISS2000 US function with unchanged opcodes, registers, ABI field offsets, constants and relative branches; every differing call target is checked against the PAL callee body/call graph. 16-byte partial boundary writeback/invalidate0x15 and interior invalidate0x11; full threshold0x2000."
+    },
+    {
+      "address": "0x8005A4C0",
+      "name": "osInvalICache",
+      "runtime_symbol": "osInvalICache_recomp",
+      "rom_offset": "0x5b0c0",
+      "size": 128,
+      "sha256": "661c779288b4a4385cb435e15038191ab4b2bd427fc96ab7c44e9d09497ba4b4",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Complete unique PAL body matches the reviewed ISS2000 US function with unchanged opcodes, registers, ABI field offsets, constants and relative branches; every differing call target is checked against the PAL callee body/call graph. 32-byte hit invalidate0x10/index0; full threshold0x4000."
+    },
+    {
+      "address": "0x8005A540",
+      "name": "osWritebackDCache",
+      "runtime_symbol": "osWritebackDCache_recomp",
+      "rom_offset": "0x5b140",
+      "size": 128,
+      "sha256": "34f4c1b390e561d62c4b6dc9ed63701b9b87430391fc74bfe7d21d90b8fd1074",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Complete unique PAL body matches the reviewed ISS2000 US function with unchanged opcodes, registers, ABI field offsets, constants and relative branches; every differing call target is checked against the PAL callee body/call graph. 16-byte hit writeback0x19/full index writeback-invalidate1."
+    },
+    {
+      "address": "0x8005A5C0",
+      "name": "osWritebackDCacheAll",
+      "runtime_symbol": "osWritebackDCacheAll_recomp",
+      "rom_offset": "0x5b1c0",
+      "size": 48,
+      "sha256": "9e2e910cf2dcf19b0d2826eea41187a62acc4584b8fb7316cc74acbd40f4b04f",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Complete unique PAL body matches the reviewed ISS2000 US function with unchanged opcodes, registers, ABI field offsets, constants and relative branches; every differing call target is checked against the PAL callee body/call graph. Index writeback-invalidate1 across0x2000 bytes in16-byte lines."
+    },
+    {
+      "address": "0x8005DE20",
+      "name": "osGetCount",
+      "runtime_symbol": "osGetCount_recomp",
+      "rom_offset": "0x5ea20",
+      "size": 16,
+      "sha256": "49439260d2ea325fd9d1049a302274c512c90775bbc3751b54513b65152f01ae",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Complete unique PAL body matches the reviewed ISS2000 US function with unchanged opcodes, registers, ABI field offsets, constants and relative branches; every differing call target is checked against the PAL callee body/call graph. Returns CP0 Count via mfc0 v0,Count."
+    },
+    {
+      "address": "0x8005D900",
+      "name": "osCreateMesgQueue",
+      "runtime_symbol": "osCreateMesgQueue_recomp",
+      "rom_offset": "0x5e500",
+      "size": 48,
+      "sha256": "e31038756b463b4f3614588bc3bc6dc593f97065a772524dd206599ead7979aa",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Complete unique PAL body matches the reviewed ISS2000 US function with unchanged opcodes, registers, ABI field offsets, constants and relative branches; every differing call target is checked against the PAL callee body/call graph. Queue sentinels+0/+4, validCount+8=0, first+C=0, msgCount+10=a2, msg+14=a1."
+    },
+    {
+      "address": "0x8005D930",
+      "name": "osJamMesg",
+      "runtime_symbol": "osJamMesg_recomp",
+      "rom_offset": "0x5e530",
+      "size": 320,
+      "sha256": "b9bd2cc2dbf0caedd0d44be47fb37c8858c206f97aa7ce2bb60be18058ecfbd3",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Complete unique PAL body matches the reviewed ISS2000 US function with unchanged opcodes, registers, ABI field offsets, constants and relative branches; every differing call target is checked against the PAL callee body/call graph. Blocking/full check, decrements first modulo capacity, inserts message, increments validCount, wakes receiver."
+    },
+    {
+      "address": "0x8005DA70",
+      "name": "osRecvMesg",
+      "runtime_symbol": "osRecvMesg_recomp",
+      "rom_offset": "0x5e670",
+      "size": 304,
+      "sha256": "50201dc3216a79906d1facb3dd304bf12827ebc2747659b2d388ff3f2f9fc802",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Complete unique PAL body matches the reviewed ISS2000 US function with unchanged opcodes, registers, ABI field offsets, constants and relative branches; every differing call target is checked against the PAL callee body/call graph. Blocking/empty check, reads msg[first], advances first modulo capacity, decrements validCount, wakes sender."
+    },
+    {
+      "address": "0x8005DBA0",
+      "name": "osSendMesg",
+      "runtime_symbol": "osSendMesg_recomp",
+      "rom_offset": "0x5e7a0",
+      "size": 304,
+      "sha256": "b1df55dfccbc0e3c9e09349eb01b0fe45034fcf217b6aa31195978ed53143b21",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Complete unique PAL body matches the reviewed ISS2000 US function with unchanged opcodes, registers, ABI field offsets, constants and relative branches; every differing call target is checked against the PAL callee body/call graph. Blocking/full check, writes msg[(first+validCount)%capacity], increments validCount, wakes receiver."
+    },
+    {
+      "address": "0x8005DCD0",
+      "name": "osSetEventMesg",
+      "runtime_symbol": "osSetEventMesg_recomp",
+      "rom_offset": "0x5e8d0",
+      "size": 176,
+      "sha256": "6287d5a52f0afeac416aa64d4acfef216befdf48bd1548993fe092b66844e24e",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Complete unique PAL body matches the reviewed ISS2000 US function with unchanged opcodes, registers, ABI field offsets, constants and relative branches; every differing call target is checked against the PAL callee body/call graph. Queue/message table indexed event*8; includes PRENMI event14 behavior."
+    },
+    {
+      "address": "0x8005DD80",
+      "name": "osDpSetNextBuffer",
+      "runtime_symbol": "osDpSetNextBuffer_recomp",
+      "rom_offset": "0x5e980",
+      "size": 160,
+      "sha256": "d87609e59d089775e28f8817ce59d036a84bf67dd9e6e17f568b4490e82686fd",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Complete unique PAL body matches the reviewed ISS2000 US function with unchanged opcodes, registers, ABI field offsets, constants and relative branches; every differing call target is checked against the PAL callee body/call graph. Waits DPC, clears XBUS_DMEM_DMA and submits physical START/END; host raw DP remains explicitly unsupported."
+    },
+    {
+      "address": "0x80058860",
+      "name": "osEPiStartDma",
+      "runtime_symbol": "osEPiStartDma_recomp",
+      "rom_offset": "0x59460",
+      "size": 160,
+      "sha256": "5c9908c109acd1545ff6f9e73947525564b21043e1efc4a0b00111c8615a3fc8",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Complete unique PAL body matches the reviewed ISS2000 US function with unchanged opcodes, registers, ABI field offsets, constants and relative branches; every differing call target is checked against the PAL callee body/call graph. a0=OSPiHandle*,a1=OSIoMesg*,a2=direction; writes handle at ioMsg+14 and dispatch command15/16."
+    },
+    {
+      "address": "0x80058900",
+      "name": "osCartRomInit",
+      "runtime_symbol": "osCartRomInit_recomp",
+      "rom_offset": "0x59500",
+      "size": 384,
+      "sha256": "e5c6e4b13ad0f44faf4504d99ac28bcd0996824124d303792f4045ce7fe03150",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Complete unique PAL body matches the reviewed ISS2000 US function with unchanged opcodes, registers, ABI field offsets, constants and relative branches; every differing call target is checked against the PAL callee body/call graph. Returns OSPiHandle with baseAddress0xB0000000 and original cartridge timings."
+    },
+    {
+      "address": "0x8005AB80",
+      "name": "osVirtualToPhysical",
+      "runtime_symbol": "osVirtualToPhysical_recomp",
+      "rom_offset": "0x5b780",
+      "size": 96,
+      "sha256": "ec6cad7ee4e75e3ea8e18bc3d29d56f00d4b1f7dd4604a66213c350377a5ae61",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Complete unique PAL body matches the reviewed ISS2000 US function with unchanged opcodes, registers, ABI field offsets, constants and relative branches; every differing call target is checked against the PAL callee body/call graph. KSEG0/KSEG1 mask0x1FFFFFFF; other regions TLB probe."
+    },
+    {
+      "address": "0x8005EB20",
+      "name": "osCreateViManager",
+      "runtime_symbol": "osCreateViManager_recomp",
+      "rom_offset": "0x5f720",
+      "size": 416,
+      "sha256": "0245b4e72dfd267d765cf1eb8faa11fea667eadef042d85e9d6840f158460c3f",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Complete unique PAL body matches the reviewed ISS2000 US function with unchanged opcodes, registers, ABI field offsets, constants and relative branches; every differing call target is checked against the PAL callee body/call graph. VI queue/thread initializer registering VI event7 and counter event3; original thread entry0x8005ECC0."
+    },
+    {
+      "address": "0x8005EE60",
+      "name": "osViSetEvent",
+      "runtime_symbol": "osViSetEvent_recomp",
+      "rom_offset": "0x5fa60",
+      "size": 96,
+      "sha256": "df01d46583107bc83eb8915155656ecdbf5fe69446db9043d7f2219ec96ca844",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Complete unique PAL body matches the reviewed ISS2000 US function with unchanged opcodes, registers, ABI field offsets, constants and relative branches; every differing call target is checked against the PAL callee body/call graph. Writes next VI queue+10,message+14,retraceCount+2 under interrupt exclusion; original PAL caller0x8001D5CC."
+    },
+    {
+      "address": "0x8005EEC0",
+      "name": "osViSetMode",
+      "runtime_symbol": "osViSetMode_recomp",
+      "rom_offset": "0x5fac0",
+      "size": 80,
+      "sha256": "a6163bb39cbe2dcf1946b07c212c94f87692147110206a7ae8897b7c945d707e",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Complete unique PAL body matches the reviewed ISS2000 US function with unchanged opcodes, registers, ABI field offsets, constants and relative branches; every differing call target is checked against the PAL callee body/call graph. Writes next VI mode+8,state1,control from mode+4; original PAL mode0x80098DC0 has vSync625."
+    },
+    {
+      "address": "0x8005EF10",
+      "name": "osViSetSpecialFeatures",
+      "runtime_symbol": "osViSetSpecialFeatures_recomp",
+      "rom_offset": "0x5fb10",
+      "size": 368,
+      "sha256": "c77d5312bc8ecc8d99ddfcb7ba4261be39af02036833e2c7f2b8a42600afa9b7",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Complete unique PAL body matches the reviewed ISS2000 US function with unchanged opcodes, registers, ABI field offsets, constants and relative branches; every differing call target is checked against the PAL callee body/call graph. Feature pairs1/2,4/8,10/20,40/80 update next VI control/state8."
+    },
+    {
+      "address": "0x8005F150",
+      "name": "osViSetYScale",
+      "runtime_symbol": "osViSetYScale_recomp",
+      "rom_offset": "0x5fd50",
+      "size": 80,
+      "sha256": "d174dc7bc205124a658f064267d624e346695022360fe85f72d3d2f8b0d36992",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Complete unique PAL body matches the reviewed ISS2000 US function with unchanged opcodes, registers, ABI field offsets, constants and relative branches; every differing call target is checked against the PAL callee body/call graph. Float f12 to next VI context+24; marks state4."
+    },
+    {
+      "address": "0x8005F1A0",
+      "name": "osViSwapBuffer",
+      "runtime_symbol": "osViSwapBuffer_recomp",
+      "rom_offset": "0x5fda0",
+      "size": 80,
+      "sha256": "7a318f66665d77f7e43f984c936497dcd9cfc9e9807c206c113092d730c1658f",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Complete unique PAL body matches the reviewed ISS2000 US function with unchanged opcodes, registers, ABI field offsets, constants and relative branches; every differing call target is checked against the PAL callee body/call graph. Framebuffer a0 to next VI context+4; marks state10."
+    },
+    {
+      "address": "0x8005E5F0",
+      "name": "osGetTime",
+      "runtime_symbol": "osGetTime_recomp",
+      "rom_offset": "0x5f1f0",
+      "size": 144,
+      "sha256": "a3841a12bcc50cb3bb419d335d34bca5d3a20413e168fa91bd01529133d5a8ca",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Complete unique PAL body matches the reviewed ISS2000 US function with unchanged opcodes, registers, ABI field offsets, constants and relative branches; every differing call target is checked against the PAL callee body/call graph. Reads Count under exclusion, adds unsigned delta to64-bit time, returns v0/v1."
+    },
+    {
+      "address": "0x8005E680",
+      "name": "osSetTimer",
+      "runtime_symbol": "osSetTimer_recomp",
+      "rom_offset": "0x5f280",
+      "size": 160,
+      "sha256": "145ba8d4d19d15175acf2151ca9b3238b2baf047956396e01601025caa195460",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Complete unique PAL body matches the reviewed ISS2000 US function with unchanged opcodes, registers, ABI field offsets, constants and relative branches; every differing call target is checked against the PAL callee body/call graph. OSTimer links+0/+4,interval+8/C,countdown+10/14,queue+18,msg+1C; inserts and arms counter."
+    },
+    {
+      "address": "0x80062F70",
+      "name": "__osDisableInt",
+      "runtime_symbol": "__osDisableInt_recomp",
+      "rom_offset": "0x63b70",
+      "size": 112,
+      "sha256": "d0a76e4030821567a0546fad57bcd672861917ed1d062cf38623f483fc8e9dc5",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Complete unique PAL body matches the reviewed ISS2000 US function with unchanged opcodes, registers, ABI field offsets, constants and relative branches; every differing call target is checked against the PAL callee body/call graph. Clears CP0 Status IE, returns prior IE, respects global interrupt mask."
+    },
+    {
+      "address": "0x80062FE0",
+      "name": "__osRestoreInt",
+      "runtime_symbol": "__osRestoreInt_recomp",
+      "rom_offset": "0x63be0",
+      "size": 32,
+      "sha256": "760fabe684a57096a1f98fb972d27fc9ae0f5b227768fa227ed73c15b4ad1e09",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Complete unique PAL body matches the reviewed ISS2000 US function with unchanged opcodes, registers, ABI field offsets, constants and relative branches; every differing call target is checked against the PAL callee body/call graph. ORs a0 into CP0 Status."
+    },
+    {
+      "address": "0x8005A5F0",
+      "name": "osContStartQuery",
+      "runtime_symbol": "osContStartQuery_recomp",
+      "rom_offset": "0x5b1f0",
+      "size": 128,
+      "sha256": "4f4a5f03067cc2b6cfd40dea36931d3c77fe405b3ee86cefe8049ad90ceead53",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Complete unique PAL body matches the reviewed ISS2000 US function with unchanged opcodes, registers, ABI field offsets, constants and relative branches; every differing call target is checked against the PAL callee body/call graph. PIF command0, SI write/read and queue completion."
+    },
+    {
+      "address": "0x8005A670",
+      "name": "osContGetQuery",
+      "runtime_symbol": "osContGetQuery_recomp",
+      "rom_offset": "0x5b270",
+      "size": 32,
+      "sha256": "bdefa2043c4d7f5be646fd7ddfa752b7904f4e7cea7d168eb6db153579633d37",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Complete unique PAL body matches the reviewed ISS2000 US function with unchanged opcodes, registers, ABI field offsets, constants and relative branches; every differing call target is checked against the PAL callee body/call graph. Parses PIF status into caller OSContStatus array."
+    },
+    {
+      "address": "0x8005A690",
+      "name": "osContStartReadData",
+      "runtime_symbol": "osContStartReadData_recomp",
+      "rom_offset": "0x5b290",
+      "size": 136,
+      "sha256": "753b6df65288a2fad38cb8ee2867a043cf367b3363c7aa92c749646dd9d723f2",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Complete unique PAL body matches the reviewed ISS2000 US function with unchanged opcodes, registers, ABI field offsets, constants and relative branches; every differing call target is checked against the PAL callee body/call graph. PIF command1, SI write/read, records last command1."
+    },
+    {
+      "address": "0x8005A718",
+      "name": "osContGetReadData",
+      "runtime_symbol": "osContGetReadData_recomp",
+      "rom_offset": "0x5b318",
+      "size": 156,
+      "sha256": "b3f7fc96cc89f00928eeb10a1977696b53e4d589f45b2a851f896e33ad4d1778",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Complete unique PAL body matches the reviewed ISS2000 US function with unchanged opcodes, registers, ABI field offsets, constants and relative branches; every differing call target is checked against the PAL callee body/call graph. Four6-byte OSContPad entries: buttons+0,stickX+2,stickY+3,errno+4."
+    },
+    {
+      "address": "0x8005A870",
+      "name": "osContInit",
+      "runtime_symbol": "osContInit_recomp",
+      "rom_offset": "0x5b470",
+      "size": 412,
+      "sha256": "880bee26431c1ef7167e589d3a235440de800df3c436302620dd241a2e952a4a",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Complete unique PAL body matches the reviewed ISS2000 US function with unchanged opcodes, registers, ABI field offsets, constants and relative branches; every differing call target is checked against the PAL callee body/call graph. One-time timer stabilization, four channels, query, bitpattern/status, SI access queue."
+    },
+    {
+      "address": "0x8005F8A4",
+      "name": "osMotorInit",
+      "runtime_symbol": "osMotorInit_recomp",
+      "rom_offset": "0x604a4",
+      "size": 588,
+      "sha256": "05a8cca03cddf58c8f2dcc5eb14736eb229c554d8e0ace0a5a6360fe52983bc8",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Complete unique PAL body matches the reviewed ISS2000 US function with unchanged opcodes, registers, ABI field offsets, constants and relative branches; every differing call target is checked against the PAL callee body/call graph. a0=queue,a1=OSPfs*,a2=channel; fields queue+4/channel+8/bank+65; probes FE/80, motor writeC000, status8."
+    },
+    {
+      "address": "0x8005F760",
+      "name": "__osMotorAccess",
+      "runtime_symbol": "__osMotorAccess_recomp",
+      "rom_offset": "0x60360",
+      "size": 324,
+      "sha256": "09589648cbd10442469471a4d060306a73b4a99bae67796caa4d8b66f794fb64",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Complete unique PAL body matches the reviewed ISS2000 US function with unchanged opcodes, registers, ABI field offsets, constants and relative branches; every differing call target is checked against the PAL callee body/call graph. Requires status8; 32 flag bytes in per-port PIF; validates start CRC EB/stopCRC0."
+    },
+    {
+      "address": "0x80058FD0",
+      "name": "osAiGetLength",
+      "runtime_symbol": "osAiGetLength_recomp",
+      "rom_offset": "0x59bd0",
+      "size": 16,
+      "sha256": "679568a8280a1cc54387664b9e46dd53d246ce010538ce2e3327ac214a9b4e75",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Complete unique PAL body matches the reviewed ISS2000 US function with unchanged opcodes, registers, ABI field offsets, constants and relative branches; every differing call target is checked against the PAL callee body/call graph. Returns AI_LEN at0xA4500004; host adapter must expose current descriptor only."
+    },
+    {
+      "address": "0x80058FE0",
+      "name": "osAiSetFrequency",
+      "runtime_symbol": "osAiSetFrequency_recomp",
+      "rom_offset": "0x59be0",
+      "size": 288,
+      "sha256": "d098fcfa08c61a49cd0b0d1d509a69534946a4758dc35932b25d16dc3764f0ee",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Complete unique PAL body matches the reviewed ISS2000 US function with unchanged opcodes, registers, ABI field offsets, constants and relative branches; every differing call target is checked against the PAL callee body/call graph. Uses PAL clock0x80099A68, float32 rounding to DAC divider, rejects divider<132, writes DACRATE/BITRATE, returns integer actualHz. Upstream pass-through implementation needs project adapter for exact quantization."
+    },
+    {
+      "address": "0x80059100",
+      "name": "osAiSetNextBuffer",
+      "runtime_symbol": "osAiSetNextBuffer_recomp",
+      "rom_offset": "0x59d00",
+      "size": 160,
+      "sha256": "178c15b8987e6c9cba21e5afbd372dd20e73d6a366665b21b9e1d9e84b563164",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Complete unique PAL body matches the reviewed ISS2000 US function with unchanged opcodes, registers, ABI field offsets, constants and relative branches; every differing call target is checked against the PAL callee body/call graph. Checks FIFO busy, original0x2000 boundary workaround, writes physical AI_DRAM_ADDR and AI_LEN."
+    },
+    {
+      "address": "0x8005DE30",
+      "name": "osSpTaskLoad",
+      "runtime_symbol": "osSpTaskLoad_recomp",
+      "rom_offset": "0x5ea30",
+      "size": 524,
+      "sha256": "c30b0d02262013ff1e5784a7128ac9d56a24895cd13627a496c011d9ff7b905d",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Complete unique PAL body matches the reviewed ISS2000 US function with unchanged opcodes, registers, ABI field offsets, constants and relative branches; every differing call target is checked against the PAL callee body/call graph. Copies0x40-byte OSTask, physicalizes pointers, handles yielded state, sets SP PC and task/boot DMA."
+    },
+    {
+      "address": "0x8005E03C",
+      "name": "osSpTaskStartGo",
+      "runtime_symbol": "osSpTaskStartGo_recomp",
+      "rom_offset": "0x5ec3c",
+      "size": 52,
+      "sha256": "adfef9e038deefcfabc3bd19ab905e1050315c7d5d2dd8c527472981b09ba755",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Complete unique PAL body matches the reviewed ISS2000 US function with unchanged opcodes, registers, ABI field offsets, constants and relative branches; every differing call target is checked against the PAL callee body/call graph. Waits SP DMA idle, SP status0x125 starts task from original a0."
+    },
+    {
+      "address": "0x8005E070",
+      "name": "osSpTaskYield",
+      "runtime_symbol": "osSpTaskYield_recomp",
+      "rom_offset": "0x5ec70",
+      "size": 32,
+      "sha256": "4ab0dc5efd49efbd1be4b59d4f5ae2a765ae739cbef62e136ccd6abe524b0177",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Complete unique PAL body matches the reviewed ISS2000 US function with unchanged opcodes, registers, ABI field offsets, constants and relative branches; every differing call target is checked against the PAL callee body/call graph. SP status0x400 sets yield signal."
+    },
+    {
+      "address": "0x8005E090",
+      "name": "osSpTaskYielded",
+      "runtime_symbol": "osSpTaskYielded_recomp",
+      "rom_offset": "0x5ec90",
+      "size": 80,
+      "sha256": "766256f6888de1f20f938ad1567dc21c17230221553f25153c30ca36b88befd1",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Complete unique PAL body matches the reviewed ISS2000 US function with unchanged opcodes, registers, ABI field offsets, constants and relative branches; every differing call target is checked against the PAL callee body/call graph. Reads signal bits7/8; updates task flags+4 and returns yielded flag."
+    },
+    {
+      "address": "0x8005E5A0",
+      "name": "osYieldThread",
+      "runtime_symbol": "osYieldThread_recomp",
+      "rom_offset": "0x5f1a0",
+      "size": 80,
+      "sha256": "e55b85dadc0de37fbb6d03cbd9c9c7ea13df3dec71456dfb98d7f3c562a2c44f",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Complete unique PAL body matches the reviewed ISS2000 US function with unchanged opcodes, registers, ABI field offsets, constants and relative branches; every differing call target is checked against the PAL callee body/call graph. Marks running thread runnable2 and enqueues/yields; pinned host support remains explicitly unsupported."
+    },
+    {
+      "address": "0x80067AF0",
+      "name": "osDestroyThread",
+      "runtime_symbol": "osDestroyThread_recomp",
+      "rom_offset": "0x686f0",
+      "size": 224,
+      "sha256": "b68a2bc00409de34eef06a40f37c21074c9ade41f2ba00da933c1e76275b0b7a",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Complete unique PAL body matches the reviewed ISS2000 US function with unchanged opcodes, registers, ABI field offsets, constants and relative branches; every differing call target is checked against the PAL callee body/call graph. Null selects running thread; dequeues, removes active-list link+C, dispatches successor if current."
+    },
+    {
+      "address": "0x8005F500",
+      "name": "osViBlack",
+      "runtime_symbol": "osViBlack_recomp",
+      "rom_offset": "0x60100",
+      "size": 96,
+      "sha256": "422ba326b109846560f0605b928e865a52a039c6f56dcd9d9c3f425962bc936a",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Complete unique PAL body matches the reviewed ISS2000 US function with unchanged opcodes, registers, ABI field offsets, constants and relative branches; every differing call target is checked against the PAL callee body/call graph. Boolean a0 sets/clears next VI state20."
+    },
+    {
+      "address": "0x80067830",
+      "name": "__osSetFpcCsr",
+      "runtime_symbol": "__osSetFpcCsr_recomp",
+      "rom_offset": "0x68430",
+      "size": 16,
+      "sha256": "1b1c2a5e117a433a988d960120310c5634987537358a5b13b49fddcee5d2dac4",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Complete unique PAL body matches the reviewed ISS2000 US function with unchanged opcodes, registers, ABI field offsets, constants and relative branches; every differing call target is checked against the PAL callee body/call graph. Returns old FPC CSR using cfc1; writes a0 using ctc1."
+    },
+    {
+      "address": "0x80063130",
+      "name": "osPiRawStartDma",
+      "runtime_symbol": "osPiRawStartDma_recomp",
+      "rom_offset": "0x63d30",
+      "size": 208,
+      "sha256": "1149032ff3505ed93a21bf4f8c6fc38d7a47fc040d97c09be81051f73335db8e",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Complete unique PAL body matches the reviewed ISS2000 US function with unchanged opcodes, registers, ABI field offsets, constants and relative branches; every differing call target is checked against the PAL callee body/call graph. direction/device/dram/size; PI status wait, physical DRAM, CART and read/write size-1."
+    },
+    {
+      "address": "0x80062270",
+      "name": "osGetMemSize",
+      "runtime_symbol": "osGetMemSize_recomp",
+      "rom_offset": "0x62e70",
+      "size": 160,
+      "sha256": "a23e1783e10b4e45055c794a8339a29b72e3a360df718541896e3234e5c58a2a",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Complete unique PAL body matches the reviewed ISS2000 US function with unchanged opcodes, registers, ABI field offsets, constants and relative branches; every differing call target is checked against the PAL callee body/call graph. No args; probes4..8MiB uncached RDRAM preserving contents; returns byte capacity."
+    },
+    {
+      "address": "0x8005EAE0",
+      "name": "osViGetCurrentFramebuffer",
+      "runtime_symbol": "osViGetCurrentFramebuffer_recomp",
+      "rom_offset": "0x5f6e0",
+      "size": 64,
+      "sha256": "aad473214f26782b397d641636c2d475dedabc3044c8eee0fd1a3aa092c38d57",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Complete unique PAL body matches the reviewed ISS2000 US function with unchanged opcodes, registers, ABI field offsets, constants and relative branches; every differing call target is checked against the PAL callee body/call graph. Under exclusion, returns current VI framebuffer+4 from global0x80099DF0; must share host state with host swap."
+    },
+    {
+      "address": "0x80060DD0",
+      "name": "osPfsInitPak",
+      "runtime_symbol": "osPfsInitPak_recomp",
+      "rom_offset": "0x619d0",
+      "size": 504,
+      "sha256": "06961c18f65ecf6f57edcae69ce3d92a309c228cdf96bdc5999061a3ae68390c",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Complete unique PAL body matches the reviewed ISS2000 US function with unchanged opcodes, registers, ABI field offsets, constants and relative branches; every differing call target is checked against the PAL callee body/call graph. PAL caller0x800046F8 passes queue0x801A3DE8,OSPfs0x801A043C+port*104,channel a2. Original504-byte filesystem initializer preserves queue/channel/status, validates/repairs IDs, reads labels and inode/directory metadata. Retain original source as unique iss2000_original_80060DD0; selected Controller Pak uses original body, absent/different accessory must return real errors.",
+      "preserve_source": true,
+      "preserved_source_sha256": "a4dffb6ce458179d075ee4eb24e5c5b32f1b83eb00fc341bf688a4f566af7e0b"
+    },
+    {
+      "address": "0x8005F080",
+      "name": "osViSetXScale",
+      "runtime_symbol": "osViSetXScale_recomp",
+      "rom_offset": "0x5fc80",
+      "size": 208,
+      "sha256": "113104e0fca6638dd2ba64c945fde2f922da89c6ba98c13748f7b98b8f9329d8",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Original complete PAL body 8005F080..8005F150: saves float f12, disables interrupts, loads next VI context at80099DF4 and mode+8, multiplies float factor by mode common xScale+0x20 maskedFFF, truncates and masksFFF into context+0x20; restores interrupts. PAL8000164C calls with0.96f after osViSetYScale(0.88125f). Host adapter applies identical fixed-point scaling in its actual double-buffered VI state. No hardware SDK context is accessed by this binding."
+    }
+  ]
+}

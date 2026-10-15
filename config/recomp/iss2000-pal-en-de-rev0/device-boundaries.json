@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "rom_sha256": "6ce6739b8ead149857c9442178a1ecd9b7f6d15b93a582c7208ca85d493817bf",
+  "purpose": "Reviewed project-owned device boundaries; original filesystem functions remain compiled and authoritative. These are not upstream runtime service bindings.",
+  "boundaries": [
+    {
+      "address": "0x800608E0",
+      "name": "osPfsIsPlug",
+      "rom_offset": "0x614e0",
+      "size": 380,
+      "sha256": "d325a6991f3b15d551f83df8ade7690ec093ccde6476745820e52e67f95ddbc3",
+      "status": "verified-instructions-and-abi",
+      "implementation": "src/runtime/pak_services.cpp",
+      "abi": "a0=OSMesgQueue*, a1=u8* bitpattern",
+      "evidence": "Unique full PAL body and call graph checked against reviewed ISS2000 US instructions; ABI fields/constants/relative branches unchanged. a1 is byte bitpattern; original store byte at0x80060A28; includes any inserted accessory."
+    },
+    {
+      "address": "0x80061100",
+      "name": "__osPfsGetStatus",
+      "rom_offset": "0x61d00",
+      "size": 240,
+      "sha256": "fa7e25d0a60a06d0b303bc0963c80b204a9129b500f3bc1266d301d4530ca2e0",
+      "status": "verified-instructions-and-abi",
+      "implementation": "src/runtime/pak_services.cpp",
+      "abi": "a0=OSMesgQueue*, a1=s32 port",
+      "evidence": "Unique full PAL body and call graph checked against reviewed ISS2000 US instructions; ABI fields/constants/relative branches unchanged. Invalidates inode-cache byte at0x80099A44 to0xFA with sb at0x8006112C; actual PIF presence/change/communication returns1/2/4."
+    },
+    {
+      "address": "0x80061E10",
+      "name": "__osContRamRead",
+      "rom_offset": "0x62a10",
+      "size": 496,
+      "sha256": "bacf786e001d5a9c2202b0633b857d252ca7986c422b2cca70c9164afd656919",
+      "status": "verified-instructions-and-abi",
+      "implementation": "src/runtime/pak_services.cpp",
+      "abi": "a0=OSMesgQueue*, a1=s32 port, a2=u16 block, a3=u8[32]*",
+      "evidence": "Unique full PAL body and call graph checked against reviewed ISS2000 US instructions; ABI fields/constants/relative branches unchanged. Original read command2,32-byte block payload and CRC. a2 is block index, not byte address."
+    },
+    {
+      "address": "0x80062000",
+      "name": "__osContRamWrite",
+      "rom_offset": "0x62c00",
+      "size": 624,
+      "sha256": "359bbe9b0c84ce0cd22769d29ff38a74004d93716398dce9421fc23b6ddafdbb",
+      "status": "verified-instructions-and-abi",
+      "implementation": "src/runtime/pak_services.cpp",
+      "abi": "a0=OSMesgQueue*, a1=s32 port, a2=u16 block, a3=u8[32]*; stack+10=s32 force",
+      "evidence": "Unique full PAL body and call graph checked against reviewed ISS2000 US instructions; ABI fields/constants/relative branches unchanged. Protects blocks1..6 unless stack+10 force==1; original command3/32-byte payload/CRC."
+    }
+  ]
+}

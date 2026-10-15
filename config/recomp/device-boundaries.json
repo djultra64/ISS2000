@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "rom_sha256": "e18e87c062a66002c0cbd7e2dd793ef755609e70675d5679df0396d4b6c67850",
+  "purpose": "Reviewed project-owned device boundaries; original filesystem functions remain compiled and authoritative. These are not upstream runtime service bindings.",
+  "boundaries": [
+    {
+      "address": "0x80060060",
+      "name": "osPfsIsPlug",
+      "rom_offset": "0x60C60",
+      "size": 380,
+      "sha256": "58318c6bdacd923a8cc62ade2c7a4cfba4675eacb2a17da096407754d8d97879",
+      "status": "verified-instructions-and-abi",
+      "implementation": "src/runtime/pak_services.cpp",
+      "abi": "a0=OSMesgQueue*, a1=u8* bitpattern",
+      "evidence": "Caller800045FC moves its output pointer to a1; original800601A8 stores only one byte, and returns SI result. Mask bits identify any inserted accessory, including Rumble Pak."
+    },
+    {
+      "address": "0x80060880",
+      "name": "__osPfsGetStatus",
+      "rom_offset": "0x61480",
+      "size": 240,
+      "sha256": "7d1cfac5a41e1ca346646b1d2386139e193b87547e8175d9160a56e381a59dea",
+      "status": "verified-instructions-and-abi",
+      "implementation": "src/runtime/pak_services.cpp",
+      "abi": "a0=OSMesgQueue*, a1=s32 port",
+      "evidence": "Original800608AC sets guest8009C434=FA to invalidate inode cache. Checks PIF status presence/change/communication and returns PFS codes1/2/4. Called by original InitPak80060550 after SI exclusion."
+    },
+    {
+      "address": "0x80061590",
+      "name": "__osContRamRead",
+      "rom_offset": "0x62190",
+      "size": 496,
+      "sha256": "bf152ee224c2e69307ce5b194aeb6a62d0ea2c512c65b577008c1e3f87539135",
+      "status": "verified-instructions-and-abi",
+      "implementation": "src/runtime/pak_services.cpp",
+      "abi": "a0=OSMesgQueue*, a1=s32 port, a2=u16 block, a3=u8[32]*",
+      "evidence": "Original builds read command2, performs SI write/read, copies exactly32 response bytes and checks data CRC; higher filesystem routines use block indices, not byte addresses."
+    },
+    {
+      "address": "0x80061780",
+      "name": "__osContRamWrite",
+      "rom_offset": "0x62380",
+      "size": 624,
+      "sha256": "48a480ebf0299656aba5e2a775911292cfd153eb0df3f9dcf6309dfebb1eb99d",
+      "status": "verified-instructions-and-abi",
+      "implementation": "src/runtime/pak_services.cpp",
+      "abi": "a0=OSMesgQueue*, a1=s32 port, a2=u16 block, a3=u8[32]*; stack+10=s32 force",
+      "evidence": "Original protects blocks1..6 unless force==1, constructs write command3 and32 payload bytes, then checks returned data CRC. Original SelectBank80060A90 writes32 bank bytes to block400."
+    }
+  ]
+}

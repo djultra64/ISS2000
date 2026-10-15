@@ -24,3 +24,16 @@ Keep actions independent of physical button names; support four controller ports
 Verification: `python3 -m unittest discover -s tests -v`. Native diagnostics and
 ROM integration are opt-in checks documented in the README; do not confuse skipped
 integration tests with a verified game boot.
+
+## Delivery and visible verification
+
+The user requires separate portable Linux and Windows folders, kept in this
+canonical project directory. Prompt for a user-supplied ROM on first launch;
+keep configuration, saves and imported private data beside the executable.
+Do intermediate development and verification on Linux. Build/package/test
+Windows only at the final stage; use the Windows-machine skill then.
+Actual game execution tests must use visible desktop windows. Save real
+screenshots privately and embed them in the chat so the remote user can follow.
+Do not replace captures with mockups or call diagnostics a playable version.
+
+Controller prompts must use original game text/sprite rendering. The user explicitly rejects an independent controls overlay; do not restore the removed host footer or add a replacement overlay.

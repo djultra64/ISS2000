@@ -1,0 +1,1205 @@
+{
+  "schema_version": 1,
+  "status": "provisional instruction-derived load inventory; not runtime verification",
+  "sections": [
+    {
+      "bss_end": 2149252480,
+      "confidence": "provisional-resident; Entry BSS clear; provisional text ends before RSP boot/data transition",
+      "load_size": 655872,
+      "loader": null,
+      "name": "resident",
+      "rom": 4096,
+      "text_size": 429440,
+      "vram": 2147484672,
+      "seeds": [
+        "0x80000400",
+        "0x80000500",
+        "0x800007B8",
+        "0x80000814",
+        "0x80000894",
+        "0x8001D1AC",
+        "0x8004B2C8",
+        "0x800582D0",
+        "0x8005E510"
+      ],
+      "thread_entry_evidence": "Explicit a2 constants at reviewed osCreateThread calls; 80000894 follows the idle-thread infinite loop and must remain a distinct function."
+    },
+    {
+      "bss_end": null,
+      "callsites": [
+        2147495552
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return; Constant DMA arguments; complete leaf return and padding before explicitly referenced data at801B0910",
+      "load_size": 40864,
+      "loaded_by_section": "resident",
+      "loader": 2147495552,
+      "name": "overlay_2cb900_801b00b0",
+      "rom": 2930944,
+      "text_size": 2144,
+      "vram": 2149253296,
+      "seeds": [
+        "0x801B00B0",
+        "0x801B00FC",
+        "0x801B015C",
+        "0x801B01A8",
+        "0x801B050C",
+        "0x801B05D4"
+      ]
+    },
+    {
+      "bss_end": null,
+      "callsites": [
+        2147495964
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 11360,
+      "loaded_by_section": "resident",
+      "loader": 2147495964,
+      "name": "overlay_2d58a0_801b00b0",
+      "rom": 2971808,
+      "text_size": 592,
+      "vram": 2149253296
+    },
+    {
+      "bss_end": 2151595904,
+      "callsites": [
+        2147496024
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 3920,
+      "loaded_by_section": "resident",
+      "loader": 2147496024,
+      "name": "overlay_2d8500_803eb000",
+      "rom": 2983168,
+      "text_size": 1408,
+      "vram": 2151591936
+    },
+    {
+      "bss_end": 2155479392,
+      "callsites": [
+        2147518772
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 2896,
+      "loaded_by_section": "resident",
+      "loader": 2147518772,
+      "name": "overlay_518430_80796000",
+      "rom": 5342256,
+      "text_size": 1760,
+      "vram": 2155438080
+    },
+    {
+      "bss_end": 2149761328,
+      "callsites": [
+        2147665736
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 20416,
+      "loaded_by_section": "resident",
+      "loader": 2147665736,
+      "name": "overlay_4feba0_80226e40",
+      "rom": 5237664,
+      "text_size": 19536,
+      "vram": 2149740096
+    },
+    {
+      "bss_end": null,
+      "callsites": [
+        2147714116
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 31040,
+      "loaded_by_section": "resident",
+      "loader": 2147714116,
+      "name": "overlay_2d9450_803eb000",
+      "rom": 2987088,
+      "text_size": 30464,
+      "vram": 2151591936
+    },
+    {
+      "bss_end": null,
+      "callsites": [
+        2147714148,
+        2147721320,
+        2147721652
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 9824,
+      "loaded_by_section": "resident",
+      "loader": 2147714148,
+      "name": "overlay_4a6c30_802328f0",
+      "rom": 4877360,
+      "text_size": null,
+      "vram": 2149787888
+    },
+    {
+      "bss_end": 2149506656,
+      "callsites": [
+        2147825964
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 1136,
+      "loaded_by_section": "resident",
+      "loader": 2147825964,
+      "name": "overlay_2be640_801ed9f0",
+      "rom": 2876992,
+      "text_size": 560,
+      "vram": 2149505520
+    },
+    {
+      "bss_end": 2149552848,
+      "callsites": [
+        2147826180
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 47296,
+      "loaded_by_section": "resident",
+      "loader": 2147826180,
+      "name": "overlay_2b2d80_801ed9f0",
+      "rom": 2829696,
+      "text_size": 5792,
+      "vram": 2149505520
+    },
+    {
+      "bss_end": 2150059312,
+      "callsites": [
+        2147826328
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 1568,
+      "loaded_by_section": "resident",
+      "loader": 2147826328,
+      "name": "overlay_50ac10_80274700",
+      "rom": 5286928,
+      "text_size": 736,
+      "vram": 2150057728
+    },
+    {
+      "bss_end": 2149527568,
+      "callsites": [
+        2147833840
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 21984,
+      "loaded_by_section": "resident",
+      "loader": 2147833840,
+      "name": "overlay_29a360_801ed9f0",
+      "rom": 2728800,
+      "text_size": 13664,
+      "vram": 2149505520
+    },
+    {
+      "bss_end": 2149523152,
+      "callsites": [
+        2147833984,
+        2147834660
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 9920,
+      "loaded_by_section": "resident",
+      "loader": 2147833984,
+      "name": "overlay_2c6860_801ed9f0",
+      "rom": 2910304,
+      "text_size": 8896,
+      "vram": 2149505520
+    },
+    {
+      "bss_end": 2149528752,
+      "callsites": [
+        2147834088,
+        2147834748
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 22928,
+      "loaded_by_section": "resident",
+      "loader": 2147834088,
+      "name": "overlay_29f940_801ed9f0",
+      "rom": 2750784,
+      "text_size": 22160,
+      "vram": 2149505520
+    },
+    {
+      "bss_end": 2149537648,
+      "callsites": [
+        2147834236
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 32128,
+      "loaded_by_section": "resident",
+      "loader": 2147834236,
+      "name": "overlay_2beae0_801ed9f0",
+      "rom": 2878176,
+      "text_size": 25744,
+      "vram": 2149505520
+    },
+    {
+      "bss_end": null,
+      "callsites": [
+        2147834312
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 7200,
+      "loaded_by_section": "resident",
+      "loader": 2147834312,
+      "name": "overlay_2c8f20_801f5770",
+      "rom": 2920224,
+      "text_size": 6928,
+      "vram": 2149537648
+    },
+    {
+      "bss_end": 2149541184,
+      "callsites": [
+        2147834368
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 3520,
+      "loaded_by_section": "resident",
+      "loader": 2147834368,
+      "name": "overlay_2cab40_801f5770",
+      "rom": 2927424,
+      "text_size": 3440,
+      "vram": 2149537648
+    },
+    {
+      "bss_end": 2149437856,
+      "callsites": [
+        2147834512
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 182224,
+      "loaded_by_section": "resident",
+      "loader": 2147834512,
+      "name": "overlay_25d3d0_801b00b0",
+      "rom": 2479056,
+      "text_size": 176576,
+      "vram": 2149253296
+    },
+    {
+      "bss_end": 2149505520,
+      "callsites": [
+        2147834576
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return; Nestedsecond DMA in80055A2C; jrROM299C3C then padding/index dataROM299C50",
+      "load_size": 67520,
+      "loaded_by_section": "resident",
+      "loader": 2147834576,
+      "name": "overlay_289ba0_801dd1a0",
+      "rom": 2661280,
+      "text_size": 65712,
+      "vram": 2149437856,
+      "seeds": [
+        "0x801DD1A0",
+        "0x801EB054"
+      ]
+    },
+    {
+      "bss_end": 2150342336,
+      "callsites": [
+        2147834932
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 64912,
+      "loaded_by_section": "resident",
+      "loader": 2147834932,
+      "name": "overlay_379be0_802a8d40",
+      "rom": 3644384,
+      "text_size": 57312,
+      "vram": 2150272320
+    },
+    {
+      "bss_end": 2150483952,
+      "callsites": [
+        2147834996
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 137072,
+      "loaded_by_section": "resident",
+      "loader": 2147834996,
+      "name": "overlay_389970_802b9ec0",
+      "rom": 3709296,
+      "text_size": 96384,
+      "vram": 2150342336
+    },
+    {
+      "bss_end": 2150069728,
+      "callsites": [
+        2147835096
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 22128,
+      "loaded_by_section": "resident",
+      "loader": 2147835096,
+      "name": "overlay_4e2300_80271f40",
+      "rom": 5120768,
+      "text_size": 18128,
+      "vram": 2150047552
+    },
+    {
+      "bss_end": 2150104592,
+      "callsites": [
+        2147835192
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 34768,
+      "loaded_by_section": "resident",
+      "loader": 2147835192,
+      "name": "overlay_4e7970_802775e0",
+      "rom": 5142896,
+      "text_size": 26400,
+      "vram": 2150069728
+    },
+    {
+      "bss_end": 2150047552,
+      "callsites": [
+        2147835324,
+        2147835460
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return; Constant DMA and BSS clear arguments; provisional terminal jr8025C6F0/padding then numeric data8025C700; caller/loader guard bit20 match",
+      "load_size": 233584,
+      "loaded_by_section": "resident",
+      "loader": 2147835324,
+      "name": "overlay_4a9290_80234f50",
+      "rom": 4887184,
+      "text_size": 161712,
+      "vram": 2149797712,
+      "seeds": [
+        "0x80234F50",
+        "0x8023E684"
+      ]
+    },
+    {
+      "bss_end": 2149561312,
+      "callsites": [
+        2147835580
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 32528,
+      "loaded_by_section": "resident",
+      "loader": 2147835580,
+      "name": "overlay_2a52d0_801f34b0",
+      "rom": 2773712,
+      "text_size": 31376,
+      "vram": 2149528752
+    },
+    {
+      "bss_end": 2149552208,
+      "callsites": [
+        2147835676
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 23456,
+      "loaded_by_section": "resident",
+      "loader": 2147835676,
+      "name": "overlay_2ad1e0_801f34b0",
+      "rom": 2806240,
+      "text_size": 22160,
+      "vram": 2149528752
+    },
+    {
+      "bss_end": 2150198272,
+      "callsites": [
+        2147835772
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 20112,
+      "loaded_by_section": "resident",
+      "loader": 2147835772,
+      "name": "overlay_3ab0e0_80281d40",
+      "rom": 3846368,
+      "text_size": 14128,
+      "vram": 2150112576
+    },
+    {
+      "bss_end": 2149607664,
+      "callsites": [
+        2147836140
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 3232,
+      "loaded_by_section": "resident",
+      "loader": 2147836140,
+      "name": "overlay_503b70_80205c40",
+      "rom": 5258096,
+      "text_size": 3072,
+      "vram": 2149604416
+    },
+    {
+      "bss_end": 2150064384,
+      "callsites": [
+        2147836236
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 16304,
+      "loaded_by_section": "resident",
+      "loader": 2147836236,
+      "name": "overlay_4f0140_80271f40",
+      "rom": 5177664,
+      "text_size": 16256,
+      "vram": 2150047552
+    },
+    {
+      "bss_end": 2150084928,
+      "callsites": [
+        2147836332
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 20544,
+      "loaded_by_section": "resident",
+      "loader": 2147836332,
+      "name": "overlay_4f40f0_80276100",
+      "rom": 5193968,
+      "text_size": 7312,
+      "vram": 2150064384
+    },
+    {
+      "bss_end": 2150108096,
+      "callsites": [
+        2147836428
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 23152,
+      "loaded_by_section": "resident",
+      "loader": 2147836428,
+      "name": "overlay_4f9130_8027b140",
+      "rom": 5214512,
+      "text_size": 23120,
+      "vram": 2150084928
+    },
+    {
+      "bss_end": 2149514416,
+      "callsites": [
+        2147841340
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return; Constant DMA/BSS clear; provisional terminal jr2EEC14 then padding/jump tableROM2EEC20",
+      "load_size": 219440,
+      "loaded_by_section": "resident",
+      "loader": 2147841340,
+      "name": "overlay_2e0d90_801b00b0",
+      "rom": 3018128,
+      "text_size": 56976,
+      "vram": 2149253296
+    },
+    {
+      "bss_end": 2149516848,
+      "callsites": [
+        2147841444
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 2432,
+      "loaded_by_section": "resident",
+      "loader": 2147841444,
+      "name": "overlay_3166c0_801efcb0",
+      "rom": 3237568,
+      "text_size": 272,
+      "vram": 2149514416
+    },
+    {
+      "bss_end": null,
+      "callsites": [
+        2147841552
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 6400,
+      "loaded_by_section": "resident",
+      "loader": 2147841552,
+      "name": "overlay_317040_801efcb0",
+      "rom": 3240000,
+      "text_size": null,
+      "vram": 2149514416
+    },
+    {
+      "bss_end": 2149526256,
+      "callsites": [
+        2147841608
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 11840,
+      "loaded_by_section": "resident",
+      "loader": 2147841608,
+      "name": "overlay_318940_801efcb0",
+      "rom": 3246400,
+      "text_size": null,
+      "vram": 2149514416
+    },
+    {
+      "bss_end": 2151866656,
+      "callsites": [
+        2147841752
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 122384,
+      "loaded_by_section": "resident",
+      "loader": 2147841752,
+      "name": "overlay_518f80_80410000",
+      "rom": 5345152,
+      "text_size": 69888,
+      "vram": 2151743488,
+      "function_spans": [
+        {
+          "vram": 2151769652,
+          "size": 80,
+          "evidence": "Reviewed bounded 6-entry switch table at 0x8042ABD0; all terminal case arms end before 0x80416684. No aligned direct jal to merged case subentries anywhere in the original ROM. Private switch-audit-01 records instruction and table proof."
+        }
+      ]
+    },
+    {
+      "bss_end": 2152709888,
+      "callsites": [
+        2147841884
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 277344,
+      "loaded_by_section": "resident",
+      "loader": 2147841884,
+      "name": "overlay_53a9e0_804b2480",
+      "rom": 5482976,
+      "text_size": 33456,
+      "vram": 2152408192
+    },
+    {
+      "bss_end": 2153205056,
+      "callsites": [
+        2147841984
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 25808,
+      "loaded_by_section": "resident",
+      "loader": 2147841984,
+      "name": "overlay_5f0e70_8056e840",
+      "rom": 6229616,
+      "text_size": null,
+      "vram": 2153179200
+    },
+    {
+      "bss_end": 2151882112,
+      "callsites": [
+        2147842104
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 15440,
+      "loaded_by_section": "resident",
+      "loader": 2147842104,
+      "name": "overlay_536d90_8042e120",
+      "rom": 5467536,
+      "text_size": null,
+      "vram": 2151866656
+    },
+    {
+      "bss_end": 2152810368,
+      "callsites": [
+        2147842224
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 100464,
+      "loaded_by_section": "resident",
+      "loader": 2147842224,
+      "name": "overlay_57e540_804fbf00",
+      "rom": 5760320,
+      "text_size": null,
+      "vram": 2152709888
+    },
+    {
+      "bss_end": 2153179200,
+      "callsites": [
+        2147842344
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 337792,
+      "loaded_by_section": "resident",
+      "loader": 2147842344,
+      "name": "overlay_59e6f0_8051c0c0",
+      "rom": 5891824,
+      "text_size": null,
+      "vram": 2152841408
+    },
+    {
+      "bss_end": 2152841408,
+      "callsites": [
+        2147842464
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 31040,
+      "loaded_by_section": "resident",
+      "loader": 2147842464,
+      "name": "overlay_596db0_80514780",
+      "rom": 5860784,
+      "text_size": null,
+      "vram": 2152810368
+    },
+    {
+      "bss_end": 2153260896,
+      "callsites": [
+        2147842660
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 55488,
+      "loaded_by_section": "resident",
+      "loader": 2147842660,
+      "name": "overlay_5f7340_80574d40",
+      "rom": 6255424,
+      "text_size": 44160,
+      "vram": 2153205056
+    },
+    {
+      "bss_end": 2153272368,
+      "callsites": [
+        2147842764
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 7376,
+      "loaded_by_section": "resident",
+      "loader": 2147842764,
+      "name": "overlay_604c00_80582760",
+      "rom": 6310912,
+      "text_size": 5712,
+      "vram": 2153260896
+    },
+    {
+      "bss_end": 2149542448,
+      "callsites": [
+        2147842924
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 16144,
+      "loaded_by_section": "resident",
+      "loader": 2147842924,
+      "name": "overlay_32a680_801f2af0",
+      "rom": 3319424,
+      "text_size": 4624,
+      "vram": 2149526256
+    },
+    {
+      "bss_end": 2149580048,
+      "callsites": [
+        2149289624
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 53632,
+      "loaded_by_section": "overlay_2e0d90_801b00b0",
+      "loader": 2149289624,
+      "name": "overlay_31b780_801f2af0",
+      "rom": 3258240,
+      "text_size": 52160,
+      "vram": 2149526256
+    },
+    {
+      "bss_end": 2151655600,
+      "callsites": [
+        2149289748
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return; Nestedloader in2E0D90; jrROM356520 then padding/jump tableROM356530",
+      "load_size": 306000,
+      "loaded_by_section": "overlay_2e0d90_801b00b0",
+      "loader": 2149289748,
+      "name": "overlay_32f090_803ac000",
+      "rom": 3338384,
+      "text_size": 160928,
+      "vram": 2151333888
+    },
+    {
+      "bss_end": 2150250592,
+      "callsites": [
+        2149289804
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return; Nestedloader in2E0D90; jrROM3B383C then padding/pointersROM3B3850",
+      "load_size": 32320,
+      "loaded_by_section": "overlay_2e0d90_801b00b0",
+      "loader": 2149289804,
+      "name": "overlay_3aff70_8029ba00",
+      "rom": 3866480,
+      "text_size": 14560,
+      "vram": 2150218240
+    },
+    {
+      "bss_end": 2151659456,
+      "callsites": [
+        2149289908
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 3856,
+      "loaded_by_section": "overlay_2e0d90_801b00b0",
+      "loader": 2149289908,
+      "name": "overlay_50dc80_803fa8b0",
+      "rom": 5299328,
+      "text_size": 368,
+      "vram": 2151655600
+    },
+    {
+      "bss_end": null,
+      "callsites": [
+        2149290016
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 16352,
+      "loaded_by_section": "overlay_2e0d90_801b00b0",
+      "loader": 2149290016,
+      "name": "overlay_50eb90_803fa8b0",
+      "rom": 5303184,
+      "text_size": null,
+      "vram": 2151655600
+    },
+    {
+      "bss_end": 2151673264,
+      "callsites": [
+        2149290072
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 17664,
+      "loaded_by_section": "overlay_2e0d90_801b00b0",
+      "loader": 2149290072,
+      "name": "overlay_512b70_803fa8b0",
+      "rom": 5319536,
+      "text_size": null,
+      "vram": 2151655600
+    },
+    {
+      "bss_end": 2150475104,
+      "callsites": [
+        2149290160
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 672,
+      "loaded_by_section": "overlay_2e0d90_801b00b0",
+      "loader": 2149290160,
+      "name": "overlay_50b240_802da2c0",
+      "rom": 5288512,
+      "text_size": 272,
+      "vram": 2150474432
+    },
+    {
+      "bss_end": null,
+      "callsites": [
+        2149290268
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 4864,
+      "loaded_by_section": "overlay_2e0d90_801b00b0",
+      "loader": 2149290268,
+      "name": "overlay_50b4e0_802da2c0",
+      "rom": 5289184,
+      "text_size": null,
+      "vram": 2150474432
+    },
+    {
+      "bss_end": 2150479712,
+      "callsites": [
+        2149290324
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 5280,
+      "loaded_by_section": "overlay_2e0d90_801b00b0",
+      "loader": 2149290324,
+      "name": "overlay_50c7e0_802da2c0",
+      "rom": 5294048,
+      "text_size": null,
+      "vram": 2150474432
+    },
+    {
+      "bss_end": 2150323840,
+      "callsites": [
+        2149290640
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 73120,
+      "loaded_by_section": "overlay_2e0d90_801b00b0",
+      "loader": 2149290640,
+      "name": "overlay_3b7db0_802a3860",
+      "rom": 3898800,
+      "text_size": 31024,
+      "vram": 2150250592
+    },
+    {
+      "bss_end": 2150364032,
+      "callsites": [
+        2149290744
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 40112,
+      "loaded_by_section": "overlay_2e0d90_801b00b0",
+      "loader": 2149290744,
+      "name": "overlay_3c9b50_802b5680",
+      "rom": 3971920,
+      "text_size": 18016,
+      "vram": 2150323840
+    },
+    {
+      "bss_end": 2150415648,
+      "callsites": [
+        2149290848
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 50544,
+      "loaded_by_section": "overlay_2e0d90_801b00b0",
+      "loader": 2149290848,
+      "name": "overlay_3d3800_802bf380",
+      "rom": 4012032,
+      "text_size": 17280,
+      "vram": 2150364032
+    },
+    {
+      "bss_end": 2150441376,
+      "callsites": [
+        2149290952
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 25552,
+      "loaded_by_section": "overlay_2e0d90_801b00b0",
+      "loader": 2149290952,
+      "name": "overlay_3dfd70_802cbd20",
+      "rom": 4062576,
+      "text_size": 11808,
+      "vram": 2150415648
+    },
+    {
+      "bss_end": 2150296096,
+      "callsites": [
+        2149291268
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 45344,
+      "loaded_by_section": "overlay_2e0d90_801b00b0",
+      "loader": 2149291268,
+      "name": "overlay_3eb4d0_802a3860",
+      "rom": 4109520,
+      "text_size": 33536,
+      "vram": 2150250592
+    },
+    {
+      "bss_end": 2150334256,
+      "callsites": [
+        2149291372
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 38080,
+      "loaded_by_section": "overlay_2e0d90_801b00b0",
+      "loader": 2149291372,
+      "name": "overlay_3f65f0_802aea20",
+      "rom": 4154864,
+      "text_size": 22832,
+      "vram": 2150296096
+    },
+    {
+      "bss_end": 2150354288,
+      "callsites": [
+        2149291476
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 19984,
+      "loaded_by_section": "overlay_2e0d90_801b00b0",
+      "loader": 2149291476,
+      "name": "overlay_3ffab0_802b7f30",
+      "rom": 4192944,
+      "text_size": 14352,
+      "vram": 2150334256
+    },
+    {
+      "bss_end": 2150399232,
+      "callsites": [
+        2149291580
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 44688,
+      "loaded_by_section": "overlay_2e0d90_801b00b0",
+      "loader": 2149291580,
+      "name": "overlay_4048c0_802bcd70",
+      "rom": 4212928,
+      "text_size": 24368,
+      "vram": 2150354288
+    },
+    {
+      "bss_end": 2150459776,
+      "callsites": [
+        2149291684
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 60432,
+      "loaded_by_section": "overlay_2e0d90_801b00b0",
+      "loader": 2149291684,
+      "name": "overlay_40f750_802c7d00",
+      "rom": 4257616,
+      "text_size": 41696,
+      "vram": 2150399232
+    },
+    {
+      "bss_end": 2150134112,
+      "callsites": [
+        2149291788
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 21392,
+      "loaded_by_section": "overlay_2e0d90_801b00b0",
+      "loader": 2149291788,
+      "name": "overlay_3e6140_80281d40",
+      "rom": 4088128,
+      "text_size": 13856,
+      "vram": 2150112576
+    },
+    {
+      "bss_end": 2150405408,
+      "callsites": [
+        2149292040
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 50944,
+      "loaded_by_section": "overlay_2e0d90_801b00b0",
+      "loader": 2149292040,
+      "name": "overlay_41e360_802bcd70",
+      "rom": 4318048,
+      "text_size": 27040,
+      "vram": 2150354288
+    },
+    {
+      "bss_end": 2150312944,
+      "callsites": [
+        2149292308
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 60992,
+      "loaded_by_section": "overlay_2e0d90_801b00b0",
+      "loader": 2149292308,
+      "name": "overlay_42aa60_802a3860",
+      "rom": 4368992,
+      "text_size": 47328,
+      "vram": 2150250592
+    },
+    {
+      "bss_end": 2150376672,
+      "callsites": [
+        2149292412
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 62448,
+      "loaded_by_section": "overlay_2e0d90_801b00b0",
+      "loader": 2149292412,
+      "name": "overlay_4398a0_802b2bf0",
+      "rom": 4429984,
+      "text_size": 13440,
+      "vram": 2150312944
+    },
+    {
+      "bss_end": 2150432384,
+      "callsites": [
+        2149292516
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 54976,
+      "loaded_by_section": "overlay_2e0d90_801b00b0",
+      "loader": 2149292516,
+      "name": "overlay_448c90_802c24e0",
+      "rom": 4492432,
+      "text_size": 42192,
+      "vram": 2150376672
+    },
+    {
+      "bss_end": 2150307760,
+      "callsites": [
+        2149292784
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 55552,
+      "loaded_by_section": "overlay_2e0d90_801b00b0",
+      "loader": 2149292784,
+      "name": "overlay_456350_802a3860",
+      "rom": 4547408,
+      "text_size": 38864,
+      "vram": 2150250592,
+      "function_spans": [
+        {
+          "vram": 2150269428,
+          "size": 308,
+          "evidence": "Reviewed bounded 12-entry switch at 0x802A8220; original table 0x802B0D98 stays within this function, final case returns before 0x802A8328. No aligned direct jal to merged case subentries in the ROM. Private boot09 RAM table matches ROM."
+        }
+      ]
+    },
+    {
+      "bss_end": 2150340080,
+      "callsites": [
+        2149292888
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 31968,
+      "loaded_by_section": "overlay_2e0d90_801b00b0",
+      "loader": 2149292888,
+      "name": "overlay_463c50_802b17b0",
+      "rom": 4602960,
+      "text_size": 15792,
+      "vram": 2150307760
+    },
+    {
+      "bss_end": 2150368816,
+      "callsites": [
+        2149292992
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 28656,
+      "loaded_by_section": "overlay_2e0d90_801b00b0",
+      "loader": 2149292992,
+      "name": "overlay_46b930_802b95f0",
+      "rom": 4634928,
+      "text_size": 12960,
+      "vram": 2150340080
+    },
+    {
+      "bss_end": 2150487984,
+      "callsites": [
+        2149293096
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 944,
+      "loaded_by_section": "overlay_2e0d90_801b00b0",
+      "loader": 2149293096,
+      "name": "overlay_517070_802dd400",
+      "rom": 5337200,
+      "text_size": 160,
+      "vram": 2150487040
+    },
+    {
+      "bss_end": null,
+      "callsites": [
+        2149293204
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 1952,
+      "loaded_by_section": "overlay_2e0d90_801b00b0",
+      "loader": 2149293204,
+      "name": "overlay_517420_802dd400",
+      "rom": 5338144,
+      "text_size": null,
+      "vram": 2150487040
+    },
+    {
+      "bss_end": 2150489200,
+      "callsites": [
+        2149293260
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 2160,
+      "loaded_by_section": "overlay_2e0d90_801b00b0",
+      "loader": 2149293260,
+      "name": "overlay_517bc0_802dd400",
+      "rom": 5340096,
+      "text_size": null,
+      "vram": 2150487040
+    },
+    {
+      "bss_end": 2150324832,
+      "callsites": [
+        2149293536
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 72240,
+      "loaded_by_section": "overlay_2e0d90_801b00b0",
+      "loader": 2149293536,
+      "name": "overlay_472920_802a3860",
+      "rom": 4663584,
+      "text_size": 44816,
+      "vram": 2150250592,
+      "function_spans": [
+        {
+          "vram": 2150285032,
+          "size": 200,
+          "evidence": "Reviewed bounded 12-entry switch table at 0x802B5188; all terminal case arms end before 0x802ABFB0. No aligned direct jal to merged case subentries anywhere in the original ROM. Private switch-audit-01 records instruction and table proof."
+        }
+      ]
+    },
+    {
+      "bss_end": 2150356544,
+      "callsites": [
+        2149293640
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 13616,
+      "loaded_by_section": "overlay_2e0d90_801b00b0",
+      "loader": 2149293640,
+      "name": "overlay_484350_802b5a60",
+      "rom": 4735824,
+      "text_size": 11232,
+      "vram": 2150324832
+    },
+    {
+      "bss_end": 2150406272,
+      "callsites": [
+        2149293744
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 49456,
+      "loaded_by_section": "overlay_2e0d90_801b00b0",
+      "loader": 2149293744,
+      "name": "overlay_487880_802bd640",
+      "rom": 4749440,
+      "text_size": null,
+      "vram": 2150356544
+    },
+    {
+      "bss_end": 2149601808,
+      "callsites": [
+        2149293848
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 7504,
+      "loaded_by_section": "overlay_2e0d90_801b00b0",
+      "loader": 2149293848,
+      "name": "overlay_328930_80203440",
+      "rom": 3311920,
+      "text_size": 7360,
+      "vram": 2149594176
+    },
+    {
+      "bss_end": 2150462144,
+      "callsites": [
+        2149293944
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 20624,
+      "loaded_by_section": "overlay_2e0d90_801b00b0",
+      "loader": 2149293944,
+      "name": "overlay_4a0080_802d21a0",
+      "rom": 4849792,
+      "text_size": 11280,
+      "vram": 2150441376
+    },
+    {
+      "bss_end": 2150408752,
+      "callsites": [
+        2149294212
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 36432,
+      "loaded_by_section": "overlay_2e0d90_801b00b0",
+      "loader": 2149294212,
+      "name": "overlay_4939b0_802b5680",
+      "rom": 4798896,
+      "text_size": 23584,
+      "vram": 2150323840
+    },
+    {
+      "bss_end": 2150378512,
+      "callsites": [
+        2149294476
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 14464,
+      "loaded_by_section": "overlay_2e0d90_801b00b0",
+      "loader": 2149294476,
+      "name": "overlay_49c800_802bf380",
+      "rom": 4835328,
+      "text_size": 5984,
+      "vram": 2150364032
+    },
+    {
+      "bss_end": 2150119520,
+      "callsites": [
+        2149294616
+      ],
+      "confidence": "constant-dma; text-boundary-provisional-final-return",
+      "load_size": 6944,
+      "loaded_by_section": "overlay_2e0d90_801b00b0",
+      "loader": 2149294616,
+      "name": "overlay_4a5110_80281d40",
+      "rom": 4870416,
+      "text_size": null,
+      "vram": 2150112576
+    }
+  ],
+  "boundary_policy": "Raw DMA arguments are instruction-derived. Text ends from terminal-return/alignment evidence remain provisional and require runtime validation; unknown text is excluded. Loader denotes DMA callsite unless confidence explicitly names enclosing loader."
+}

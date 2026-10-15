@@ -1,0 +1,540 @@
+{
+  "schema_version": 1,
+  "rom_sha256": "e18e87c062a66002c0cbd7e2dd793ef755609e70675d5679df0396d4b6c67850",
+  "upstream_runtime_commit": "cdf5abbd5026fef5c364c676e4667c45e42b6863",
+  "provenance": "ISS2000 instructions and calling contexts; generic N64ModernRuntime ABI. No cross-game binary matching.",
+  "bindings": [
+    {
+      "address": "0x80061A90",
+      "name": "osInitialize",
+      "runtime_symbol": "osInitialize_recomp",
+      "rom_offset": "0x62690",
+      "size": 560,
+      "sha256": "445391c3cd7c34d2d14268e5f80aa1f840b1daf99f0130a94c222a48dcd27ae9",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Boot call 0x800007C0; installs exception vectors at 0x80000000/80/100/180, initializes FPU and boot globals."
+    },
+    {
+      "address": "0x8005DAD0",
+      "name": "osCreateThread",
+      "runtime_symbol": "osCreateThread_recomp",
+      "rom_offset": "0x5E6D0",
+      "size": 208,
+      "sha256": "1e1afedbac8313a12449d857fd0bb61b91e0a9d12654dffad81f1ad2c921114b",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Boot call 0x800007F4 passes id 1, entry 0x80000814, stack and priority; writes OSThread id+0x14, priority+4, PC+0x11C, args+0x38/3C, SP+0xF0/F4."
+    },
+    {
+      "address": "0x8005DC90",
+      "name": "osStartThread",
+      "runtime_symbol": "osStartThread_recomp",
+      "rom_offset": "0x5E890",
+      "size": 288,
+      "sha256": "f16c19ccc77e397e0d2f83fbb02a5c7e47271cca5ab63e53648138c55a498d2f",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Boot call 0x800007FC; examines thread state+0x10 and enqueues runnable thread."
+    },
+    {
+      "address": "0x8005DBA0",
+      "name": "osGetThreadPri",
+      "runtime_symbol": "osGetThreadPri_recomp",
+      "rom_offset": "0x5E7A0",
+      "size": 32,
+      "sha256": "031d9f7b0841f3b8b3546bd99b2f89fca8c714aa975f2b73ad0d52b376dceaec",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Returns thread+4, selecting running thread for null argument."
+    },
+    {
+      "address": "0x8005DBC0",
+      "name": "osSetThreadPri",
+      "runtime_symbol": "osSetThreadPri_recomp",
+      "rom_offset": "0x5E7C0",
+      "size": 208,
+      "sha256": "bfa55dfac6ba100652490a6a90ae5d638281021ba199fe62828e8e5c9ccf50da",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Updates thread priority+4 and requeues/yields when required; idle boot calls with null thread and priority zero."
+    },
+    {
+      "address": "0x80057D30",
+      "name": "osCreatePiManager",
+      "runtime_symbol": "osCreatePiManager_recomp",
+      "rom_offset": "0x58930",
+      "size": 400,
+      "sha256": "7f9598496e9b148e3ad4d5e4a89c9bbff2a7410be3add531f1a0d91f579ff318",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Boot 0x8000083C passes priority 150, queue, buffer, capacity 400; creates queue, PI event 8 and PI device-manager thread."
+    },
+    {
+      "address": "0x80057C90",
+      "name": "osSetIntMask",
+      "runtime_symbol": "osSetIntMask_recomp",
+      "rom_offset": "0x58890",
+      "size": 160,
+      "sha256": "75573a2724489e8de09badeb5a9152d900c3733658609242932ba3c82eef76ba",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Reads/writes CP0 Status and MI_INTR_MASK at 0xA430000C; returns previous combined mask."
+    },
+    {
+      "address": "0x80059C60",
+      "name": "osInvalDCache",
+      "runtime_symbol": "osInvalDCache_recomp",
+      "rom_offset": "0x5A860",
+      "size": 176,
+      "sha256": "8ae1ab78f7b451eff125bd297f76cbcc5f2e3c7a54c6c1497d3f3c0b281f886f",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Partial 16-byte boundary writeback/invalidate cache op 0x15, interior invalidate 0x11; whole-cache threshold 0x2000."
+    },
+    {
+      "address": "0x80059D10",
+      "name": "osInvalICache",
+      "runtime_symbol": "osInvalICache_recomp",
+      "rom_offset": "0x5A910",
+      "size": 128,
+      "sha256": "661c779288b4a4385cb435e15038191ab4b2bd427fc96ab7c44e9d09497ba4b4",
+      "status": "verified-instructions-and-abi",
+      "evidence": "32-byte lines, hit invalidate I cache op 0x10, index invalidate 0; threshold 0x4000."
+    },
+    {
+      "address": "0x80059D90",
+      "name": "osWritebackDCache",
+      "runtime_symbol": "osWritebackDCache_recomp",
+      "rom_offset": "0x5A990",
+      "size": 128,
+      "sha256": "34f4c1b390e561d62c4b6dc9ed63701b9b87430391fc74bfe7d21d90b8fd1074",
+      "status": "verified-instructions-and-abi",
+      "evidence": "16-byte lines, hit writeback D cache op 0x19; full-cache fallback index writeback/invalidate 1."
+    },
+    {
+      "address": "0x80059E10",
+      "name": "osWritebackDCacheAll",
+      "runtime_symbol": "osWritebackDCacheAll_recomp",
+      "rom_offset": "0x5AA10",
+      "size": 48,
+      "sha256": "9e2e910cf2dcf19b0d2826eea41187a62acc4584b8fb7316cc74acbd40f4b04f",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Index writeback/invalidate D cache op 1 across 0x2000 bytes in 16-byte lines."
+    },
+    {
+      "address": "0x8005D670",
+      "name": "osGetCount",
+      "runtime_symbol": "osGetCount_recomp",
+      "rom_offset": "0x5E270",
+      "size": 16,
+      "sha256": "49439260d2ea325fd9d1049a302274c512c90775bbc3751b54513b65152f01ae",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Returns CP0 Count register with mfc0 v0,Count."
+    },
+    {
+      "address": "0x8005D150",
+      "name": "osCreateMesgQueue",
+      "runtime_symbol": "osCreateMesgQueue_recomp",
+      "rom_offset": "0x5DD50",
+      "size": 48,
+      "sha256": "309b5c4b785e55bf0a9df6e9177f243f361d88e0e8fa779f755fae85e4dc30ad",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Writes thread-list sentinels +0/+4, validCount+8=0, first+C=0, msgCount+10=a2, msg+14=a1."
+    },
+    {
+      "address": "0x8005D180",
+      "name": "osJamMesg",
+      "runtime_symbol": "osJamMesg_recomp",
+      "rom_offset": "0x5DD80",
+      "size": 320,
+      "sha256": "7afb596a68694a0467276d504839b59c1a0645695b33cc2bca3d7460eca00f30",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Waits for free slot, decrements first modulo capacity, inserts message, increments validCount and wakes receiver."
+    },
+    {
+      "address": "0x8005D2C0",
+      "name": "osRecvMesg",
+      "runtime_symbol": "osRecvMesg_recomp",
+      "rom_offset": "0x5DEC0",
+      "size": 304,
+      "sha256": "14dd6f721847f6dcdf804763ea32ed8a22650a5b910deb796b03b5e94d15fada",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Waits for validCount; reads msg[first], advances first modulo capacity, decrements count and wakes sender."
+    },
+    {
+      "address": "0x8005D3F0",
+      "name": "osSendMesg",
+      "runtime_symbol": "osSendMesg_recomp",
+      "rom_offset": "0x5DFF0",
+      "size": 304,
+      "sha256": "dcade87ea10a11bac5adcf268d61d6a93dce47b3056fe55e18fc07c592c0b126",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Waits for free slot, inserts at (first+validCount) modulo capacity, increments count and wakes receiver."
+    },
+    {
+      "address": "0x8005D520",
+      "name": "osSetEventMesg",
+      "runtime_symbol": "osSetEventMesg_recomp",
+      "rom_offset": "0x5E120",
+      "size": 176,
+      "sha256": "c2ad248027cb305fbdc299aa369ed80ef3f962c429803eecd6d297409f3cf5fc",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Stores queue/message at event*8 in event table, including PRENMI event 14 handling."
+    },
+    {
+      "address": "0x8005D5D0",
+      "name": "osDpSetNextBuffer",
+      "runtime_symbol": "osDpSetNextBuffer_recomp",
+      "rom_offset": "0x5E1D0",
+      "size": 160,
+      "sha256": "b9a43bf03fbc7669b0c9a9c920fd5684eca9a5fbb72ff9ef80ed5de4cf8b9126",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Waits DPC status, resets XBUS_DMEM_DMA, translates buffer to physical, writes DPC START/END."
+    },
+    {
+      "address": "0x800580B0",
+      "name": "osEPiStartDma",
+      "runtime_symbol": "osEPiStartDma_recomp",
+      "rom_offset": "0x58CB0",
+      "size": 160,
+      "sha256": "6df6a4c279bfaf96af5f3a64797fde26bc1adcc8dda288e9f2f420c3d6aaef8d",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Original game wrapper 0x80003894 supplies OSPiHandle*, OSIoMesg*, direction; writes handle at ioMsg+0x14 and command 15/16 before PI queue dispatch."
+    },
+    {
+      "address": "0x80058150",
+      "name": "osCartRomInit",
+      "runtime_symbol": "osCartRomInit_recomp",
+      "rom_offset": "0x58D50",
+      "size": 384,
+      "sha256": "0b2873194d43c015943bdee9ffda94dd7d157e096386fbe01628d945507089ce",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Original caller 0x80003870 stores returned handle used by DMA; initializes OSPiHandle with baseAddress 0xB0000000 and PI timings."
+    },
+    {
+      "address": "0x8005A3D0",
+      "name": "osVirtualToPhysical",
+      "runtime_symbol": "osVirtualToPhysical_recomp",
+      "rom_offset": "0x5AFD0",
+      "size": 96,
+      "sha256": "f10be1efd2d5f486a3fed9cd289f241730a712ca20a346b66520b804466d5699",
+      "status": "verified-instructions-and-abi",
+      "evidence": "KSEG0/KSEG1 return address & 0x1FFFFFFF; other regions use TLB probe helper."
+    },
+    {
+      "address": "0x8005E370",
+      "name": "osCreateViManager",
+      "runtime_symbol": "osCreateViManager_recomp",
+      "rom_offset": "0x5EF70",
+      "size": 416,
+      "sha256": "26283f0057e962955ce777263be6ef778c8bc49f2c58a7b7d59178f658376855",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Creates VI queue/thread, registers VI event 7 and counter event 3; manager dispatches VI updates and timer interrupts."
+    },
+    {
+      "address": "0x8005E6B0",
+      "name": "osViSetEvent",
+      "runtime_symbol": "osViSetEvent_recomp",
+      "rom_offset": "0x5F2B0",
+      "size": 96,
+      "sha256": "9fb90ff7070ef76737e245de81196a41c03c333715d828b8259a5681d4c4df8a",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Writes next VI context queue+0x10, message+0x14, retraceCount+2 under interrupt lock."
+    },
+    {
+      "address": "0x8005E710",
+      "name": "osViSetMode",
+      "runtime_symbol": "osViSetMode_recomp",
+      "rom_offset": "0x5F310",
+      "size": 80,
+      "sha256": "6b9d79540278f4938418ae003a788b369e87aebaf5e1575aa0edbd1b00456d75",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Sets next VI context mode+8, state=1, control from mode+4."
+    },
+    {
+      "address": "0x8005E760",
+      "name": "osViSetSpecialFeatures",
+      "runtime_symbol": "osViSetSpecialFeatures_recomp",
+      "rom_offset": "0x5F360",
+      "size": 368,
+      "sha256": "54e2d993a3896366b4fdb01fcccebd7c4cf23d4d2e360530b62093eabf3614a5",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Handles feature pairs 1/2,4/8,10/20,40/80 and updates next VI control and state bit 8."
+    },
+    {
+      "address": "0x8005E8D0",
+      "name": "osViSetYScale",
+      "runtime_symbol": "osViSetYScale_recomp",
+      "rom_offset": "0x5F4D0",
+      "size": 80,
+      "sha256": "9377b9f3e59c88773f35a9afe7226a1aa13703d61d99a77ac81f8b56d20489ff",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Stores float f12 to next VI context+0x24, marks state bit 4."
+    },
+    {
+      "address": "0x8005E920",
+      "name": "osViSwapBuffer",
+      "runtime_symbol": "osViSwapBuffer_recomp",
+      "rom_offset": "0x5F520",
+      "size": 80,
+      "sha256": "7b6216539f05a2231da718d513afed46b044e918a4d02d1308ff27b69dc76f30",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Writes next VI context framebuffer+4 and state bit 0x10."
+    },
+    {
+      "address": "0x8005DE40",
+      "name": "osGetTime",
+      "runtime_symbol": "osGetTime_recomp",
+      "rom_offset": "0x5EA40",
+      "size": 144,
+      "sha256": "ad94bb1834947d8905eca13dcda10d4812ce0f6eb5347d3c096fa93e64aceff4",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Reads Count under interrupt lock, adds unsigned Count delta to 64-bit global time, returns v0/v1."
+    },
+    {
+      "address": "0x8005DED0",
+      "name": "osSetTimer",
+      "runtime_symbol": "osSetTimer_recomp",
+      "rom_offset": "0x5EAD0",
+      "size": 160,
+      "sha256": "99c0d5024285cdfc8b31380796e75bd159dfca7b936c6dbd9f6edabb10cc6fef",
+      "status": "verified-instructions-and-abi",
+      "evidence": "OSTimer links +0/+4=0; interval+8/C, countdown+10/14, queue+18, msg+1C; inserts timer and arms counter."
+    },
+    {
+      "address": "0x800626F0",
+      "name": "__osDisableInt",
+      "runtime_symbol": "__osDisableInt_recomp",
+      "rom_offset": "0x632F0",
+      "size": 112,
+      "sha256": "f3c6174c60a722a918710b77642aa14215873057dfb49906c2afdb8520db9bdf",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Clears CP0 Status IE bit and returns former IE; handles global interrupt-mask changes."
+    },
+    {
+      "address": "0x80062760",
+      "name": "__osRestoreInt",
+      "runtime_symbol": "__osRestoreInt_recomp",
+      "rom_offset": "0x63360",
+      "size": 32,
+      "sha256": "760fabe684a57096a1f98fb972d27fc9ae0f5b227768fa227ed73c15b4ad1e09",
+      "status": "verified-instructions-and-abi",
+      "evidence": "ORs a0 into CP0 Status and returns."
+    },
+    {
+      "address": "0x80059E40",
+      "name": "osContStartQuery",
+      "runtime_symbol": "osContStartQuery_recomp",
+      "rom_offset": "0x5AA40",
+      "size": 128,
+      "sha256": "0da00f0860e692c38e64f419d25da7befb8dad44d9b58a81a5addfe63234009a",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Builds PIF query command 0 when prior command differs; SI write/read DMA and queue completion."
+    },
+    {
+      "address": "0x80059EC0",
+      "name": "osContGetQuery",
+      "runtime_symbol": "osContGetQuery_recomp",
+      "rom_offset": "0x5AAC0",
+      "size": 32,
+      "sha256": "aa0fb5ec785ac52f76146fa219a7a87aab698588425315b23929a58dc9bc472d",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Calls status parser with local bitpattern and caller OSContStatus array."
+    },
+    {
+      "address": "0x80059EE0",
+      "name": "osContStartReadData",
+      "runtime_symbol": "osContStartReadData_recomp",
+      "rom_offset": "0x5AAE0",
+      "size": 136,
+      "sha256": "cf45015bd270656498f737b4a888cceb0f86b2ffbf7653553abb7d089aced867",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Builds PIF controller read command 1, performs SI write then read, sets last command 1."
+    },
+    {
+      "address": "0x80059F68",
+      "name": "osContGetReadData",
+      "runtime_symbol": "osContGetReadData_recomp",
+      "rom_offset": "0x5AB68",
+      "size": 156,
+      "sha256": "d6deb6a28bc889ce8da3bf8f3b01f6518da249bb4807da5a5eec2c29af810d85",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Parses four PIF replies into 6-byte OSContPad: buttons+0, stick_x+2, stick_y+3, errno+4."
+    },
+    {
+      "address": "0x8005A0C0",
+      "name": "osContInit",
+      "runtime_symbol": "osContInit_recomp",
+      "rom_offset": "0x5ACC0",
+      "size": 412,
+      "sha256": "d9a2e8685ec9d263aef95c22b75f46e9bc584a26cacbc34683411b67e947ebba",
+      "status": "verified-instructions-and-abi",
+      "evidence": "One-time init; waits initial stabilization timer, sets four channels, PIF query command, outputs bitpattern/status and SI access queue."
+    },
+    {
+      "address": "0x8005F024",
+      "name": "osMotorInit",
+      "runtime_symbol": "osMotorInit_recomp",
+      "rom_offset": "0x5FC24",
+      "size": 588,
+      "sha256": "6bb308acd9664ab987900fb41424aa0024ddfa7bf762eef0c5f4db04ced06fe6",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Stores OSPfs queue+4/channel+8/activebank+65; probes banks FE/80, constructs C000 motor-write command, sets status 8."
+    },
+    {
+      "address": "0x8005EEE0",
+      "name": "__osMotorAccess",
+      "runtime_symbol": "__osMotorAccess_recomp",
+      "rom_offset": "0x5FAE0",
+      "size": 324,
+      "sha256": "04878f751a0d3d28d969e4fb24e48991f362f890d3009140d8a0912c2d3d92eb",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Requires OSPfs status8; writes 32 motor flag bytes in per-port PIF command, SI DMA, validates start CRC EB or stop CRC zero."
+    },
+    {
+      "address": "0x80058820",
+      "name": "osAiGetLength",
+      "runtime_symbol": "osAiGetLength_recomp",
+      "rom_offset": "0x59420",
+      "size": 16,
+      "sha256": "679568a8280a1cc54387664b9e46dd53d246ce010538ce2e3327ac214a9b4e75",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Returns AI_LEN register at 0xA4500004."
+    },
+    {
+      "address": "0x80058830",
+      "name": "osAiSetFrequency",
+      "runtime_symbol": "osAiSetFrequency_recomp",
+      "rom_offset": "0x59430",
+      "size": 288,
+      "sha256": "31dd843ad9412db481414e69c36251183c0af96f348a93a0acbeaba121e122b5",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Derives DAC rate from video clock/request frequency; writes AI_DACRATE+10 and AI_BITRATE+14; returns actual sample frequency."
+    },
+    {
+      "address": "0x80058950",
+      "name": "osAiSetNextBuffer",
+      "runtime_symbol": "osAiSetNextBuffer_recomp",
+      "rom_offset": "0x59550",
+      "size": 160,
+      "sha256": "1e1356f93745460d6a2d308d6023aa05ced5f2978b17b8b4824dd3d44c9f15d5",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Checks AI FIFO busy, handles 0x2000 boundary workaround; writes physical buffer AI_DRAM_ADDR and size AI_LEN."
+    },
+    {
+      "address": "0x8005D680",
+      "name": "osSpTaskLoad",
+      "runtime_symbol": "osSpTaskLoad_recomp",
+      "rom_offset": "0x5E280",
+      "size": 524,
+      "sha256": "14be2b5b6fa784fdfc1d30696cae3b6480b12445fafc747a3151de11ce615379",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Copies OSTask 0x40 bytes; physicalizes pointer fields, handles yielded task state, sets SP PC, DMAs task and boot ucode."
+    },
+    {
+      "address": "0x8005D88C",
+      "name": "osSpTaskStartGo",
+      "runtime_symbol": "osSpTaskStartGo_recomp",
+      "rom_offset": "0x5E48C",
+      "size": 52,
+      "sha256": "5f20253f2c456ae1a4d2573383409c29e540b21cf37fc272ff77ac98fcef8598",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Waits SP DMA idle, writes SP status 0x125 to start prepared task; upstream task submission uses original a0 task."
+    },
+    {
+      "address": "0x8005D8C0",
+      "name": "osSpTaskYield",
+      "runtime_symbol": "osSpTaskYield_recomp",
+      "rom_offset": "0x5E4C0",
+      "size": 32,
+      "sha256": "5f38f9cb6474e618481cbd8ffba6fd52b0c27e83ab6939a5ccb4e4eaaae2cbd1",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Writes SP status 0x400, setting yield signal."
+    },
+    {
+      "address": "0x8005D8E0",
+      "name": "osSpTaskYielded",
+      "runtime_symbol": "osSpTaskYielded_recomp",
+      "rom_offset": "0x5E4E0",
+      "size": 80,
+      "sha256": "6a11345a22c5a13f538fda42b58a8f8b06d831e08abb7f86e0d5aa93d4be5e4e",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Reads SP signal bits7/8; updates task flags +4 and returns yielded flag."
+    },
+    {
+      "address": "0x8005DDF0",
+      "name": "osYieldThread",
+      "runtime_symbol": "osYieldThread_recomp",
+      "rom_offset": "0x5E9F0",
+      "size": 80,
+      "sha256": "400f1d7617bcee8552ebd1f720d06e436846457de8a40ab74402bddd14837bd7",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Marks running thread runnable state2 then enqueues/yields on run queue under interrupt lock."
+    },
+    {
+      "address": "0x80067270",
+      "name": "osDestroyThread",
+      "runtime_symbol": "osDestroyThread_recomp",
+      "rom_offset": "0x67E70",
+      "size": 224,
+      "sha256": "54f081906bc0489519156d5e9e5cae6b0e87d4a46c38d0c4363854a7d99ddf2f",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Null selects running thread; dequeues target, removes active-list link+0xC, dispatches replacement when destroying current."
+    },
+    {
+      "address": "0x8005EC80",
+      "name": "osViBlack",
+      "runtime_symbol": "osViBlack_recomp",
+      "rom_offset": "0x5F880",
+      "size": 96,
+      "sha256": "8de116c1bb795b1e0aaab5d6bd7b52e8bfc9586c6d7acd0b051af5816430989e",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Sets/clears next VI context state bit 0x20 from boolean a0."
+    },
+    {
+      "address": "0x80066FB0",
+      "name": "__osSetFpcCsr",
+      "runtime_symbol": "__osSetFpcCsr_recomp",
+      "rom_offset": "0x67BB0",
+      "size": 16,
+      "sha256": "1b1c2a5e117a433a988d960120310c5634987537358a5b13b49fddcee5d2dac4",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Returns previous FPC CSR via cfc1 and writes a0 via ctc1."
+    },
+    {
+      "address": "0x800628B0",
+      "name": "osPiRawStartDma",
+      "runtime_symbol": "osPiRawStartDma_recomp",
+      "rom_offset": "0x634B0",
+      "size": 208,
+      "sha256": "cb2a336614377b3c98b1817647d0dcf965229522eaaec152f5bd8f1f02fc9610",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Four args direction/device/dram/size; waits PI status, translates DRAM, writes PI DRAM/CART and read/write length size-1."
+    },
+    {
+      "address": "0x800619F0",
+      "name": "osGetMemSize",
+      "runtime_symbol": "osGetMemSize_recomp",
+      "rom_offset": "0x625F0",
+      "size": 160,
+      "sha256": "a23e1783e10b4e45055c794a8339a29b72e3a360df718541896e3234e5c58a2a",
+      "status": "verified-instructions-and-abi",
+      "evidence": "No arguments. Probes uncached RDRAM at 4 MiB and boundary words in 1 MiB increments through 8 MiB, restores original contents, returns capacity bytes in v0. Caller 0x80008780 compares v0 to 0x7FFFFF to set Expansion Pak flag. Pinned upstream librecomp/src/recomp.cpp osGetMemSize_recomp reports 8 MiB."
+    },
+    {
+      "address": "0x8005E330",
+      "name": "osViGetCurrentFramebuffer",
+      "runtime_symbol": "osViGetCurrentFramebuffer_recomp",
+      "rom_offset": "0x5EF30",
+      "size": 64,
+      "sha256": "d2298e6496d8a7aac3ecaa502019e754c6992c78eb93fbebd275e4837399a99a",
+      "status": "verified-instructions-and-abi",
+      "evidence": "No arguments. Under interrupt lock, loads original __osViCurr pointer at 0x8009C7E0, returns context framebuffer field +4 in v0. Original scheduler func_8001D504 calls at 0x8001D520/0x8001D548 to advance framebuffer ring and clear old busy flags. Must share host VI state with bound osViSwapBuffer; original guest contexts are not advanced by host setters. Confirmed visible boot GDB shows original context 0x8009C780 still zero while host current framebuffer is 0x80307800 and both guest buffer busy flags are set. Pinned upstream librecomp/src/vi.cpp implements osViGetCurrentFramebuffer_recomp."
+    },
+    {
+      "address": "0x80060550",
+      "name": "osPfsInitPak",
+      "runtime_symbol": "osPfsInitPak_recomp",
+      "rom_offset": "0x61150",
+      "size": 504,
+      "sha256": "5686e4fa285a3a643b8feaf5fc31a40c7dc35bed710e23578cce007dc0ec42e7",
+      "status": "verified-instructions-and-abi",
+      "evidence": "Caller 0x800042C0 passes queue 0x801A6678, OSPfs pointer 0x801A2CCC + port*104, and channel in a2. Body locks SI, obtains channel status, stores queue/channel/status in OSPfs, checks and repairs Pak ID checksums, reads filesystem labels and initializes inode/directory metadata. Visible boot core backtrace-04 proves this path enters raw SI DMA 0x8005D930 through status helper 0x80060880. Pinned upstream librecomp/src/pak.cpp osPfsInitPak_recomp reports PFS_ERR_NOPACK (1), accurately representing the current profile offering no Controller Pak; this is an absent-accessory error, not successful initialization or save support. No raw SI success stub is added. Project host dispatch now routes a selected Controller Pak to the retained original 0x80060550 filesystem body, using reviewed project-owned block/status boundaries 0x80061590,0x80061780,0x80060880,0x80060060; absence or a different accessory returns the corresponding real device error. The upstream constant no-pack implementation is not used to claim successful initialization.",
+      "preserve_source": true,
+      "preserved_source_sha256": "7ff4ec2f4967d94dc6cdfe473583c061415bc6558acf06ac11522a1488584050"
+    }
+  ]
+}
