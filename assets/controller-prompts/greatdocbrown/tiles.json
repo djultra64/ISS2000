@@ -83,8 +83,8 @@
       "label": "LB",
       "sheet": "gdb-xbox-2.png",
       "rect": [
-        336,
-        80,
+        224,
+        496,
         16,
         16
       ],
@@ -97,8 +97,8 @@
       "label": "RB",
       "sheet": "gdb-xbox-2.png",
       "rect": [
-        336,
-        96,
+        224,
+        512,
         16,
         16
       ],
@@ -1633,6 +1633,17 @@
           16
         ]
       }
+    },
+    {
+      "family": "Keyboard",
+      "label": "Left Shift",
+      "sheet": "gdb-keyboard-2.png",
+      "rect": [
+        32,
+        80,
+        32,
+        16
+      ]
     }
   ]
 }

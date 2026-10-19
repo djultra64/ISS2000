@@ -28,6 +28,28 @@ public:
     uint32_t length() const {return slots_?(frames_[0]*4)&~7u:0;}
     uint32_t status() const {return slots_?(0x40000000u|(slots_==2?0x80000000u:0)):0;}
 };
+// AI drains at its DAC rate continuously. SDL queue depth advances in whole
+// device callbacks and cannot represent the AI register between those callbacks.
+// The caller supplies steady-clock nanoseconds; idle time never credits future DMA.
+class AudioDmaClock {
+    uint64_t previous_ns_{};
+    uint64_t remainder_{};
+    bool initialized_{};
+public:
+    void advance(uint64_t now_ns,uint32_t frequency,AudioFifo& fifo) {
+        if(!initialized_) {previous_ns_=now_ns;initialized_=true;return;}
+        if(now_ns<=previous_ns_)return;
+        const uint64_t elapsed=now_ns-previous_ns_;
+        previous_ns_=now_ns;
+        if(!fifo.status()) {remainder_=0;return;}
+        // Split whole seconds first so even a long host suspend cannot overflow.
+        const uint64_t fraction=(elapsed%1000000000u)*frequency+remainder_;
+        const uint64_t frames=(elapsed/1000000000u)*frequency+fraction/1000000000u;
+        remainder_=fraction%1000000000u;
+        fifo.consume(frames);
+        if(!fifo.status())remainder_=0;
+    }
+};
 // Convert real output-device stereo frames to source stereo frames without
 // accumulating a rounding error at every SDL consumption observation.
 class AudioFrameClock {

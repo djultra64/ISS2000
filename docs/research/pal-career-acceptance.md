@@ -26,8 +26,9 @@ when a gamepad is active. Release each press before the next step.
    affirmative choice. Exact setup label positions and country order have not
    all been decoded; follow the visible English screens rather than assumed
    button counts.
-4. Reach a settled weekly schedule. Capture the protagonist, country, date and
-   status. Record the three calendar halfwords below as optional read-only
+4. Reach a settled weekly schedule. Actual hidden acceptance starts at
+   September 1 after the initial staff introductions. Capture the protagonist,
+   country, date and status. Record the three calendar halfwords below as optional read-only
    corroboration.
 5. Complete one available original **Rest** or **Training** schedule action and
    all resulting dialogue. Return to a settled schedule and capture the changed
@@ -206,3 +207,83 @@ and restart/reload screenshots remain to be captured. A successful weekly
 round trip supports early Career playability and persistence; it does not by
 itself establish complete three-year progression, every Career match, all
 branches/endings, or completed-player export.
+
+## Refined weekly navigation and confirmation order
+
+Additional static PAL analysis pins the ordinary weekly menu and its Save End
+submenu. Original `802145F0` chooses among primary lists `8021E228`, `8021E248`
+and `8021E26C`, depending on Career state. The first two contain event IDs
+`[0,1,22,2,4,33,5]` and `[0,1,22,2,4,33,5,6]`; their `99` marker terminates the
+list. Some periods use a reduced list instead, so select visible labels rather
+than assuming a fixed number of presses from the top.
+
+Primary event 5 builds the submenu through
+`80214FD4 -> 8021505C -> 80214384`. The exact original table `8021E3A0`, ROM
+`52EDC0`, contains three entries:
+
+| Visible submenu position | Original event | Meaning established by original continuation |
+| --- | --- | --- |
+| Left | 35 | Original controller icon, verified in hidden captures 091–092 |
+| Center | 21 | Save End confirmation and original Career serializer |
+| Right | 46 | Return from submenu |
+
+Opening this submenu through original `802153D8` resets its active cursor to
+zero at `80215464`. Actual hidden captures 091–092 establish that these entries
+are horizontal; the earlier static Down inference is superseded. Therefore, after opening the visible **Options** menu,
+release the input, tap Right once, release, and Accept to choose its center
+**SAVE END** entry. Its English confirmation script is original root script
+`1FB`, which branches to bank 6 offset 1. The source is compressed original
+asset `1C0` (448), decoded offset `16E1`. Its choices are, in order:
+
+1. **End after saving.** — serialize the chosen original Career slot.
+2. **End without saving.** — leave without serializing this Career state.
+3. **Return** — resume Career interaction.
+
+Select the first choice and follow the genuine Pak write flow described above.
+The menu label is not a promise that a Pak write succeeded; retain the actual
+save confirmation and the clean restart/reload check.
+
+Rest is original event 1, dispatched by `801F0768`. When its eligibility check
+selects the ordinary resting path, script `211` reaches English bank 26 offset
+0; its text includes “I'm going to take it easy this week.” Situational stories
+can replace that ordinary path. Compare settled calendar tuples before and
+after the chosen action rather than assuming one dialogue always advances a
+week. Original `801F2A30` remains the normal calendar advance consumer.
+
+The Test Match dialogue uses a different chooser. Visible capture 217 showed
+that its initial cursor was unselected: the first Down selected **Play Game**;
+it did not select **View Results**. Once Play Game is visibly selected, another
+Down selects the second original row. Both labels are present in English asset
+`1C2` (450), decoded offsets `5EB6` and `5EC3`. This analysis does not establish
+whether View Results completes every forced trial or only a particular match
+branch. The acceptance operator completed the forced trial naturally instead,
+reaching its original post-match story (captures 218–219). No shortcut,
+fabricated result or forced callback is required for that observed path.
+
+Reproducibility/provenance for these table, handler and compressed-script
+observations is private under `.local/pal-career-navigation-02/`. The research
+performs only bounded ROM reads and script decompression; it does not execute
+the game, mutate guest RAM or create a save.
+
+## Hidden Linux save acceptance and user-owned remaining checks
+
+The later build32 acceptance used a separate private data folder and an actual
+hardware-GPU headless Gamescope compositor, following the user's requirement
+that all remaining game windows stay hidden. App-only SDL controller inputs
+reached original code; this is not physical-controller verification. A new
+Career profile A used the original View Results choice for its trial, reached
+the September 1 weekly menu, rested to September 2, selected Options → Save End →
+End after saving, and completed the separate genuine Pak confirmation. The
+original UI reported Saved. A normal process exit and a clean launch of the
+same exact executable loaded file1 A at September 2; another original Rest
+advanced it to September 3. The persisted September 2 Pak remained unchanged.
+Private receipt: `.local/career-acceptance-02/acceptance.json`.
+
+A separate build35 data copy exercised original Edit Team and Edit Formation,
+changed England from 4-4-2 to 4-3-3, and saved formation file1. Its original UI
+reported Saved and its private Pak digest changed. The user then explicitly
+assumed the remaining editing, Training and League tests. Agent testing stopped
+before formation reload; no Training or League acceptance is claimed. Both
+owned games exited normally and their private compositor closed. The original
+Career acceptance and its saved Pak remain separate. Private partial receipt:
+`.local/menu-acceptance-01/acceptance.json`.

@@ -1,6 +1,7 @@
 // Original project work: djultra64.
 #include "transform_runtime.hpp"
 #include "graphics_task_bank.hpp"
+#include "pal_menu_avatar.hpp"
 #include <array>
 #include <cstring>
 namespace iss2000 {
@@ -46,6 +47,10 @@ TransformRuntime::TransformRuntime(const TransformGuestLayout& layout):state_(st
 TransformRuntime::~TransformRuntime()=default;
 void TransformRuntime::observe_allocation(uint64_t record){
     if(state_->known_record(record))state_->tracker.allocate(0x80000000ull+*address(record,0x60));
+}
+std::optional<TransformTag> TransformRuntime::lookup_record(uint64_t record)const{
+    if(!state_->known_record(record))return {};
+    return state_->tracker.lookup_record(0x80000000ull+*address(record,0x60));
 }
 void TransformRuntime::observe_release(uint64_t record){
     if(state_->known_record(record))state_->tracker.release(0x80000000ull+*address(record,0x60));
@@ -142,15 +147,27 @@ void TransformRuntime::submit_metadata(std::span<const uint8_t> ram,uint32_t typ
     // between selecting its token and submit_task would invalidate that token.
     std::lock_guard lock(state_->frame_mutex);
     std::optional<uint64_t> frame;
+    std::optional<TransformModelScope> scope;
     const auto code=address(task.ucode,1),data=address(task.ucode_data,1);
     bool known_microcode=false;
     for(const auto& candidate:state_->layout.microcodes)
         if(code && data && *code==candidate.code && *data==candidate.data)known_microcode=true;
+    std::optional<GraphicsTaskModelReferences> references;
     if(type==1 && known_microcode && ram.size()==0x800000){
-        if(auto bank=graphics_task_bank(ram,task.data_ptr,state_->layout.perspective_matrices))
-            if(state_->frames[*bank])frame=state_->frames[*bank];
+        references=graphics_task_model_references(ram,task.data_ptr,state_->layout);
+        if(references){
+            // Camera-only field tasks retain their original known producer path.
+            if(state_->scene && (*state_->scene&0xFFFF)==state_->layout.interpolation_scene_token && references->perspective_bank){
+                const auto bank=*references->perspective_bank;
+                if(state_->frames[bank])frame=state_->frames[bank];
+            }
+            // Exact cloth/rig ownership enriches deformation compatibility only;
+            // it never gates normal allocator-owned rigid models.
+            if(auto proof=verified_pal_menu_avatar(ram))scope=proof->models;
+        }
     }
-    state_->tracker.submit_task(type,task,frame);
+    state_->tracker.submit_task(type,task,frame,scope,references?
+        std::optional<std::span<const uint32_t>>{references->loads}:std::nullopt);
 }
 std::shared_ptr<const TransformTaskSnapshot> TransformRuntime::consume_metadata(const TransformTaskFingerprint& task){return state_->tracker.consume_submission(task);}
 void configure_transform_runtime(const TransformGuestLayout& layout){
@@ -160,6 +177,7 @@ void configure_transform_runtime(const TransformGuestLayout& layout){
     configured_runtime=std::move(candidate);
 }
 void observe_transform_allocation(uint64_t record){if(auto r=runtime())r->observe_allocation(record);}
+std::optional<TransformTag> lookup_transform_record(uint64_t record){if(auto r=runtime())return r->lookup_record(record);return {};}
 void observe_transform_release(uint64_t record){if(auto r=runtime())r->observe_release(record);}
 void observe_transform_frame(std::span<const uint8_t> ram){if(auto r=runtime())r->observe_frame(ram);}
 void notify_transform_discontinuity(){if(auto r=runtime())r->invalidate_scene();}

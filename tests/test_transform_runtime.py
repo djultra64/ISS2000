@@ -38,9 +38,10 @@ Bytes frame_ram(const TransformGuestLayout& l,unsigned bank=0){
     ram[l.scene_bytes[0]^3]=l.interpolation_scene_token>>8;
     ram[l.scene_bytes[1]^3]=l.interpolation_scene_token&255;
     word(ram,0x1000,0xDA380007);word(ram,0x1004,0x80000000+l.perspective_matrices[bank]);
+    word(ram,0x1008,0xDF000000);
     return ram;
 }
-TransformTaskFingerprint task(const TransformGuestLayout& l){return {0x80001000,0x80000000+l.microcodes[0].code,0x80000000+l.microcodes[0].data,8};}
+TransformTaskFingerprint task(const TransformGuestLayout& l){return {0x80001000,0x80000000+l.microcodes[0].code,0x80000000+l.microcodes[0].data,16};}
 std::shared_ptr<const TransformTaskSnapshot> submit(TransformRuntime& rt,const Bytes& ram,const TransformTaskFingerprint& fp){
     rt.submit_metadata(ram,1,fp);return rt.consume_metadata(fp);
 }
@@ -217,7 +218,7 @@ class TransformRuntimeTests(unittest.TestCase):
         cls.binary = directory/'runtime'
         result = subprocess.run(['c++','-std=c++20','-pthread','-O2','-Wall','-Wextra','-Werror',
             '-I'+str(ROOT/'src'),str(source),str(ROOT/'src/runtime/transform_runtime.cpp'),
-            str(ROOT/'src/runtime/transform_tracker.cpp'),str(ROOT/'src/runtime/graphics_task_bank.cpp'),
+            str(ROOT/'src/runtime/transform_tracker.cpp'),str(ROOT/'src/runtime/graphics_task_bank.cpp'),str(ROOT/'src/runtime/pal_menu_avatar.cpp'),
             '-o',str(cls.binary)],text=True,capture_output=True)
         if result.returncode:
             raise RuntimeError(result.stderr)

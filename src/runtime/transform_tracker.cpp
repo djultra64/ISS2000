@@ -1,6 +1,9 @@
 // Original project work: djultra64.
 #include "transform_tracker.hpp"
 #include <array>
+#include <cstdio>
+#include <cstdlib>
+#include <sstream>
 #include <limits>
 #include <deque>
 #include <thread>
@@ -68,14 +71,43 @@ struct TransformTracker::State {
     std::array<Frame,2> frames;
     std::unordered_map<uint32_t,uint64_t> generations;
     std::unordered_map<uint32_t,Record> records;
+    struct VertexIdentity {uint32_t owner{},id{};uint64_t compatibility{};};
+    std::unordered_map<uint32_t,VertexIdentity> vertex_ids;
     std::unordered_map<uint64_t,std::shared_ptr<const TransformTaskSnapshot>> pending;
     explicit State(const TransformGuestLayout& guest_layout,size_t count):layout(guest_layout),capacity(count){camera_ids={id(),id()};}
+    bool live(const TransformTag& tag)const{
+        const auto owner=records.find(tag.record);
+        return tag.scene_epoch==epoch && owner!=records.end() &&
+            owner->second.tag.id==tag.id && owner->second.tag.generation==tag.generation;
+    }
+    // Called before discarding the first failing submission. stderr belongs to
+    // runtime.log; do not race the renderer-owned evidence file or change recovery.
+    void report_quarantine(const char* reason,const TransformTaskFingerprint& observed,bool producer_changed=false)const noexcept {
+        const char* gate=std::getenv("ISS2000_RENDER_EVIDENCE");
+        if(!gate || !*gate)return;
+        try {
+            std::ostringstream out;
+            auto write_fingerprint=[&](const TransformTaskFingerprint& fp){
+                out<<"{\"data_ptr\":"<<fp.data_ptr<<",\"ucode\":"<<fp.ucode
+                    <<",\"ucode_data\":"<<fp.ucode_data<<",\"data_size\":"<<fp.data_size<<"}";
+            };
+            out<<"{\"event\":\"transform_quarantine\",\"reason\":\""<<reason
+                <<"\",\"scene\":"<<scene_token<<",\"epoch\":"<<epoch
+                <<",\"producer_changed\":"<<(producer_changed?"true":"false")
+                <<",\"queued\":"<<submissions.size()<<",\"pending\":"<<pending.size()
+                <<",\"head_sequence\":"<<(submissions.empty()?0:submissions.front().token.sequence)
+                <<",\"expected\":";
+            if(submissions.empty())out<<"null";else write_fingerprint(submissions.front().fingerprint);
+            out<<",\"observed\":";write_fingerprint(observed);out<<"}\n";
+            const auto line=out.str();std::fwrite(line.data(),1,line.size(),stderr);
+        }catch(...){/* Optional diagnostics must never alter the quarantine. */}
+    }
     uint32_t id(){
-        if(next_id==0xFFFFFFFFu)throw std::overflow_error("Transform ID space exhausted");
+        if(next_id>=TransformModelIdLimit)throw std::overflow_error("Transform ID space exhausted");
         return next_id++;
     }
     void invalidate_scene(){
-        if(next_id>=0xFFFFFFFEu)throw std::overflow_error("Transform camera IDs exhausted");
+        if(next_id>=TransformModelIdLimit-1)throw std::overflow_error("Transform camera IDs exhausted");
         advance(epoch);camera_ids={id(),id()};
         for(auto& f:frames)f=Frame{};
     }
@@ -107,6 +139,11 @@ TransformTag TransformTracker::allocate(uint64_t address){
     TransformTag tag{state_->id(),record,++generation,state_->epoch};
     state_->records[record]={tag};return tag;
 }
+std::optional<TransformTag> TransformTracker::lookup_record(uint64_t address)const{
+    uint32_t record;try{record=record_address(address,state_->layout);}catch(const std::invalid_argument&){return {};}
+    std::lock_guard lock(state_->mutex);auto it=state_->records.find(record);if(it==state_->records.end())return {};
+    auto tag=it->second.tag;tag.scene_epoch=state_->epoch;return tag;
+}
 bool TransformTracker::release(uint64_t address){
     uint32_t record=record_address(address,state_->layout);std::lock_guard lock(state_->mutex);
     return state_->records.erase(record)!=0;
@@ -114,7 +151,10 @@ bool TransformTracker::release(uint64_t address){
 uint64_t TransformTracker::begin_frame(unsigned bank,uint64_t begin,uint64_t end){
     auto b=physical(begin,0,true),e=physical(end,0,true);
     uint32_t expected=state_->layout.arena_base+bank*state_->layout.arena_size;
-    if(bank>=2||!b||!e||*b!=expected||*e!=expected+state_->layout.arena_size)
+    const uint32_t extended=state_->layout.extended_arena_base+bank*state_->layout.extended_arena_size;
+    const bool original=b&&e&&*b==expected&&*e==expected+state_->layout.arena_size;
+    const bool port_owned=state_->layout.extended_arena_size&&b&&e&&*b==extended&&*e==extended+state_->layout.extended_arena_size;
+    if(bank>=2||(!original&&!port_owned))
         throw std::invalid_argument("Matrix arena disagrees with original252B0 bounds");
     std::lock_guard lock(state_->mutex);auto token=advance(state_->frame_sequence);
     auto& f=state_->frames[bank];f=State::Frame{};f.token=token;f.begin=*b;f.end=*e;return token;
@@ -143,14 +183,53 @@ bool TransformTracker::capture_matrix(const TransformMatrixCapture& capture){
     }else frame->matrices[*after]=owner.tag;
     return true;
 }
-TransformTaskToken TransformTracker::publish_locked(std::optional<uint64_t> frame_token,uint32_t root){
+TransformTaskToken TransformTracker::publish_locked(std::optional<uint64_t> frame_token,uint32_t root,std::optional<TransformModelScope> scope){
     if(state_->pending.size()>=state_->capacity)throw std::overflow_error("Pending transform task snapshots exhausted");
     auto snapshot=std::make_shared<TransformTaskSnapshot>();
     snapshot->layout=state_->layout;
     snapshot->scene_epoch=state_->epoch;snapshot->scene_token=state_->scene_token;snapshot->root=root;snapshot->bank=2;
     if(frame_token){
         auto [bank,frame]=state_->frame(*frame_token);snapshot->bank=bank;
-        snapshot->matrices_=frame->matrices;snapshot->camera_ids=state_->camera_ids;
+        for(const auto&[matrix,tag]:frame->matrices)if(state_->live(tag))snapshot->matrices_.emplace(matrix,tag);
+        snapshot->camera_ids=state_->camera_ids;
+        if(scope && scope->scene==(state_->scene_token&0xFFFF)){
+            bool complete=scope->record_count==19||scope->record_count==38;
+            for(unsigned i=scope->record_count;i<scope->records.size();++i)if(scope->records[i])complete=false;
+            for(unsigned i=0;complete&&i<scope->record_count;++i){
+                const auto record=scope->records[i];bool found=false;
+                for(unsigned j=0;j<i;++j)if(scope->records[j]==record)complete=false;
+                for(const auto& [matrix,tag]:frame->matrices){
+                    (void)matrix;
+                    const auto owner=state_->records.find(record);
+                    if(tag.record==record && tag.scene_epoch==state_->epoch &&
+                       owner!=state_->records.end() && owner->second.tag.id==tag.id &&
+                       owner->second.tag.generation==tag.generation)found=true;
+                }
+                if(!found)complete=false;
+            }
+            if(complete){
+                // Each optional cloth root has an independently checked current
+                // allocation. Texture/palette replacement renews its group ID.
+                for(unsigned i=0;i<scope->vertex_models.size();++i){auto&cloth=scope->vertex_models[i];
+                    std::optional<TransformTag> live;
+                    if(cloth.record&&cloth.compatibility){
+                        for(const auto&[matrix,tag]:frame->matrices){(void)matrix;
+                            auto owner=state_->records.find(cloth.record);
+                            if(tag.record==cloth.record&&tag.scene_epoch==state_->epoch&&owner!=state_->records.end()&&
+                               owner->second.tag.id==tag.id&&owner->second.tag.generation==tag.generation)live=tag;
+                        }
+                        for(auto record:scope->records)if(record==cloth.record)live.reset();
+                        for(unsigned n=0;n<i;++n)if(scope->vertex_models[n].record==cloth.record)live.reset();
+                    }
+                    if(!live){cloth={};continue;}
+                    auto&identity=state_->vertex_ids[cloth.record];
+                    if(identity.owner!=live->id||identity.compatibility!=cloth.compatibility)
+                        identity={live->id,state_->id(),cloth.compatibility};
+                    cloth.id=identity.id;
+                }
+                snapshot->model_scope=scope;
+            }
+        }
     }
     snapshot->sequence=advance(state_->sequence);
     state_->pending.emplace(snapshot->sequence,snapshot);return {snapshot->sequence,root};
@@ -159,7 +238,7 @@ TransformTaskToken TransformTracker::publish_task(uint64_t frame_token,uint64_t 
     uint32_t root=task_root(data_ptr);std::lock_guard lock(state_->mutex);
     return publish_locked(frame_token,root);
 }
-std::optional<TransformTaskToken> TransformTracker::submit_task(uint32_t type,const TransformTaskFingerprint& submitted,std::optional<uint64_t> frame){
+std::optional<TransformTaskToken> TransformTracker::submit_task(uint32_t type,const TransformTaskFingerprint& submitted,std::optional<uint64_t> frame,std::optional<TransformModelScope> scope,std::optional<std::span<const uint32_t>> model_loads){
     if(type!=1)return {}; // Original M_GFXTASK=1; audio/other RSP work has no graphics event.
     auto normalized=fingerprint(submitted);
     if(!normalized)throw std::invalid_argument("Invalid graphics submission fingerprint");
@@ -168,10 +247,28 @@ std::optional<TransformTaskToken> TransformTracker::submit_task(uint32_t type,co
     if(state_->graphics_producer&&*state_->graphics_producer!=producer){
         // The pinned queue uses implicit per-thread producer streams. A mutex
         // cannot impose cross-producer FIFO order on that upstream queue.
+        state_->report_quarantine("producer_changed",submitted,true);
         state_->synchronized=false;state_->submissions.clear();state_->pending.clear();return {};
     }
     state_->graphics_producer=producer;
-    auto token=publish_locked(frame,uint32_t(normalized->data_ptr));
+    if(model_loads){
+        std::optional<unsigned> selected;bool arena_reference=false,conflict=false;
+        for(const auto matrix:*model_loads){
+            for(unsigned bank=0;bank<2;++bank){
+                const auto& candidate=state_->frames[bank];
+                if(!candidate.token || matrix<candidate.begin || matrix>candidate.end-64)continue;
+                arena_reference=true;
+                const auto found=candidate.matrices.find(matrix);
+                if(found==candidate.matrices.end() || !state_->live(found->second))continue;
+                if(selected && *selected!=bank)conflict=true;
+                selected=bank;
+            }
+        }
+        if(conflict)frame.reset();
+        else if(selected)frame=state_->frames[*selected].token;
+        else if(arena_reference)frame.reset();
+    }
+    auto token=publish_locked(frame,uint32_t(normalized->data_ptr),scope);
     try{state_->submissions.push_back({*normalized,token});}
     catch(...){state_->pending.erase(token.sequence);throw;}
     return token;
@@ -180,11 +277,13 @@ std::shared_ptr<const TransformTaskSnapshot> TransformTracker::consume_submissio
     auto normalized=fingerprint(submitted);std::lock_guard lock(state_->mutex);
     if(!state_->synchronized)return {};
     if(!normalized||state_->submissions.empty()||!same(*normalized,state_->submissions.front().fingerprint)){
+        state_->report_quarantine(!normalized?"invalid_fingerprint":state_->submissions.empty()?"empty_queue":"fingerprint_mismatch",submitted);
         state_->synchronized=false;state_->submissions.clear();state_->pending.clear();return {};
     }
     auto token=state_->submissions.front().token;
     auto found=state_->pending.find(token.sequence);
     if(found==state_->pending.end()){
+        state_->report_quarantine("missing_snapshot",submitted);
         state_->synchronized=false;state_->submissions.clear();state_->pending.clear();return {};
     }
     auto snapshot=found->second;state_->pending.erase(found);state_->submissions.pop_front();return snapshot;

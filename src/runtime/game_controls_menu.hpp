@@ -1,6 +1,7 @@
 // Original project work: djultra64.
 #pragma once
 #include "platform.hpp"
+#include "runtime/pal_options_skin.hpp"
 #include <cstdint>
 #include <functional>
 #include <mutex>
@@ -9,8 +10,8 @@
 #include <span>
 #include "recomp.h"
 namespace iss2000 {
-enum class ControlsMenuCommand { None, Up, Down, PreviousPage, NextPage, Accept, Cancel, RestoreDefault };
-struct EngineTextLine { int16_t x=24,y=24;std::string text; };
+enum class ControlsMenuCommand { None, Up, Down, PreviousPage, NextPage, Accept, Cancel, RestoreDefault, ApplySave };
+struct EngineTextLine { int16_t x=24,y=24;std::string text;uint8_t height=12,palette=0; };
 using SavePortCallback=std::function<bool(unsigned,const platform::PortPreferences&)>;
 // Input snapshots come from the host input thread. Drawing uses the original game font.
 // The callback must persist and then apply the selected port; it runs without this mutex.
@@ -21,6 +22,7 @@ public:
  bool active()const;
  bool capturing()const;
  unsigned port()const;
+ PalOptionsSkinView view(platform::Family active_family)const;
  std::vector<EngineTextLine> lines(platform::Family active_family)const;
 private:
  mutable std::mutex mutex_;

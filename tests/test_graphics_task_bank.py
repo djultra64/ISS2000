@@ -8,18 +8,21 @@ ROOT=Path(__file__).resolve().parents[1]
 SOURCE=r'''
 #include "runtime/graphics_task_bank.hpp"
 #include "runtime/transform_guest_layout.hpp"
+#include "runtime/pal_game_layout.hpp"
 #include <array>
 #include <cassert>
 #include <cstdint>
 #include <cstring>
 #include <string>
+#include <fstream>
+#include <iterator>
 #include <vector>
 using Bytes=std::vector<uint8_t>;
 template<class... Args> auto bank(const Bytes& b,uint64_t root,Args&&... args){return iss2000::graphics_task_bank(b,root,iss2000::us_transform_layout().perspective_matrices,args...);}
 void word(Bytes& b,size_t p,uint32_t w){std::memcpy(b.data()+p,&w,4);}
 void cmd(Bytes& b,size_t p,uint32_t w,uint32_t v=0){word(b,p,w);word(b,p+4,v);}
 void projection(Bytes& b,size_t p,uint32_t a){cmd(b,p,0xDA380007,a);}
-int main(int argc,char** argv){assert(argc==2);std::string mode=argv[1];Bytes b(0x800000);
+int main(int argc,char** argv){assert(argc>=2);std::string mode=argv[1];Bytes b(0x800000);
  if(mode=="direct"){
   projection(b,0x1000,0x800C43A0);auto old=b;
   assert(bank(b,0x80001000)==0);
@@ -63,13 +66,40 @@ int main(int argc,char** argv){assert(argc==2);std::string mode=argv[1];Bytes b(
   cmd(b,0x1000,0xDA380003,0x12340);projection(b,0x1008,0xC43A0);assert(bank(b,0x1000)==0);
  }else if(mode=="budget"){
   cmd(b,0x1000,0xDE010000,0x1000);assert(!bank(b,0x1000));
-  for(int i=0;i<16384;++i)cmd(b,0x1000+i*8,0xE7000000);
-  projection(b,0x1000+16384*8,0xC43A0);assert(!bank(b,0x1000));
-  projection(b,0x1000+16383*8,0xC43E0);assert(bank(b,0x1000)==1);
+  for(int i=0;i<131072;++i)cmd(b,0x1000+i*8,0xE7000000);
+  projection(b,0x1000+131072*8,0xC43A0);assert(!bank(b,0x1000));
+  projection(b,0x1000+131071*8,0xC43E0);assert(bank(b,0x1000)==1);
  }else if(mode=="depth"){
   for(int i=0;i<33;++i)cmd(b,0x1000+i*16,0xDE000000,0x1010+i*16);
   projection(b,0x1000+33*16,0xC43A0);assert(!bank(b,0x1000));
   projection(b,0x1000+31*16,0xC43E0);assert(bank(b,0x1000)==1);
+ }else if(mode=="extensions"){
+  cmd(b,0x1000,0xE0525464,0x10000064);
+  cmd(b,0x1008,0x64000033,2);cmd(b,0x1010,0x64000017);
+  cmd(b,0x1018,0x64000005,0x01000000);cmd(b,0x1020,0xDA380007,0x12340);
+  cmd(b,0x1028,0x64000006,0x00800800);cmd(b,0x1030,0xDA380007,0x12340);
+  cmd(b,0x1038,0x64000002,0x02004000);cmd(b,0x1040,0xDA380007,0x12340);
+  cmd(b,0x1048,0xDA380007,0x12340);cmd(b,0x1050,0x64000018);
+  cmd(b,0x1058,0x64000033);projection(b,0x1060,0xC43E0);
+  auto original=b;assert(bank(b,0x1000)==1&&b==original);
+  // Payload words that resemble matrices must never be interpreted as commands.
+  cmd(b,0x1000,0xE0525464,0x10000065);assert(!bank(b,0x1000));b=original;
+  cmd(b,0x1000,0xE7000000);assert(!bank(b,0x1000));b=original;
+  cmd(b,0x1008,0xE0525464,0x10000065);assert(!bank(b,0x1000));b=original;
+  for(auto invalid:{0x64000099u,0x64000004u}){cmd(b,0x1008,invalid);assert(!bank(b,0x1000));}
+  b=original;cmd(b,0x1008,0x64000033,3);assert(!bank(b,0x1000));
+  b=original;cmd(b,0x1008,0xDE010000,0x7FFFF0);cmd(b,0x7FFFF0,0x64000002);assert(!bank(b,0x1000));
+ }else if(mode=="actual_pal"){
+  assert(argc==3);std::ifstream input(argv[2],std::ios::binary);
+  b=Bytes{std::istreambuf_iterator<char>(input),{}};assert(b.size()==0x800000);auto original=b;
+  const std::array<uint32_t,2> perspective{0xC1AC0,0xC1B00};
+  assert(iss2000::graphics_task_bank(b,0x800D0328,perspective)==0);
+  assert(iss2000::graphics_task_bank(b,0x800E0388,perspective)==1);
+  for(uint32_t root:{0x800D0328u,0x800E0388u}){
+   auto refs=iss2000::graphics_task_model_references(b,root,iss2000::verified_pal_transform_layout());
+   assert(refs&&refs->loads.size()>19&&"Full real field/Career tasks must remain traversable beyond their sky projection prefix");
+  }
+  assert(b==original);
  }else return 2;
 }
 '''
@@ -93,3 +123,11 @@ class GraphicsTaskBankTests(unittest.TestCase):
     def test_unknown_projection_branch_or_ucode_context_fails_closed(self):self.run_case('unsafe_context')
     def test_cycles_and_exact_command_budget_are_bounded(self):self.run_case('budget')
     def test_nested_list_depth_is_bounded(self):self.run_case('depth')
+
+    def test_known_rt64_extensions_require_exact_enable_and_skip_bounded_payloads(self):self.run_case('extensions')
+    def test_actual_pal_match_and_career_sky_prefixes_preserve_bank_identity(self):
+        paths=[ROOT/'.local/pal-acceptance'/name for name in ('field09.rdram','career-field10.rdram')]
+        if not all(path.is_file() for path in paths):self.skipTest('Private original PAL field snapshots required')
+        for path in paths:
+            result=subprocess.run([str(self.binary),'actual_pal',str(path)],capture_output=True,text=True)
+            self.assertEqual(result.returncode,0,path.name+': '+result.stderr)

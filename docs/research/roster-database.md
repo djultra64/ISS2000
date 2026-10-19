@@ -145,6 +145,8 @@ The name is eight **encoded bytes** at `+0x18..+0x1F`. Name consumer
 which calls `0x80040BF8`. The scanner accounts for eight encoded bytes and uses
 `0x800489CC/0x80048A64` for character classification/conversion, including
 multi-byte paths. Eight bytes does not imply eight Unicode characters.
+The earlier uppercase hypothesis below is superseded by the verified PAL encoder used in [real player names](pal-real-player-names.md): `A..Z = 0x0B..0x24`, `a..z = 0x25..0x3E`, digits `0x01..0x0A`, space `0x00`, period `0x3F`.
+
 An initial Latin code hypothesis (`A..Z = 0x07..0x20`,
 `a..z = 0x25..0x3E`) yields plausible names, but the complete alphabet,
 padding, control codes, accents and encoder still need verification. A future

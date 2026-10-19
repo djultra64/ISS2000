@@ -53,15 +53,18 @@ int main(int argc,char**argv){
   return subprocess.run(args,capture_output=True)
  def test_face_and_keyboard_glyphs_are_exact_artist_tiles_quantized_to_supplied_palette(self):
   # Coordinates independently read from the official sheets, not the manifest.
-  cases=[(1,'A','gdb-xbox-2.png',16,48),(1,'B','gdb-xbox-2.png',16,80),
+  cases=[(1,'LB','gdb-xbox-2.png',224,496),(1,'RB','gdb-xbox-2.png',224,512),(1,'A','gdb-xbox-2.png',16,48),(1,'B','gdb-xbox-2.png',16,80),
    (2,'×','gdb-playstation-3.png',16,192),(2,'○','gdb-playstation-3.png',16,176),
    (3,'B','gdb-switch-2.png',16,32),(3,'A','gdb-switch-2.png',16,48),
-   (4,'Z','gdb-keyboard-2.png',64,80),(4,'X','gdb-keyboard-2.png',80,80)]
+   (4,'Left Shift','gdb-keyboard-2.png',32,80),(4,'Z','gdb-keyboard-2.png',64,80),(4,'X','gdb-keyboard-2.png',80,80)]
   palette=[(0,0,0,0)]+[(level*255//31,)*3+(255,) for n in range(1,16) for level in [(n-1)*31//14]]
   def luminance(c):return c[0]*77+c[1]*150+c[2]*29
   for family,label,sheet,x,y in cases:
    with self.subTest(family=family,label=label):
-    tile=Image.open(ASSETS/sheet).crop((x,y,x+16,y+16));indices=[]
+    tile=Image.open(ASSETS/sheet).crop((x,y,x+(32 if label=='Left Shift' else 16),y+16))
+    if label=='Left Shift':
+     source=tile.resize((16,8),Image.Resampling.NEAREST);tile=Image.new('RGBA',(16,16));tile.paste(source,(0,4))
+    indices=[]
     for c in tile.getdata():
      index=0 if c[3]==0 else min(range(1,16),key=lambda i:(abs(luminance(c)-luminance(palette[i])),sum(w*(c[j]-palette[i][j])**2 for j,w in enumerate([77,150,29])),i))
      indices.append(index)
@@ -98,14 +101,16 @@ int main(int argc,char**argv){
  def test_original_pal_icon_palettes_preserve_artist_opacity_for_all_families(self):
   rom=Path(os.environ['ISS2000_PAL_ROM']).read_bytes()
   self.assertEqual(hashlib.sha256(rom).hexdigest(),'6ce6739b8ead149857c9442178a1ecd9b7f6d15b93a582c7208ca85d493817bf')
-  cases=[(1,'A','gdb-xbox-2.png',16,48),(1,'B','gdb-xbox-2.png',16,80),
+  cases=[(1,'LB','gdb-xbox-2.png',224,496),(1,'RB','gdb-xbox-2.png',224,512),(1,'A','gdb-xbox-2.png',16,48),(1,'B','gdb-xbox-2.png',16,80),
    (2,'×','gdb-playstation-3.png',16,192),(2,'○','gdb-playstation-3.png',16,176),
    (3,'B','gdb-switch-2.png',16,32),(3,'A','gdb-switch-2.png',16,48),
-   (4,'Z','gdb-keyboard-2.png',64,80),(4,'X','gdb-keyboard-2.png',80,80)]
+   (4,'Left Shift','gdb-keyboard-2.png',32,80),(4,'Z','gdb-keyboard-2.png',64,80),(4,'X','gdb-keyboard-2.png',80,80)]
   for start in [0x35B0A0,0x35B0C0,0x35B120]:
    palette=rom[start:start+32]
    for family,label,sheet,x,y in cases:
-    tile=Image.open(ASSETS/sheet).crop((x,y,x+16,y+16))
+    tile=Image.open(ASSETS/sheet).crop((x,y,x+(32 if label=='Left Shift' else 16),y+16))
+    if label=='Left Shift':
+     source=tile.resize((16,8),Image.Resampling.NEAREST);tile=Image.new('RGBA',(16,16));tile.paste(source,(0,4))
     result=self.run_glyph(family,label,palette);self.assertEqual(result.returncode,0,result.stderr)
     indices=[index for value in result.stdout for index in [value>>4,value&15]]
     self.assertEqual([bool(palette[i*2+1]&1) for i in indices],[bool(pixel[3]) for pixel in tile.getdata()])

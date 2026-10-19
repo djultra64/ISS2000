@@ -8,7 +8,7 @@ physics and timers. Running that compensated code at 60 VI/s or applying a
 blanket 1.2 speed multiplier would accelerate it again. Keep the PAL VI/audio
 clock and original motion coefficients while verifying the remaining clock
 rounding and update gates. Exact measured NTSC equivalence remains pending
-because gameplay execution is deferred.
+because matched-state NTSC/PAL gameplay wall-time acceptance is not complete.
 
 The evidence below compares only the authorized original ISS2000 US and PAL
 inputs. It changes neither ROM. Private `.local/pal-runtime-01/pace-proof.json`
@@ -106,10 +106,11 @@ contains two matching reload changes. The original decrement-then-reload path
 actually takes **31 calls in US versus 26 in PAL** per displayed clock unit.
 Duration tables are identical. Thus original PAL scaling is close but its clock
 rounding alone does not prove mathematically exact NTSC wall-time behavior.
-A precise correction, if used, must be confined to eligible original clock
-ticks, preserve pause/phase decisions and independent counters, and retain the
-original final-clock behavior. The clock proof and the VI scheduling ratio
-must be evaluated together before selecting that adjustment.
+The subsequent bounded correction is confined to eligible original clock
+reloads, preserves pause/phase decisions and independent counters, and retains
+the original final-clock behavior; see [the clock adapter](pal-match-clock.md).
+Its call-count proof still depends on the original 5:6 scheduling ratio for a
+wall-time interpretation.
 
 The motion evidence supports retaining 50-Hz PAL execution with original
 compensation. It does not justify changing the whole runtime to 60 Hz, applying
@@ -117,3 +118,65 @@ a global movement multiplier, speeding audio, or tying simulation to 120-Hz
 presentation. Later visible verification still needs measured match-clock
 elapsed time and comparable player/ball movement against the preserved NTSC
 baseline, including pause, replay and speed settings.
+
+## Implementation status — 2026-10-17
+
+The static checkpoint above is historical evidence about original regional
+coefficients, not a statement that runtime integration remains deferred.
+`src/runtime/native_game.cpp` now selects the version-2 native frame derivative
+under the exact original function identity. In stable HIGH scene `0604`, it
+omits the duplicate complete simulation pass and its paired skeletal-phase
+pass. Original first passes, PAL motion coefficients, VI/audio timing and
+other scene/transition paths remain intact. The local NTSC match-clock adapter
+is also connected to the exact original initializer and tick identities.
+
+The final Linux CPU suite recorded 498 tests with three native-diagnostic
+launch tests skipped. Genuine PAL frame/skeletal closure, original PAL/US clock
+leaf comparison, audio DMA progress, all-22-player capacity and preserved
+full-detail task traversal tests all passed. The phase regression compares 35
+states over 25 tasks with original LOW; its final pose bake is an observer.
+Earlier live build-47 HIGH Training and original Ares LOW measurements establish
+approximately 25 admitted updates per second in those particular runs, not a
+fresh final-build NTSC match equivalence result. See
+[the native pace evidence](pal-native-frame-pace.md).
+
+Final-build matched-state player/ball displacement, animation cycles and full
+match-clock duration against the NTSC reference, including pause/replay and
+speed settings, remain distinct wall-time acceptance work. Distinct GPU images
+at 60/120 Hz demonstrate presentation interpolation, not those timing claims.
+Audio CPU tests demonstrate source-clock/FIFO behavior; actual output/device
+quality and drift require their own recording or listening evidence.
+
+## Executed original integration leaves — 2026-10-17
+
+Private `.local/ntsc-pal-leaf-comparison-01/receipt.json` records a completed
+CPU-only comparison using authenticated original PAL and US ROMs, exact
+translated sources and original function-body hashes. No game, audio device
+or GPU ran. The harness executes complete original position leaves PAL
+`802C932C` in overlay `386080` and US `802CD70C` in overlay `389970`, plus
+original airborne vertical steps PAL `802B6D60` and US `802BB3F0`. An unexpected
+external call aborts instead of substituting a behavior stub.
+
+For both original speed slopes and all 256 attributes (512 cases), initial
+horizontal velocity comes from the authenticated original readonly slope/base
+coefficients. This explicitly does not execute the full player initializer,
+acceleration, heading or clamp closure. After 25 PAL versus 30 US position
+calls, maximum relative displacement disagreement was `7.56608222e-7`, below
+the predeclared `2e-5` floating-point tolerance. These calls represent one
+synthetic second under the assumed 25/30 cadence; they do not measure it.
+
+The ball starts at height 1000 with zero vertical velocity and the original
+regional gravity literals. The original position-before-gravity integration
+predicts `y = 1000 - g*n*(n-1)/2` and `v = -g*n`. Observed PAL height was 952;
+US height was 951.666687012. Their difference, 0.333312988, agrees with the
+precomputed discrete-Euler difference 0.333330296 to approximately
+`1.7308e-5` game units. Each result also satisfied its predeclared roundoff
+bound `8*float_epsilon*n*1000`. Regional terminal velocities, expressed per
+assumed second, were approximately -100.00002384 and -100.00003338. Thus the
+small height difference is consistent with the original different step sizes,
+not evidence requiring a new global pace multiplier.
+
+This adds executed integration evidence to the earlier coefficient algebra.
+It does not establish full accelerated trajectories, ground contacts, regional
+animation-script equivalence, AI decisions, actual NTSC scheduling or final
+wall-time gameplay equivalence. No product change follows from these results.

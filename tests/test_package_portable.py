@@ -21,7 +21,8 @@ class PortablePackageTests(unittest.TestCase):
             environment=dict(os.environ,LD_LIBRARY_PATH='/existing library path')
             run=subprocess.run([str(output/'launch.sh'),'two words','literal;$(nothing)'],
                 cwd=root,env=environment,text=True,capture_output=True,check=True)
-            self.assertEqual(run.stdout.splitlines(),[str(output),
+            self.assertEqual(run.stdout,'')
+            self.assertEqual((output/'data/runtime.log').read_text().splitlines(),[str(output),
                 str(output/'lib')+':/existing library path','two words','literal;$(nothing)'])
             self.assertEqual((output/'lib/libaudio.so.1').read_bytes(),b'synthetic dependency')
             self.assertTrue((output/'data').is_dir())
@@ -38,7 +39,14 @@ class PortablePackageTests(unittest.TestCase):
             package('linux',source,output)
             environment=dict(os.environ);environment.pop('LD_LIBRARY_PATH',None)
             run=subprocess.run([str(output/'launch.sh')],env=environment,text=True,capture_output=True,check=True)
-            self.assertEqual(run.stdout,str(output/'lib'))
+            self.assertEqual(run.stdout,'')
+            self.assertEqual((output/'data/runtime.log').read_text(),str(output/'lib'))
+            # A second launch preserves previous diagnostics and writes both streams.
+            with source.open('a') as f:f.write('printf "stderr detail" >&2\n')
+            # Repack a separate fixture to exercise stderr without changing the first package.
+            other=root/'second portable';package('linux',source,other)
+            for _ in range(2):subprocess.run([str(other/'launch.sh')],env=environment,check=True)
+            self.assertEqual((other/'data/runtime.log').read_text(),(str(other/'lib')+'stderr detail')*2)
 
     def test_windows_copies_only_explicit_executable_and_root_dlls_without_running(self):
         with tempfile.TemporaryDirectory() as temporary:

@@ -9,6 +9,14 @@ from pathlib import Path
 
 SOURCE_SHA256='6e97f155ae149a191128c9e941735a4e9948056787b39a8f67c26581866fac05'
 REPLACEMENTS={
+    # The VI thread previously flipped/copies states outside the mutex used by
+    # SDK setters. A swap between flip and copy was silently overwritten.
+    '        events_context.vi.update_vi();':
+        '        {\n            std::lock_guard lock{ events_context.message_mutex };\n            events_context.vi.update_vi();\n        }',
+    'extern "C" PTR(void) osViGetNextFramebuffer() {\n    return':
+        'extern "C" PTR(void) osViGetNextFramebuffer() {\n    std::lock_guard lock{ events_context.message_mutex };\n    return',
+    'extern "C" PTR(void) osViGetCurrentFramebuffer() {\n    return':
+        'extern "C" PTR(void) osViGetCurrentFramebuffer() {\n    std::lock_guard lock{ events_context.message_mutex };\n    return',
     'regs.VI_STATUS_REG = next_state->control;': 'regs.VI_STATUS_REG = next_state->control;\n            iss2000_record_vi_framebuffer(regs.VI_ORIGIN_REG, regs.VI_WIDTH_REG, regs.VI_STATUS_REG, uint32_t(framebuffer));',
     '    int retrace_count = 1;': '    int retrace_count = 1;\n    iss2000::ViScaleState scale;',
     'uint32_t yScale = field_regs->yScale;': 'uint32_t yScale = next_state->scale.y_register(field_regs->yScale);',
@@ -47,7 +55,7 @@ def prepare(source:Path,output:Path)->dict:
         text=text.replace(old,new)
     generated=('#include "runtime/video_timing.hpp"\n#include "runtime/vi_scale.hpp"\n#include "runtime/vi_framebuffer.hpp"\n'+text).encode()
     receipt=dict(source_sha256=SOURCE_SHA256,generated_sha256=hashlib.sha256(generated).hexdigest(),
-                 vi_hz=50,status='PAL VI scheduling and original next-state X/Y scaling; presentation rate is independent')
+                 vi_hz=50,status='PAL VI scheduling, original X/Y scaling and serialized VI state publication/readers; presentation rate is independent')
     files={'events.cpp':generated,'receipt.json':(json.dumps(receipt,indent=2)+'\n').encode()}
     if output.exists():
         if output.is_symlink() or any(not (output/name).is_file() or (output/name).is_symlink() or (output/name).read_bytes()!=value for name,value in files.items()):

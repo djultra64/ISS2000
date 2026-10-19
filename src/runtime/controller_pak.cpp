@@ -4,6 +4,7 @@
 #include <atomic>
 #include <fstream>
 #include <mutex>
+#include <thread>
 #include <random>
 #include <stdexcept>
 #include <system_error>
@@ -115,6 +116,8 @@ struct ControllerPakStore::State {
     DirectoryLock lock;
     mutable std::mutex mutex;
     std::array<PakImage,4> images{};
+    struct Transaction {PakImage original;std::thread::id thread;};
+    std::array<std::unique_ptr<Transaction>,4> transactions{};
     std::array<PakAccessory,4> accessories{};
     std::array<bool,4> configured{},changed{};
     std::string error;
@@ -171,10 +174,12 @@ uint8_t ControllerPakStore::plugged_mask()const{
 int ControllerPakStore::read_block(unsigned port,uint16_t block,PakBlock& output){
     std::lock_guard guard(state_->mutex);int result=state_->check(port);if(result)return result;
     if(block>=1024)return 5;
+    if(state_->transactions[port]&&state_->transactions[port]->thread!=std::this_thread::get_id())return 4;
     std::copy_n(state_->images[port].begin()+unsigned(block)*32,32,output.begin());return 0;
 }
 int ControllerPakStore::write_block(unsigned port,uint16_t block,const PakBlock& input,bool force){
     std::lock_guard guard(state_->mutex);int result=state_->check(port);if(result)return result;
+    if(state_->transactions[port]&&state_->transactions[port]->thread!=std::this_thread::get_id())return 4;
     // Original __osPfsSelectBank 80060A90 sends 32 identical bank bytes to block 400.
     // This backend implements a single real 32 KiB bank, never aliases other banks.
     if(block==0x400)return std::all_of(input.begin(),input.end(),[](uint8_t value){return value==0;})?0:11;
@@ -182,6 +187,7 @@ int ControllerPakStore::write_block(unsigned port,uint16_t block,const PakBlock&
     // Original __osContRamWrite61780 protects ID blocks 1..6 unless force == 1.
     if(block>0&&block<7&&!force)return 0;
     auto next=state_->images[port];std::copy(input.begin(),input.end(),next.begin()+unsigned(block)*32);
+    if(state_->transactions[port]){state_->images[port]=next;return 0;}
     try{
         auto path=state_->path(port);
         if(read_image(path)!=state_->images[port])throw std::runtime_error("Controller Pak image changed outside the locked process; write refused");
@@ -191,6 +197,28 @@ int ControllerPakStore::write_block(unsigned port,uint16_t block,const PakBlock&
         publish(path,next,true);
         state_->images[port]=next;state_->error.clear();return 0;
     }catch(const std::exception& error){state_->error=error.what();return 4;}
+}
+int ControllerPakStore::begin_file_write(unsigned port){
+    std::lock_guard guard(state_->mutex);const auto result=state_->check(port);if(result)return result;
+    if(state_->transactions[port])return 4;
+    try{
+        if(read_image(state_->path(port))!=state_->images[port])throw std::runtime_error("Save image changed outside the locked process; write refused");
+        state_->transactions[port]=std::make_unique<State::Transaction>(State::Transaction{state_->images[port],std::this_thread::get_id()});return 0;
+    }catch(const std::exception&e){state_->error=e.what();return 4;}
+}
+int ControllerPakStore::finish_file_write(unsigned port,bool commit){
+    std::lock_guard guard(state_->mutex);if(port>=4||!state_->transactions[port])return 5;
+    if(state_->transactions[port]->thread!=std::this_thread::get_id())return 4;
+    auto transaction=std::move(state_->transactions[port]);
+    const auto next=state_->images[port];state_->images[port]=transaction->original;
+    if(!commit)return 0;
+    if(const auto result=state_->check(port))return result;
+    try{
+        auto path=state_->path(port);
+        if(read_image(path)!=transaction->original)throw std::runtime_error("Save image changed outside the locked process; commit refused");
+        if(next!=transaction->original){auto backup=path;backup+=".bak";publish(backup,transaction->original,true);publish(path,next,true);}
+        state_->images[port]=next;state_->error.clear();return 0;
+    }catch(const std::exception&e){state_->error=e.what();return 4;}
 }
 std::filesystem::path ControllerPakStore::image_path(unsigned port)const{
     if(port>=4)throw std::out_of_range("Controller Pak port");

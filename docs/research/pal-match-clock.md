@@ -102,7 +102,8 @@ original initializer/tick once, and apply the helper afterward. The helper
 never writes remaining seconds, elapsed seconds, HUD digits, physics or audio;
 its only guest writes are halfwords `0x8012DDD8` and `0x8012DDDC`. It rejects
 short memory, uninitialized/stale observations and invalid subcounter values.
-No helper wiring or full-game execution was performed by this subtask.
+At the original isolated-helper checkpoint, this subtask did not wire the
+helper or execute a full game. The current integration is described below.
 
 The SDK/main-loop research establishes original VI-linked update opportunities
 at a PAL:US ratio of 50:60 through the same scheduler/queue route. Actual
@@ -179,3 +180,24 @@ caller and absolute-value helper body hashes, the threshold instruction and
 counter bound. Root's separate visible run subsequently reached natural
 halftime (capture `125`), consistent with these original gates. That observation
 does not establish completion of a full match.
+
+## Integration status — 2026-10-17
+
+The historical helper-only scope above no longer describes the linked runtime.
+`src/runtime/native_game.cpp` calls each original initializer/tick once and
+then applies `NtscMatchClock`; lookup requires the exact active original
+function identity at `801DB94C` or `801DC14C`. Overlay address reuse therefore
+does not admit an unrelated function. `src/runtime/ntsc_match_clock.cpp` only
+shortens every sixth eligible interval by one update, independently for the
+two subcounters; it does not replace remaining/elapsed seconds or half-end
+conditions.
+
+The final 498-test CPU suite (three unrelated native-diagnostic launch tests
+skipped) passed the actual original PAL/US leaf comparison over 2,700 clock
+seconds: corrected PAL uses 69,750 calls and US uses 83,700. Every six-second
+group agrees at the 5:6 rate ratio, with intervening error below one PAL update.
+Independent gates, pauses, reset/stale observations, endings and restricted
+writes also pass. These are executed CPU call-count checks, not a measured
+final-build full-match duration. Consecutive friendly startup/quit and GPU
+interpolation checks do not substitute for a natural full-match end or an
+NTSC-reference wall-time comparison.

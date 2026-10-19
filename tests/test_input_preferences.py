@@ -40,7 +40,7 @@ int main(int,char** argv){try{
  require(platform::button_label(platform::Family::Nintendo,SDL_CONTROLLER_BUTTON_A)=="B");
  require(platform::button_label(platform::Family::PlayStation,SDL_CONTROLLER_BUTTON_LEFTSHOULDER)=="L1");
  require(platform::button_label(platform::Family::Xbox,SDL_CONTROLLER_BUTTON_PADDLE2)=="Paddle 3");
- p.ports[2].manual_family=platform::Family::Nintendo;p.ports[2].bindings[3]=SDL_CONTROLLER_BUTTON_DPAD_RIGHT;
+ p.ports[2].vibration=false;p.ports[2].manual_family=platform::Family::Nintendo;p.ports[2].bindings[3]=SDL_CONTROLLER_BUTTON_DPAD_RIGHT;
  save_input_preferences(folder,p);auto restored=load_input_preferences(folder);require(restored==p);
  #ifndef _WIN32
  auto changed=p;changed.ports[0].bindings[0]=SDL_CONTROLLER_BUTTON_Y;fail_input_sync=true;
@@ -66,22 +66,30 @@ int main(int,char** argv){try{
    includes=['src','.local/deps/N64Recomp/include','.local/deps/N64ModernRuntime/librecomp/include','.local/deps/N64ModernRuntime/ultramodern/include','.local/deps/N64ModernRuntime/thirdparty','.local/deps/N64ModernRuntime/thirdparty/concurrentqueue']
    command=['c++','-std=c++20','-Wall','-Wextra','-Werror','-pthread',*(['-Wl,--wrap=fsync'] if sys.platform!='win32' else [])]
    for inc in includes:command+=['-I',str(ROOT/inc)]
-   command+=['-I/home/linuxbrew/.linuxbrew/include/SDL2',str(source),str(ROOT/'src/runtime/input_preferences.cpp'),'-o',str(folder/'test')]
+   command+=['-I/home/linuxbrew/.linuxbrew/include/SDL2',str(source),str(ROOT/'src/runtime/input_preferences.cpp'),str(ROOT/'src/runtime/controller_schemes.cpp'),'-o',str(folder/'test')]
    result=subprocess.run(command,capture_output=True,text=True);self.assertEqual(result.returncode,0,result.stderr)
    result=subprocess.run([str(folder/'test'),str(folder)],capture_output=True,text=True);self.assertEqual(result.returncode,0,result.stderr)
  def test_actual_platform_snapshot_apply_and_invalid_rollback(self):
   with tempfile.TemporaryDirectory(prefix='iss2000-input-apply-') as directory:
    folder=Path(directory);source=folder/'apply.cpp';source.write_text(r'''
 #include "platform.hpp"
+#include <algorithm>
 #include <stdexcept>
+// No physical controller in this CPU-only snapshot fixture.
+extern "C" int SDL_GameControllerRumble(SDL_GameController*,Uint16,Uint16,Uint32){return 0;}
 using namespace iss2000::platform;
 void require(bool value){if(!value)throw std::runtime_error("Platform mapping contract failed");}
 int main(){try{
  auto initial=port_preferences();auto edited=initial;
- edited[3].manual_family=Family::Nintendo;edited[3].bindings[size_t(Action::Z)]=SDL_CONTROLLER_BUTTON_DPAD_UP;
+ edited[3].vibration=false;edited[3].manual_family=Family::Nintendo;edited[3].bindings[size_t(Action::Z)]=SDL_CONTROLLER_BUTTON_DPAD_UP;
+ edited[3].football_scheme=iss2000::ControllerScheme::Free;std::rotate(edited[3].free_football_bindings.begin(),edited[3].free_football_bindings.begin()+3,edited[3].free_football_bindings.end());edited[2].football_scheme=iss2000::ControllerScheme::Type4;
  apply_port_preferences(edited);require(port_preferences()==edited);require(get_binding(3,Action::Z)==SDL_CONTROLLER_BUTTON_DPAD_UP);require(controller_family(3)==Family::Nintendo);
  auto invalid=edited;invalid[0].manual_family=Family::PlayStation;invalid[3].bindings[1]=SDL_CONTROLLER_BUTTON_MAX;
  bool failed=false;try{apply_port_preferences(invalid);}catch(const std::exception&){failed=true;}require(failed&&port_preferences()==edited);
+ invalid=edited;invalid[0].vibration=false;invalid[3].football_scheme=iss2000::ControllerScheme(255);failed=false;
+ try{apply_port_preferences(invalid);}catch(const std::exception&){failed=true;}require(failed&&port_preferences()==edited);
+ invalid=edited;invalid[0].manual_family=Family::Xbox;invalid[3].free_football_bindings[0]=invalid[3].free_football_bindings[1];failed=false;
+ try{apply_port_preferences(invalid);}catch(const std::exception&){failed=true;}require(failed&&port_preferences()==edited);
  failed=false;try{bind_button(0,Action(-1),SDL_CONTROLLER_BUTTON_A);}catch(const std::exception&){failed=true;}require(failed);
  apply_port_preferences(initial);require(port_preferences()==initial);return 0;
 }catch(...){return 1;}}
@@ -89,7 +97,7 @@ int main(){try{
    includes=['src','.local/deps/N64Recomp/include','.local/deps/N64ModernRuntime/librecomp/include','.local/deps/N64ModernRuntime/ultramodern/include','.local/deps/N64ModernRuntime/thirdparty','.local/deps/N64ModernRuntime/thirdparty/concurrentqueue']
    command=['c++','-std=c++20','-ffunction-sections','-fdata-sections','-Wl,--gc-sections','-pthread']
    for inc in includes:command+=['-I',str(ROOT/inc)]
-   command+=['-I/home/linuxbrew/.linuxbrew/include/SDL2',str(source),str(ROOT/'src/platform.cpp'),'-o',str(folder/'apply')]
+   command+=['-I/home/linuxbrew/.linuxbrew/include/SDL2',str(source),str(ROOT/'src/platform.cpp'),str(ROOT/'src/runtime/controller_schemes.cpp'),'-o',str(folder/'apply')]
    result=subprocess.run(command,capture_output=True,text=True);self.assertEqual(result.returncode,0,result.stderr)
    result=subprocess.run([str(folder/'apply')],capture_output=True,text=True);self.assertEqual(result.returncode,0,result.stderr)
 if __name__=='__main__':unittest.main()

@@ -2,6 +2,12 @@
 import unittest
 from tools.analyze_render_evidence import analyze
 class RenderEvidenceAnalysisTests(unittest.TestCase):
+ def test_different_capture_regions_cannot_prove_interpolation(self):
+  base=dict(event='render',workload=7,matched=True,capture='gpu_readback',target_hz=60,width=1920,height=1117,capture_y=400,capture_width=256,capture_height=256)
+  frames=[dict(base,weight=.4,pixel_sha256='a'*64,capture_x=800),dict(base,weight=.8,pixel_sha256='b'*64,capture_x=900)]
+  self.assertEqual(analyze(frames)['distinct_fractional_gpu_workloads'],[])
+  frames[1]['capture_x']=800
+  self.assertEqual(analyze(frames)['distinct_fractional_gpu_workloads'],[7])
  def test_distinct_pixel_hash_and_fractional_weight_required_within_same_workload(self):
   def frame(workload,weight,digest,matched=True):return dict(event='render',workload=workload,weight=weight,pixel_sha256=digest,capture='gpu_readback',matched=matched,target_hz=60,time_us=100)
   samples=[dict(event='display',detected_hz=60,requested_hz=120),

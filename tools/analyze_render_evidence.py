@@ -14,11 +14,12 @@ def analyze(events):
  groups=defaultdict(list)
  for e in renders:
   h=e.get('pixel_sha256','')
-  if e.get('capture')=='gpu_readback' and e.get('matched') is True and len(h)==64 and all(c in '0123456789abcdef' for c in h):groups[e['workload']].append(e)
- distinct=[]
- for workload,frames in groups.items():
+  region=tuple(e.get(k) for k in ('width','height','capture_x','capture_y','capture_width','capture_height','capture_format'))
+  if e.get('capture')=='gpu_readback' and e.get('matched') is True and len(h)==64 and all(c in '0123456789abcdef' for c in h):groups[(e['workload'],region)].append(e)
+ distinct=set()
+ for (workload,region),frames in groups.items():
   weights={e['weight'] for e in frames};hashes={e['pixel_sha256'] for e in frames}
-  if any(0<w<1 for w in weights) and len(weights)>1 and len(hashes)>1:distinct.append(workload)
+  if any(0<w<1 for w in weights) and len(weights)>1 and len(hashes)>1:distinct.add(workload)
  stamps=[e['time_us'] for e in presents if 'time_us' in e]
  intervals=[b-a for a,b in zip(stamps,stamps[1:]) if b>a]
  dls=[e for e in events if e.get('event')=='display_list']

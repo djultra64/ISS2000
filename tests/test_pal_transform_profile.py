@@ -23,8 +23,8 @@ int main(){
  TransformRuntime rt(l);std::vector<uint8_t>b(0x800000);
  word(b,0x9DED0,0);word(b,0xB1A48,0x800A7848);word(b,0xB1A4C,0x800AC948);
  b[0x13B446^3]=6;b[0x13B44C^3]=4;
- word(b,0x1000,0xDA380007);word(b,0x1004,0x800C1AC0);
- TransformTaskFingerprint fp{0x80001000,0x80069AD0,0x80099EF0,8};
+ word(b,0x1000,0xDA380007);word(b,0x1004,0x800C1AC0);word(b,0x1008,0xDF000000);
+ TransformTaskFingerprint fp{0x80001000,0x80069AD0,0x80099EF0,16};
  auto frame=[&]{rt.observe_frame(b);rt.submit_metadata(b,1,fp);return rt.consume_metadata(fp);};
  auto first=frame();assert(first&&first->camera_id(0));
  b[0xB452^3]=1;auto unrelated=frame();assert(unrelated->camera_id(0)==first->camera_id(0));
@@ -37,6 +37,6 @@ int main(){
 }
 ''')
             exe=p/'profile'
-            args=['c++','-std=c++20','-O2','-pthread','-I',str(ROOT/'src'),str(s),*[str(ROOT/'src/runtime'/name) for name in ['transform_tracker.cpp','transform_runtime.cpp','graphics_task_bank.cpp']],'-o',str(exe)]
+            args=['c++','-std=c++20','-O2','-pthread','-I',str(ROOT/'src'),str(s),*[str(ROOT/'src/runtime'/name) for name in ['transform_tracker.cpp','transform_runtime.cpp','graphics_task_bank.cpp','pal_menu_avatar.cpp']],'-o',str(exe)]
             build=subprocess.run(args,capture_output=True,text=True);self.assertEqual(build.returncode,0,build.stderr)
             result=subprocess.run([str(exe)],capture_output=True,text=True);self.assertEqual(result.returncode,0,result.stderr)

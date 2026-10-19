@@ -1,0 +1,16 @@
+Gamepad UI / Controller Prompts Pack
+Artist: greatdocbrown
+Official project: https://greatdocbrown.itch.io/gamepad-ui
+License: Creative Commons Zero v1.0 Universal (CC0).
+License URL: https://creativecommons.org/publicdomain/zero/1.0/
+
+The official project page explicitly identifies this pack as CC0 and invites
+use, modification, and redistribution, including commercial projects.
+Downloaded from the artist's official itch.io free-download flow, 2026-10-15.
+Current PlayStation sheet is version 3 (2024); the all-files archive is version 2
+(2021). The unmodified originals are retained here with SHA-256 provenance.
+
+ISS2000 integration work: djultra64.
+Adaptations: exact tile extraction; nearest-neighbor fit only where a source
+button exceeds 16x16; color reduction to the game's existing sprite palettes.
+No source artwork was generated or redrawn.

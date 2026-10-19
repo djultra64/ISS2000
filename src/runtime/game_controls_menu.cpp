@@ -1,3 +1,4 @@
+#include "runtime/pal_menu_view.hpp"
 // Original project work: djultra64.
 #include "runtime/game_controls_menu.hpp"
 #include <bit>
@@ -48,11 +49,11 @@ void GameControlsMenu::update(ControlsMenuCommand command,uint32_t held,platform
  case ControlsMenuCommand::PreviousPage:selected_=(selected_+item_count-page_rows)%item_count;break;
  case ControlsMenuCommand::NextPage:selected_=(selected_+page_rows)%item_count;break;
  case ControlsMenuCommand::Cancel:active_=false;visible_.store(false,std::memory_order_release);break;
- case ControlsMenuCommand::RestoreDefault:if(selected_<action_count)draft_.bindings[selected_]=platform::default_binding(platform::Action(selected_));else draft_=platform::PortPreferences{};error_=conflict_=false;break;
+ case ControlsMenuCommand::RestoreDefault:if(selected_<action_count)draft_.bindings[selected_]=platform::default_binding(platform::Action(selected_));else {const bool vibration=draft_.vibration;draft_=platform::PortPreferences{};draft_.vibration=vibration;}error_=conflict_=false;break;
  case ControlsMenuCommand::Accept:
   if(selected_<action_count){capture_=true;released_=false;}
   else if(selected_==action_count){draft_.manual_family=platform::Family((unsigned(draft_.manual_family)+1)%4);}
-  else if(selected_==action_count+1){draft_=platform::PortPreferences{};error_=conflict_=false;}
+  else if(selected_==action_count+1){const bool vibration=draft_.vibration;draft_=platform::PortPreferences{};draft_.vibration=vibration;error_=conflict_=false;}
   else if(selected_==action_count+3){active_=false;visible_.store(false,std::memory_order_release);}
   else {
    // Draft duplicates are useful while swapping two bindings. Never publish
@@ -89,6 +90,7 @@ std::vector<EngineTextLine> GameControlsMenu::lines(platform::Family active_fami
  lines.push_back({24,196,capture_?"Escape cancels capture":"Page "+std::to_string(first/page_rows+1)+" of 3"});
  return lines;
 }
+PalOptionsSkinView GameControlsMenu::view(platform::Family family)const{return pal_menu_view(lines(family),true);}
 GameControlsMenu& game_controls_menu(){static GameControlsMenu menu;return menu;}
 
 namespace {
@@ -102,7 +104,7 @@ int encode_font(char c){
  if(c>='0'&&c<='9')return c-'0'+1;
  if(c>='A'&&c<='Z')return c-'A'+0x0b;
  if(c>='a'&&c<='z')return c-'a'+0x25;
- return c=='.'?0x3f:-1;
+ return c=='.'?0x3f:c=='?'?0x40:-1;
 }
 }
 bool draw_pal_engine_text(std::span<uint8_t> ram,const recomp_context& caller,std::span<const EngineTextLine> lines,recomp_func_t* draw,recomp_func_t* clear){
@@ -126,7 +128,7 @@ bool draw_pal_engine_text(std::span<uint8_t> ram,const recomp_context& caller,st
  // 49158 emits 24 rect bytes; setup <=32. Rounded bound includes full setup.
  size_t required=clear?256:0;
  for(const auto& line:lines){
-  if(line.text.empty()||line.text.size()>40||line.x<0||line.y<0||line.x+line.text.size()*6>320||line.y+12>240)return false;
+  if(line.text.empty()||line.text.size()>40||line.x<0||line.y<0||line.x+line.text.size()*6>320||(line.height!=8&&line.height!=12)||(line.palette!=0&&line.palette!=4)||line.y+line.height+(line.height==8?1:0)>240)return false;
   for(char c:line.text)if(encode_font(c)<0)return false;
   required+=128*line.text.size()+256;
  }
@@ -142,7 +144,7 @@ bool draw_pal_engine_text(std::span<uint8_t> ram,const recomp_context& caller,st
  }
  std::array<uint8_t,0x400> saved{};const uint32_t low=sp-0x400;
  std::memcpy(saved.data(),ram.data()+(low&0x7fffff),saved.size());
- const uint32_t local=sp-0x100,object=local+0x20,source=local+0x60;
+ const uint32_t local=sp-0x100,object=local+0x20,source=local+0x60,scale_owner=local+0x90;
  if(clear){
   const std::array<uint32_t,3> colors{read_word(ram,frame+4),read_word(ram,frame+8),read_word(ram,frame+12)};
   write_half(ram,frame+6,0);write_half(ram,frame+8,0);write_half(ram,frame+10,0);write_half(ram,frame+12,1);
@@ -156,8 +158,20 @@ bool draw_pal_engine_text(std::span<uint8_t> ram,const recomp_context& caller,st
  }
  for(const auto& line:lines){
   for(unsigned i=0;i<0x24;++i)write_byte(ram,object+i,0);
-  write_byte(ram,object+4,2);write_half(ram,object+0xe,uint16_t(line.x));write_half(ram,object+0x10,uint16_t(line.y));
+  write_byte(ram,object+4,2);
+  // Original489C8 otherwise borrows the previous sprite's RGBA material at
+  // 80165D5C. Main Select can leave alpha0 there; these independent labels
+  // explicitly request the original opaque font material (flag2000).
+  write_half(ram,object+0xa,0x2000);write_half(ram,object+0xe,uint16_t(line.x));write_half(ram,object+0x10,uint16_t(line.y));
+  write_byte(ram,object+0x12,line.palette);
   write_word(ram,object+0x14,source);write_half(ram,object+0x22,0xffff);
+  if(line.height==8){
+   // Original 48B48 applies its model owner's X/Y scales when flag bit 3 is set.
+   // Preserve font-2's native 6-pixel width and use its proven 2/3 Y scale.
+   // The temporary owner lives above the callee stack, beyond our text buffer.
+   write_half(ram,object+0xc,8);write_word(ram,object+0x1c,scale_owner);
+   write_word(ram,scale_owner+0x28,0x3f800000);write_word(ram,scale_owner+0x2c,0x3f2aaaab);
+  }
   for(unsigned i=0;i<line.text.size();++i)write_byte(ram,source+i,uint8_t(encode_font(line.text[i])));
   write_byte(ram,source+uint32_t(line.text.size()),0xff);write_byte(ram,source+uint32_t(line.text.size())+1,0x11);
   auto context=caller;

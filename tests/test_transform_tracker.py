@@ -13,7 +13,8 @@ template<class F> void rejects(F f){bool rejected=false;try{f();}catch(const std
 int main(){
  TransformTracker t(us_transform_layout(),2); t.begin_scene(6*256+4);
  auto a=t.allocate(0x80148104),b=t.allocate(0xFFFFFFFFA014819CULL);
- assert(a.record==0x80148104&&b.record==0x8014819C&&a.id!=b.id&&a.id&&a.id!=0xFFFFFFFF);
+ assert(t.lookup_record(a.record)->generation==a.generation);assert(!t.lookup_record(0x80001000));
+ assert(a.id<TransformModelIdLimit&&b.id<TransformModelIdLimit);assert(a.record==0x80148104&&b.record==0x8014819C&&a.id!=b.id&&a.id&&a.id!=0xFFFFFFFF);
  rejects([&]{t.allocate(0x80148108);});rejects([&]{t.allocate(0x123480148104ULL);});rejects([&]{t.allocate(0x148104);});
  auto child=t.allocate(0x80152A3C+899*0x60);assert(child.id!=a.id);
  rejects([&]{t.allocate(0x80152A3C+900*0x60);});
@@ -30,7 +31,7 @@ int main(){
  assert(snapshot->root==0xD2C08&&snapshot->lookup(0x800AA128)->id==a.id);
  assert(snapshot->lookup(0xA00AA168)->id==b.id&&!snapshot->lookup(0xAA1A8));
  rejects([&]{t.consume_task(token.sequence,0xD2C08);});
- t.release(0x80148104);auto again=t.allocate(0x80148104);assert(again.id!=a.id&&again.generation>a.generation);
+ t.release(0x80148104);assert(!t.lookup_record(0x80148104));auto releasedToken=t.publish_task(f,0xD2C08);assert(!t.consume_task(releasedToken.sequence,0xD2C08)->lookup(0xAA128));auto again=t.allocate(0x80148104);assert(again.id!=a.id&&again.generation>a.generation);
  auto f1=t.begin_frame(1,0x800AF228,0x800B4328);
  assert(t.capture_matrix({f1,again.record,0x80000000,0xAA128,0xAF228,0xAF228,0xAF268,0x80400000,TransformMatrixBuilder::Conditional252F8}));
  assert(t.capture_matrix({f1,b.record,0x80000000,0xAA168,0xAF268,0xAF268,0xAF2A8,0x80400000,TransformMatrixBuilder::Conditional252F8}));
@@ -118,3 +119,45 @@ int main(){
    p=Path(d);(p/'test.cpp').write_text(source)
    subprocess.run(['c++','-std=c++20','-pthread','-I'+str(ROOT/'src'),str(p/'test.cpp'),str(ROOT/'src/runtime/transform_tracker.cpp'),'-o',str(p/'test')],check=True,capture_output=True)
    subprocess.run([str(p/'test')],check=True,capture_output=True)
+
+ def test_first_quarantine_diagnostic_is_gated_and_keeps_fingerprint_evidence(self):
+  # A missing report, altered fingerprint or repeated reporting loses the first cause.
+  import json,os
+  source=r'''#include "runtime/transform_tracker.hpp"
+#include <cassert>
+#include <string>
+#include <thread>
+using namespace iss2000;
+int main(int argc,char** argv){
+ assert(argc==2);std::string mode=argv[1];TransformTracker t(us_transform_layout());t.begin_scene(0x604);
+ TransformTaskFingerprint fp{0x800D2C08,0x80069250,0x8009C8E0,0x200};
+ if(mode!="empty")t.submit_task(1,fp);
+ auto wrong=fp;wrong.data_size=0x208;
+ if(mode=="thread"){std::thread worker([&]{assert(!t.submit_task(1,wrong));});worker.join();}
+ else if(mode=="invalid"){wrong.data_ptr=0x90000000;assert(!t.consume_submission(wrong));}
+ else if(mode=="missing"){t.consume_task(1,fp.data_ptr);assert(!t.consume_submission(fp));}
+ else assert(!t.consume_submission(mode=="empty"?fp:wrong));
+ assert(!t.submissions_synchronized());
+ t.invalidate_scene();for(int n=0;n<3;++n){assert(!t.submit_task(1,fp));assert(!t.consume_submission(fp));}
+}
+'''
+  with tempfile.TemporaryDirectory() as d:
+   p=Path(d);(p/'test.cpp').write_text(source)
+   subprocess.run(['c++','-std=c++20','-pthread','-I'+str(ROOT/'src'),str(p/'test.cpp'),str(ROOT/'src/runtime/transform_tracker.cpp'),'-o',str(p/'test')],check=True,capture_output=True)
+   env=os.environ.copy();env.pop('ISS2000_RENDER_EVIDENCE',None)
+   for gate in (None,'','unused-evidence-path'):
+    if gate is not None:env['ISS2000_RENDER_EVIDENCE']=gate
+    for mode,reason in [('mismatch','fingerprint_mismatch'),('thread','producer_changed'),('empty','empty_queue'),('invalid','invalid_fingerprint'),('missing','missing_snapshot')]:
+     with self.subTest(gate=gate,mode=mode):
+      result=subprocess.run([str(p/'test'),mode],env=env,text=True,capture_output=True,check=True)
+      if not gate:self.assertEqual(result.stderr,'');continue
+      lines=result.stderr.splitlines();self.assertEqual(len(lines),1)
+      report=json.loads(lines[0]);self.assertEqual(report['event'],'transform_quarantine');self.assertEqual(report['reason'],reason)
+      self.assertEqual(report['scene'],0x604);self.assertEqual(report['epoch'],1)
+      self.assertEqual(report['producer_changed'],mode=='thread')
+      self.assertEqual(report['queued'],0 if mode=='empty' else 1)
+      self.assertEqual(report['pending'],0 if mode in ('empty','missing') else 1)
+      self.assertEqual(report['head_sequence'],0 if mode=='empty' else 1)
+      expected={'data_ptr':0xD2C08,'ucode':0x69250,'ucode_data':0x9C8E0,'data_size':0x200}
+      self.assertEqual(report['expected'],None if mode=='empty' else expected)
+      self.assertEqual(report['observed'],{'data_ptr':0x90000000 if mode=='invalid' else 0x800D2C08,'ucode':0x80069250,'ucode_data':0x8009C8E0,'data_size':0x200 if mode in ('empty','missing') else 0x208})

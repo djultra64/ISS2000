@@ -24,6 +24,15 @@ def derive(source: bytes, kind: str) -> bytes:
     if hashlib.sha256(source).hexdigest() != profile['source_sha256']:
         raise ValueError('Pinned PAL '+kind+' generated source digest mismatch')
     text = source.decode()
+    # C++ COFF drops the upstream Clang extern-inline definition when this
+    # private entry has no callers in its translation unit. Keep the original
+    # header intact and give only this derivative a strong, non-inline entry.
+    include = '#include "recomp.h"\n'
+    if text.count(include) != 1:
+        raise ValueError('Original recomp header include is not unique')
+    text = text.replace(include, include +
+        '#ifdef _WIN32\n#undef RECOMP_FUNC\n'
+        '#define RECOMP_FUNC __declspec(noinline)\n#endif\n')
     def replace(old, new):
         nonlocal text
         if text.count(old) != 1:

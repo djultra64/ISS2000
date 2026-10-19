@@ -27,6 +27,10 @@ public:
     uint8_t plugged_mask() const;
     int read_block(unsigned port,uint16_t block,PakBlock& output);
     int write_block(unsigned port,uint16_t block,const PakBlock& input,bool force);
+    // Called around the real SDK file-write function. Low-level blocks remain
+    // visible to that thread; successful return requires one durable publish.
+    int begin_file_write(unsigned port);
+    int finish_file_write(unsigned port,bool commit);
     std::filesystem::path image_path(unsigned port) const;
     std::string last_error() const;
 };

@@ -168,16 +168,26 @@ def package(platform, executable, output, libraries=(), notices=(), *,
                 'BASE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)\n'
                 'export LD_LIBRARY_PATH="$BASE/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"\n'
                 'cd -- "$BASE"\n'
-                'exec "$BASE"/'+shlex.quote(executable.name)+' "$@"\n')
+                'exec "$BASE"/'+shlex.quote(executable.name)+' "$@" >>"$BASE/data/runtime.log" 2>&1\n')
             launcher.chmod(0o755)
         launch='Run ./launch.sh' if platform=='linux' else 'Run '+executable.name
         (output/'README.txt').write_text('ISS2000 portable folder\n\n'+launch+'.\n'
             'Original project work: djultra64.\n'
+            'Source and releases: https://github.com/djultra64/ISS2000\n'
             f'Supported ROM: {identity["revision_id"]} (English).\n'
             f'Canonical SHA-256: {identity["sha256"]}\n'
             'The application prompts for your supported ROM on first launch.\n'
             'Keep portable settings and saves in data/ beside the executable.\n'
+            'On Linux, launch.sh appends execution details to data/runtime.log for troubleshooting.\n'
+            'Open Option, then PC Settings, for graphics, presentation and controllers.\n'
+            'Original game Resolution is fixed at High; PC render resolution is separate.\n'
+            'Filtering selects 2D Original or 2D Bilinear; Original is the default.\n'
             'screenshots/ is reserved for captures made after launch.\n\n'
+            'Independent fan project, not affiliated with Konami or Nintendo.\n'
+            'Original project code: GPL-3.0-or-later; dependencies retain their licenses.\n'
+            'Original game and trademark rights are not granted by that license.\n'
+            'See licenses/ and the public source repository for complete notices.\n'
+            'Created with OpenAI Codex assistance under the direction of djultra64.\n\n'
             'No ROM, game assets, saves, source code or research captures are included.\n'
             'Only the supplied executable, explicitly selected libraries and text notices were copied.\n'
             'Packaging does not establish that this build boots or is playable.\n')

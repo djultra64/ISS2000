@@ -73,7 +73,20 @@ int main(int argc,char** argv){
                               capture_output=True,text=True,timeout=10)
     def test_missing_settings_defaults_without_creating_files(self):
         r=self.run_native('load');self.assertEqual(r.returncode,0,r.stderr)
-        self.assertEqual(json.loads(r.stdout),dict(self.settings(),aspectRatio="16:9"));self.assertEqual(list(self.data.iterdir()),[])
+        self.assertEqual(json.loads(r.stdout),dict(self.settings(),aspectRatio="16:9",resolution="720",refreshRate="60"));self.assertEqual(list(self.data.iterdir()),[])
+    def test_fullscreen_roundtrip_preserves_legacy_settings_and_rejects_invalid_types(self):
+        legacy=self.settings()
+        self.assertEqual(self.run_native('parse',legacy).returncode,0)
+        fullscreen=dict(legacy,fullscreen=True)
+        result=self.run_native('save',fullscreen)
+        self.assertEqual(result.returncode,0,result.stderr)
+        self.assertEqual(json.loads(self.run_native('load').stdout),fullscreen)
+        for invalid in ['yes',1,None]:
+            result=self.run_native('parse',dict(legacy,fullscreen=invalid))
+            self.assertNotEqual(result.returncode,0)
+        self.assertEqual(self.run_native('save',legacy).returncode,0)
+        self.assertEqual(json.loads(self.run_native('load').stdout),legacy)
+
     def test_all_supported_options_roundtrip_and_resolution_scale(self):
         for aspect in ['4:3','16:9']:
             for resolution,height in [('Original',240),('720',720),('900',900),('1080',1080),('1440',1440),('1800',1800),('2160',2160)]:
@@ -102,6 +115,21 @@ int main(int argc,char** argv){
             v=dict(good);v[field]=bad;values.append(json.dumps(v))
         for value in values:
             r=self.run_native('parse',value);self.assertNotEqual(r.returncode,0,value)
+    def test_2d_filter_roundtrip_and_legacy_default(self):
+        legacy=self.settings()
+        self.assertEqual(json.loads(self.run_native('parse',legacy).stdout),legacy)
+        filtered=dict(legacy,filter2D='Bilinear')
+        for fullscreen in [False,True]:
+            value=dict(filtered,**({'fullscreen':True} if fullscreen else {}))
+            result=self.run_native('save',value)
+            self.assertEqual(result.returncode,0,result.stderr)
+            self.assertEqual(json.loads(self.run_native('load').stdout),value)
+        for invalid in ['Linear','On',1,True,None]:
+            self.assertNotEqual(self.run_native('parse',dict(legacy,filter2D=invalid)).returncode,0)
+        result=self.run_native('parse',dict(legacy,filter2D='Original'))
+        self.assertEqual(result.returncode,0,result.stderr)
+        self.assertEqual(json.loads(result.stdout),legacy)
+
     def test_malformed_existing_is_reported_and_preserved(self):
         path=self.data/'graphics.json';path.write_text('{broken')
         r=self.run_native('load');self.assertNotEqual(r.returncode,0);self.assertEqual(path.read_text(),'{broken')

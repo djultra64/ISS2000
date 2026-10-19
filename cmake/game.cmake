@@ -4,7 +4,7 @@ set(ISS2000_ROM_REVISION "iss2000-pal-en-de-rev0" CACHE STRING "Exact ROM revisi
 set_property(CACHE ISS2000_ROM_REVISION PROPERTY STRINGS iss2000-us-rev0 iss2000-pal-en-de-rev0)
 if(ISS2000_ROM_REVISION STREQUAL "iss2000-pal-en-de-rev0")
   set(ISS2000_DEFAULT_CPU "${CMAKE_SOURCE_DIR}/.local/pal-map-bound-01/functions")
-  set(ISS2000_DEFAULT_METADATA "${CMAKE_SOURCE_DIR}/.local/pal-native-metadata-02")
+  set(ISS2000_DEFAULT_METADATA "${CMAKE_SOURCE_DIR}/.local/pal-native-metadata-04")
 elseif(ISS2000_ROM_REVISION STREQUAL "iss2000-us-rev0")
   set(ISS2000_DEFAULT_CPU "${CMAKE_SOURCE_DIR}/.local/runtime-map-04/functions")
   set(ISS2000_DEFAULT_METADATA "${CMAKE_SOURCE_DIR}/.local/native-metadata-09")
@@ -86,7 +86,7 @@ if(ISS2000_ROM_REVISION STREQUAL "iss2000-pal-en-de-rev0")
       --output "${ISS2000_RENDER_PATCH_OUTPUT}"
     COMMAND "${Python3_EXECUTABLE}" -m tools.prepare_runtime_timing
       --source "${ISS2000_RUNTIME_SOURCE}/ultramodern/src/events.cpp"
-      --output "${CMAKE_CURRENT_BINARY_DIR}/pal-runtime-timing-v3"
+      --output "${CMAKE_CURRENT_BINARY_DIR}/pal-runtime-timing-v4"
     WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}" VERBATIM)
 else()
   add_custom_target(iss2000_verify_native_inputs COMMAND ${ISS2000_VERIFY_COMMAND}
@@ -100,12 +100,12 @@ if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
   target_compile_options(iss2000_original PRIVATE -O1 -fexceptions -fno-strict-aliasing)
 endif()
 add_executable(iss2000
-  src/game_main.cpp src/platform.cpp src/renderer.cpp src/runtime/native_game.cpp src/runtime/rom_image.cpp src/runtime/ntsc_match_clock.cpp src/runtime/debug_console.cpp src/runtime/graphics_settings.cpp src/runtime/input_preferences.cpp src/runtime/test_controller.cpp src/runtime/controller_pak.cpp src/runtime/pak_services.cpp src/runtime/settings_dialog.cpp src/runtime/prompt_textures.cpp src/runtime/prompt_text.cpp src/runtime/prompt_encoded.cpp src/runtime/widescreen_culling.cpp src/runtime/transform_tracker.cpp src/runtime/transform_runtime.cpp src/runtime/graphics_task_bank.cpp src/runtime/rt64_transform_bridge.cpp
+  src/game_main.cpp src/platform.cpp src/renderer.cpp src/runtime/native_game.cpp src/runtime/rom_image.cpp src/runtime/ntsc_match_clock.cpp src/runtime/debug_console.cpp src/runtime/graphics_settings.cpp src/runtime/input_preferences.cpp src/runtime/test_controller.cpp src/runtime/controller_pak.cpp src/runtime/pak_services.cpp src/runtime/prompt_textures.cpp src/runtime/prompt_text.cpp src/runtime/prompt_encoded.cpp src/runtime/prompt_title_model.cpp src/runtime/widescreen_culling.cpp src/runtime/transform_tracker.cpp src/runtime/transform_runtime.cpp src/runtime/graphics_task_bank.cpp src/runtime/rt64_transform_bridge.cpp
   tests/test_platform_prompts.cpp
   "${ISS2000_NATIVE_METADATA}/native_metadata.cpp" "${ISS2000_NATIVE_METADATA}/native_bindings.cpp" "${ISS2000_NATIVE_METADATA}/native_retained.cpp"
   "${ISS2000_AUDIO_GENERATED}" $<TARGET_OBJECTS:iss2000_original>)
 add_dependencies(iss2000 iss2000_verify_native_inputs)
-target_sources(iss2000 PRIVATE src/runtime/game_controls_menu.cpp)
+target_sources(iss2000 PRIVATE src/runtime/game_controls_menu.cpp src/runtime/game_settings_menu.cpp src/runtime/settings_persistence.cpp src/runtime/controller_schemes.cpp src/runtime/football_controller_editor.cpp src/runtime/pal_main_select.cpp src/runtime/pal_controller_screen.cpp src/runtime/pal_football_input.cpp src/runtime/pal_menu_audio.cpp src/runtime/menu_sprite_runtime.cpp src/runtime/pal_radar_interpolation.cpp src/runtime/menu_sprite_bridge.cpp src/runtime/menu_sprite_render.cpp src/runtime/menu_sprite_match.cpp src/runtime/pal_projected_shadow.cpp src/runtime/pal_shadow_vertices.cpp src/runtime/rt64_shadow_bridge.cpp src/runtime/pal_menu_avatar.cpp src/runtime/pal_team_saved_data.cpp src/runtime/prompt_sprite_draw.cpp src/runtime/render_target_lifetime.cpp)
 target_include_directories(iss2000 PRIVATE
   "${CMAKE_SOURCE_DIR}/src" "${ISS2000_N64RECOMP_SOURCE}/include"
   "${ISS2000_RUNTIME_SOURCE}/librecomp/include" "${ISS2000_RUNTIME_SOURCE}/ultramodern/include"
@@ -141,7 +141,7 @@ endif()
 if(ISS2000_ROM_REVISION STREQUAL "iss2000-pal-en-de-rev0")
   target_compile_definitions(iss2000 PRIVATE ISS2000_PAL_ENGLISH)
   find_package(Python3 REQUIRED COMPONENTS Interpreter)
-  set(ISS2000_PAL_TIMING "${CMAKE_CURRENT_BINARY_DIR}/pal-runtime-timing-v3")
+  set(ISS2000_PAL_TIMING "${CMAKE_CURRENT_BINARY_DIR}/pal-runtime-timing-v4")
   execute_process(COMMAND "${Python3_EXECUTABLE}" -m tools.prepare_runtime_timing
     --source "${ISS2000_RUNTIME_SOURCE}/ultramodern/src/events.cpp"
     --output "${ISS2000_PAL_TIMING}"
@@ -153,6 +153,71 @@ if(ISS2000_ROM_REVISION STREQUAL "iss2000-pal-en-de-rev0")
   # upstream static archive from being extracted; pinned checkout stays pristine.
   target_sources(iss2000 PRIVATE "${ISS2000_PAL_TIMING}/events.cpp")
   set(ISS2000_PAL_ROM "${CMAKE_SOURCE_DIR}/.local/inputs/pal-en-de/rom.z64" CACHE FILEPATH "Private exact PAL ROM used to verify original rendering source generation")
+  set(ISS2000_PAL_NATIVE_PACE "${CMAKE_CURRENT_BINARY_DIR}/pal-native-pace-v2")
+  set(ISS2000_PAL_NATIVE_PACE_COMMAND "${Python3_EXECUTABLE}" -m tools.prepare_pal_native_pace
+    --rom "${ISS2000_PAL_ROM}" --source "${ISS2000_GAME_GENERATED}/func_80000C30_resident.c"
+    --output "${ISS2000_PAL_NATIVE_PACE}")
+  execute_process(COMMAND ${ISS2000_PAL_NATIVE_PACE_COMMAND}
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}" RESULT_VARIABLE pal_native_pace_result)
+  if(NOT pal_native_pace_result EQUAL 0)
+    message(FATAL_ERROR "Could not prepare the pinned PAL native simulation pace")
+  endif()
+  add_custom_target(iss2000_verify_pal_native_pace COMMAND ${ISS2000_PAL_NATIVE_PACE_COMMAND}
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}" VERBATIM)
+  add_dependencies(iss2000 iss2000_verify_pal_native_pace)
+  target_sources(iss2000 PRIVATE "${ISS2000_PAL_NATIVE_PACE}/pal_native_frame_pace.cpp")
+  set(ISS2000_PAL_HIGH_SPRITES "${CMAKE_CURRENT_BINARY_DIR}/pal-high-sprites-v1")
+  set(ISS2000_PAL_HIGH_SPRITES_COMMAND "${Python3_EXECUTABLE}" -m tools.prepare_pal_high_sprites
+    --rom "${ISS2000_PAL_ROM}" --source "${ISS2000_GAME_GENERATED}/func_807AA008_overlay_515890_807aa000.c"
+    --output "${ISS2000_PAL_HIGH_SPRITES}")
+  execute_process(COMMAND ${ISS2000_PAL_HIGH_SPRITES_COMMAND}
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}" RESULT_VARIABLE pal_high_sprites_result)
+  if(NOT pal_high_sprites_result EQUAL 0)
+    message(FATAL_ERROR "Could not prepare the pinned PAL High sprite sampling")
+  endif()
+  add_custom_target(iss2000_verify_pal_high_sprites COMMAND ${ISS2000_PAL_HIGH_SPRITES_COMMAND}
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}" VERBATIM)
+  add_dependencies(iss2000 iss2000_verify_pal_high_sprites)
+  target_sources(iss2000 PRIVATE "${ISS2000_PAL_HIGH_SPRITES}/pal_high_sprite_edges.cpp")
+  set(ISS2000_PAL_RADAR "${CMAKE_CURRENT_BINARY_DIR}/pal-radar-interpolation-v1")
+  set(ISS2000_PAL_RADAR_COMMAND "${Python3_EXECUTABLE}" -m tools.prepare_pal_radar_interpolation
+    --rom "${ISS2000_PAL_ROM}" --source "${ISS2000_GAME_GENERATED}/func_802A5290_overlay_376010_802a4380.c"
+    --output "${ISS2000_PAL_RADAR}")
+  execute_process(COMMAND ${ISS2000_PAL_RADAR_COMMAND}
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}" RESULT_VARIABLE pal_radar_result)
+  if(NOT pal_radar_result EQUAL 0)
+    message(FATAL_ERROR "Could not prepare the pinned PAL radar metadata")
+  endif()
+  add_custom_target(iss2000_verify_pal_radar COMMAND ${ISS2000_PAL_RADAR_COMMAND}
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}" VERBATIM)
+  add_dependencies(iss2000 iss2000_verify_pal_radar)
+  target_sources(iss2000 PRIVATE "${ISS2000_PAL_RADAR}/pal_radar_callback.cpp")
+  set(ISS2000_PAL_FIXED_HIGH "${CMAKE_CURRENT_BINARY_DIR}/pal-fixed-high-v3")
+  set(ISS2000_PAL_FIXED_HIGH_COMMAND "${Python3_EXECUTABLE}" -m tools.prepare_pal_fixed_high
+    --rom "${ISS2000_PAL_ROM}" --source "${ISS2000_GAME_GENERATED}/func_80008C30_resident.c"
+    --output "${ISS2000_PAL_FIXED_HIGH}")
+  execute_process(COMMAND ${ISS2000_PAL_FIXED_HIGH_COMMAND}
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}" RESULT_VARIABLE pal_fixed_high_result)
+  if(NOT pal_fixed_high_result EQUAL 0)
+    message(FATAL_ERROR "Could not prepare the pinned PAL fixed High preference")
+  endif()
+  add_custom_target(iss2000_verify_pal_fixed_high COMMAND ${ISS2000_PAL_FIXED_HIGH_COMMAND}
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}" VERBATIM)
+  add_dependencies(iss2000 iss2000_verify_pal_fixed_high)
+  target_sources(iss2000 PRIVATE src/runtime/pal_options_skin.cpp src/runtime/pal_options_row_font.cpp src/runtime/pal_options_entry.cpp "${ISS2000_PAL_FIXED_HIGH}/pal_fixed_high_initializer.cpp")
+  set(ISS2000_PAL_FRAMEBUFFER_OWNERSHIP "${CMAKE_CURRENT_BINARY_DIR}/pal-framebuffer-ownership-v2")
+  set(ISS2000_PAL_FRAMEBUFFER_OWNERSHIP_COMMAND "${Python3_EXECUTABLE}" -m tools.prepare_pal_framebuffer_ownership
+    --rom "${ISS2000_PAL_ROM}" --source "${ISS2000_GAME_GENERATED}/func_8001D480_resident.c"
+    --output "${ISS2000_PAL_FRAMEBUFFER_OWNERSHIP}")
+  execute_process(COMMAND ${ISS2000_PAL_FRAMEBUFFER_OWNERSHIP_COMMAND}
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}" RESULT_VARIABLE pal_framebuffer_ownership_result)
+  if(NOT pal_framebuffer_ownership_result EQUAL 0)
+    message(FATAL_ERROR "Could not prepare the pinned PAL framebuffer ownership correction")
+  endif()
+  add_custom_target(iss2000_verify_pal_framebuffer_ownership COMMAND ${ISS2000_PAL_FRAMEBUFFER_OWNERSHIP_COMMAND}
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}" VERBATIM)
+  add_dependencies(iss2000 iss2000_verify_pal_framebuffer_ownership)
+  target_sources(iss2000 PRIVATE "${ISS2000_PAL_FRAMEBUFFER_OWNERSHIP}/pal_framebuffer_allocator.cpp")
   set(ISS2000_PAL_DETAIL "${CMAKE_CURRENT_BINARY_DIR}/pal-max-detail-v1")
   set(ISS2000_PAL_DETAIL_COMMAND "${Python3_EXECUTABLE}" -m tools.prepare_pal_max_detail
     --rom "${ISS2000_PAL_ROM}"
@@ -170,6 +235,46 @@ if(ISS2000_ROM_REVISION STREQUAL "iss2000-pal-en-de-rev0")
   target_sources(iss2000 PRIVATE "${ISS2000_PAL_DETAIL}/pal_max_detail_models.cpp"
     "${ISS2000_PAL_DETAIL}/pal_max_detail_shadows.cpp")
   set(ISS2000_PAL_RUMBLE_UI "${CMAKE_CURRENT_BINARY_DIR}/pal-rumble-ui-v1")
+  set(ISS2000_PAL_EXPANSION_UI "${CMAKE_CURRENT_BINARY_DIR}/pal-expansion-ui-v1")
+  set(ISS2000_PAL_EXPANSION_UI_COMMAND "${Python3_EXECUTABLE}" -m tools.prepare_pal_expansion_ui
+    --rom "${ISS2000_PAL_ROM}"
+    --source "${ISS2000_GAME_GENERATED}/func_802B1FDC_overlay_481680_802b1070.c"
+    --output "${ISS2000_PAL_EXPANSION_UI}")
+  execute_process(COMMAND ${ISS2000_PAL_EXPANSION_UI_COMMAND}
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}" RESULT_VARIABLE pal_expansion_ui_result)
+  if(NOT pal_expansion_ui_result EQUAL 0)
+    message(FATAL_ERROR "Could not prepare the pinned PAL Expansion Pak notice continuation")
+  endif()
+  add_custom_target(iss2000_verify_pal_expansion_ui COMMAND ${ISS2000_PAL_EXPANSION_UI_COMMAND}
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}" VERBATIM)
+  add_dependencies(iss2000 iss2000_verify_pal_expansion_ui)
+  target_sources(iss2000 PRIVATE "${ISS2000_PAL_EXPANSION_UI}/pal_skip_expansion_notice.cpp")
+  set(ISS2000_PAL_AUTO_STORAGE_UI "${CMAKE_CURRENT_BINARY_DIR}/pal-auto-storage-ui-v6")
+  set(ISS2000_PAL_AUTO_STORAGE_UI_COMMAND "${Python3_EXECUTABLE}" -m tools.prepare_pal_auto_storage_ui
+    --rom "${ISS2000_PAL_ROM}"
+    --source "${ISS2000_GAME_GENERATED}/func_802B1CC8_overlay_481680_802b1070.c"
+    --output "${ISS2000_PAL_AUTO_STORAGE_UI}")
+  execute_process(COMMAND ${ISS2000_PAL_AUTO_STORAGE_UI_COMMAND}
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}" RESULT_VARIABLE pal_auto_storage_ui_result)
+  if(NOT pal_auto_storage_ui_result EQUAL 0)
+    message(FATAL_ERROR "Could not prepare the pinned PAL Expansion Pak notice continuation")
+  endif()
+  add_custom_target(iss2000_verify_pal_auto_storage_ui COMMAND ${ISS2000_PAL_AUTO_STORAGE_UI_COMMAND}
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}" VERBATIM)
+  add_dependencies(iss2000 iss2000_verify_pal_auto_storage_ui)
+  target_sources(iss2000 PRIVATE "${ISS2000_PAL_AUTO_STORAGE_UI}/pal_automatic_storage_ui.cpp")
+  set(ISS2000_PAL_STORAGE_TEXT "${CMAKE_CURRENT_BINARY_DIR}/pal-storage-text-v2")
+  set(ISS2000_PAL_STORAGE_TEXT_COMMAND "${Python3_EXECUTABLE}" -m tools.prepare_pal_storage_text
+    --rom "${ISS2000_PAL_ROM}" --output "${ISS2000_PAL_STORAGE_TEXT}")
+  execute_process(COMMAND ${ISS2000_PAL_STORAGE_TEXT_COMMAND}
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}" RESULT_VARIABLE pal_storage_text_result)
+  if(NOT pal_storage_text_result EQUAL 0)
+    message(FATAL_ERROR "Could not prepare the pinned PAL save wording")
+  endif()
+  add_custom_target(iss2000_verify_pal_storage_text COMMAND ${ISS2000_PAL_STORAGE_TEXT_COMMAND}
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}" VERBATIM)
+  add_dependencies(iss2000 iss2000_verify_pal_storage_text)
+  target_sources(iss2000 PRIVATE "${ISS2000_PAL_STORAGE_TEXT}/pal_storage_text.cpp")
   set(ISS2000_PAL_RUMBLE_UI_COMMAND "${Python3_EXECUTABLE}" -m tools.prepare_pal_rumble_ui
     --rom "${ISS2000_PAL_ROM}" --generated "${ISS2000_GAME_GENERATED}"
     --output "${ISS2000_PAL_RUMBLE_UI}")
@@ -196,7 +301,7 @@ if(ISS2000_ROM_REVISION STREQUAL "iss2000-pal-en-de-rev0")
   add_custom_target(iss2000_verify_pal_sky COMMAND ${ISS2000_PAL_SKY_COMMAND}
     WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}" VERBATIM)
   add_dependencies(iss2000 iss2000_verify_pal_sky)
-  target_sources(iss2000 PRIVATE src/runtime/pal_sky_widescreen.cpp src/runtime/pal_hud_widescreen.cpp "${ISS2000_PAL_SKY}/pal_wide_sky.cpp")
+  target_sources(iss2000 PRIVATE src/runtime/pal_sky_widescreen.cpp src/runtime/pal_hud_widescreen.cpp src/runtime/pal_background_widescreen.cpp "${ISS2000_PAL_SKY}/pal_wide_sky.cpp")
   set(ISS2000_PAL_VI "${CMAKE_CURRENT_BINARY_DIR}/pal-rt64-vi-v1")
   set(ISS2000_PAL_VI_COMMAND "${Python3_EXECUTABLE}" -m tools.prepare_rt64_vi
     --source "${ISS2000_RT64_SOURCE}/src/hle/rt64_vi.cpp" --output "${ISS2000_PAL_VI}")
@@ -212,9 +317,111 @@ if(ISS2000_ROM_REVISION STREQUAL "iss2000-pal-en-de-rev0")
   set_source_files_properties("${ISS2000_PAL_VI}/rt64_vi.cpp"
     PROPERTIES COMPILE_DEFINITIONS "HLSL_CPU;FFX_GCC")
 
+  set(ISS2000_PAL_FORMATION_PERSISTENCE "${CMAKE_CURRENT_BINARY_DIR}/pal-formation-persistence-v1")
+  set(ISS2000_PAL_FORMATION_PERSISTENCE_COMMAND "${Python3_EXECUTABLE}" -m tools.prepare_pal_formation_persistence
+    --rom "${ISS2000_PAL_ROM}" --source "${ISS2000_GAME_GENERATED}/func_802A3464_overlay_3e83d0_8029eea0.c"
+    --output "${ISS2000_PAL_FORMATION_PERSISTENCE}")
+  execute_process(COMMAND ${ISS2000_PAL_FORMATION_PERSISTENCE_COMMAND}
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}" RESULT_VARIABLE pal_formation_persistence_result)
+  if(NOT pal_formation_persistence_result EQUAL 0)
+    message(FATAL_ERROR "Could not prepare the pinned PAL formation persistence correction")
+  endif()
+  add_custom_target(iss2000_verify_pal_formation_persistence COMMAND ${ISS2000_PAL_FORMATION_PERSISTENCE_COMMAND}
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}" VERBATIM)
+  add_dependencies(iss2000 iss2000_verify_pal_formation_persistence)
+  target_sources(iss2000 PRIVATE "${ISS2000_PAL_FORMATION_PERSISTENCE}/pal_formation_save.cpp")
+
+  add_custom_target(iss2000_verify_real_names
+    COMMAND "${Python3_EXECUTABLE}" -m tools.generate_pal_real_names --check
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}" VERBATIM)
+  add_dependencies(iss2000 iss2000_verify_real_names)
+  target_sources(iss2000 PRIVATE src/runtime/pal_real_names.cpp src/runtime/pal_real_names_data.cpp)
+
+  set(ISS2000_FILTER_2D "${CMAKE_CURRENT_BINARY_DIR}/rt64-filter-2d-v3")
+  set(ISS2000_FILTER_2D_COMMAND "${Python3_EXECUTABLE}" -m tools.prepare_rt64_filter_2d
+    --source "${ISS2000_RT64_SOURCE}/src/hle/rt64_state.cpp" --output "${ISS2000_FILTER_2D}")
+  execute_process(COMMAND ${ISS2000_FILTER_2D_COMMAND}
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}" RESULT_VARIABLE filter_2d_result)
+  if(NOT filter_2d_result EQUAL 0)
+    message(FATAL_ERROR "Could not prepare the pinned 2D shader filtering option")
+  endif()
+  add_custom_target(iss2000_verify_filter_2d COMMAND ${ISS2000_FILTER_2D_COMMAND}
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}" VERBATIM)
+  add_dependencies(iss2000 iss2000_verify_filter_2d)
+  target_sources(iss2000 PRIVATE "${ISS2000_FILTER_2D}/rt64_state.cpp")
+  target_include_directories(iss2000 PRIVATE "${ISS2000_RT64_SOURCE}/src/contrib/imgui")
+  set_source_files_properties("${ISS2000_FILTER_2D}/rt64_state.cpp"
+    PROPERTIES COMPILE_DEFINITIONS "HLSL_CPU;FFX_GCC")
+  # Pinned upstream State uses the pre-C++20 filesystem u8string interface.
+  if(MSVC)
+    set_property(SOURCE "${ISS2000_FILTER_2D}/rt64_state.cpp" APPEND PROPERTY COMPILE_OPTIONS /std:c++17)
+  else()
+    set_property(SOURCE "${ISS2000_FILTER_2D}/rt64_state.cpp" APPEND PROPERTY COMPILE_OPTIONS -std=c++17)
+  endif()
+
+  set(ISS2000_SPRITE_PHASE "${CMAKE_CURRENT_BINARY_DIR}/rt64-sprite-phase-v5")
+  set(ISS2000_SPRITE_PHASE_COMMAND "${Python3_EXECUTABLE}" -m tools.prepare_rt64_sprite_phase
+    --source "${ISS2000_RT64_SOURCE}/src/render/rt64_framebuffer_renderer.cpp"
+    --output "${ISS2000_SPRITE_PHASE}")
+  execute_process(COMMAND ${ISS2000_SPRITE_PHASE_COMMAND}
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}" RESULT_VARIABLE sprite_phase_result)
+  if(NOT sprite_phase_result EQUAL 0)
+    message(FATAL_ERROR "Could not prepare the pinned sprite viewport alignment")
+  endif()
+  add_custom_target(iss2000_verify_sprite_phase COMMAND ${ISS2000_SPRITE_PHASE_COMMAND}
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}" VERBATIM)
+  add_dependencies(iss2000 iss2000_verify_sprite_phase)
+  # Defining this complete source keeps the original archive object unextracted.
+  # The pinned dependency checkout is read-only.
+  target_sources(iss2000 PRIVATE "${ISS2000_SPRITE_PHASE}/rt64_framebuffer_renderer.cpp")
+  target_include_directories(iss2000 PRIVATE "${ISS2000_RT64_SOURCE}/src/render")
+  set_source_files_properties("${ISS2000_SPRITE_PHASE}/rt64_framebuffer_renderer.cpp"
+    PROPERTIES COMPILE_DEFINITIONS "HLSL_CPU;FFX_GCC")
+
+
 endif()
 option(ISS2000_ENABLE_RENDER_EVIDENCE "Enable private RT64 render evidence instrumentation" OFF)
-if(ISS2000_ENABLE_RENDER_EVIDENCE)
+if(ISS2000_ROM_REVISION STREQUAL "iss2000-pal-en-de-rev0")
+  set(ISS2000_MENU_QUEUE "${CMAKE_CURRENT_BINARY_DIR}/rt64-menu-interpolation-v4")
+  set(ISS2000_MENU_QUEUE_COMMAND "${Python3_EXECUTABLE}" -m tools.prepare_rt64_menu_interpolation
+    --source "${ISS2000_RT64_SOURCE}/src/hle/rt64_workload_queue.cpp")
+  if(ISS2000_ENABLE_RENDER_EVIDENCE)
+    string(APPEND ISS2000_MENU_QUEUE "-evidence")
+    list(APPEND ISS2000_MENU_QUEUE_COMMAND --evidence)
+  endif()
+  list(APPEND ISS2000_MENU_QUEUE_COMMAND --output "${ISS2000_MENU_QUEUE}")
+  execute_process(COMMAND ${ISS2000_MENU_QUEUE_COMMAND}
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}" RESULT_VARIABLE menu_queue_result)
+  if(NOT menu_queue_result EQUAL 0)
+    message(FATAL_ERROR "Could not prepare pinned menu rectangle interpolation")
+  endif()
+  add_custom_target(iss2000_verify_menu_queue COMMAND ${ISS2000_MENU_QUEUE_COMMAND}
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}" VERBATIM)
+  add_dependencies(iss2000 iss2000_verify_menu_queue)
+  target_sources(iss2000 PRIVATE "${ISS2000_MENU_QUEUE}/rt64_workload_queue.cpp")
+  set_source_files_properties("${ISS2000_MENU_QUEUE}/rt64_workload_queue.cpp"
+    PROPERTIES COMPILE_DEFINITIONS "HLSL_CPU;FFX_GCC")
+  set(ISS2000_PRESENT_LIFETIME "${CMAKE_CURRENT_BINARY_DIR}/rt64-present-lifetime-v2")
+  set(ISS2000_PRESENT_LIFETIME_COMMAND "${Python3_EXECUTABLE}" -m tools.prepare_rt64_present_lifetime
+    --source "${ISS2000_RT64_SOURCE}/src/hle/rt64_present_queue.cpp")
+  if(ISS2000_ENABLE_RENDER_EVIDENCE)
+    string(APPEND ISS2000_PRESENT_LIFETIME "-evidence")
+    list(APPEND ISS2000_PRESENT_LIFETIME_COMMAND --evidence)
+  endif()
+  list(APPEND ISS2000_PRESENT_LIFETIME_COMMAND --output "${ISS2000_PRESENT_LIFETIME}")
+  execute_process(COMMAND ${ISS2000_PRESENT_LIFETIME_COMMAND}
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}" RESULT_VARIABLE present_lifetime_result)
+  if(NOT present_lifetime_result EQUAL 0)
+    message(FATAL_ERROR "Could not prepare pinned presentation target lifetime")
+  endif()
+  add_custom_target(iss2000_verify_present_lifetime COMMAND ${ISS2000_PRESENT_LIFETIME_COMMAND}
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}" VERBATIM)
+  add_dependencies(iss2000 iss2000_verify_present_lifetime)
+  target_sources(iss2000 PRIVATE "${ISS2000_PRESENT_LIFETIME}/rt64_present_queue.cpp")
+  set_source_files_properties("${ISS2000_PRESENT_LIFETIME}/rt64_present_queue.cpp"
+    PROPERTIES COMPILE_DEFINITIONS "HLSL_CPU;FFX_GCC")
+endif()
+if(ISS2000_ENABLE_RENDER_EVIDENCE AND NOT ISS2000_ROM_REVISION STREQUAL "iss2000-pal-en-de-rev0")
   set(ISS2000_RENDER_EVIDENCE_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/rt64-render-evidence")
   set(ISS2000_RENDER_EVIDENCE_COMMAND "${Python3_EXECUTABLE}" -m tools.prepare_render_evidence
     --source "${ISS2000_RT64_SOURCE}/src/hle" --output "${ISS2000_RENDER_EVIDENCE_OUTPUT}")
@@ -228,14 +435,21 @@ if(ISS2000_ENABLE_RENDER_EVIDENCE)
     WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}" VERBATIM)
   add_dependencies(iss2000 iss2000_verify_render_evidence)
   set(ISS2000_RENDER_EVIDENCE_SOURCES
-    "${ISS2000_RENDER_EVIDENCE_OUTPUT}/rt64_workload_queue.cpp"
     "${ISS2000_RENDER_EVIDENCE_OUTPUT}/rt64_present_queue.cpp")
+  if(NOT ISS2000_ROM_REVISION STREQUAL "iss2000-pal-en-de-rev0")
+    list(APPEND ISS2000_RENDER_EVIDENCE_SOURCES "${ISS2000_RENDER_EVIDENCE_OUTPUT}/rt64_workload_queue.cpp")
+  endif()
   target_sources(iss2000 PRIVATE ${ISS2000_RENDER_EVIDENCE_SOURCES})
   set_source_files_properties(${ISS2000_RENDER_EVIDENCE_SOURCES}
     PROPERTIES COMPILE_DEFINITIONS "HLSL_CPU;FFX_GCC")
 endif()
 target_link_libraries(iss2000 PRIVATE SDL2::SDL2 Threads::Threads ${CMAKE_DL_LIBS})
 if(WIN32)
+  # Keep the SDL_MAIN_HANDLED main entry without opening a separate console.
+  set_target_properties(iss2000 PROPERTIES WIN32_EXECUTABLE TRUE)
+  target_link_options(iss2000 PRIVATE /ENTRY:mainCRTStartup)
+  target_compile_definitions(iss2000 PRIVATE NOMINMAX)
+  target_include_directories(iss2000 PRIVATE "${ISS2000_RT64_SOURCE}/src/contrib/dxc/inc")
   # Upstream targets are linked here as private static archives, so their
   # Windows SDK/import-library dependencies must be preserved explicitly.
   set(ISS2000_DXC_IMPORT "${ISS2000_RT64_SOURCE}/src/contrib/dxc/lib/x64/dxcompiler.lib")
@@ -251,7 +465,7 @@ if(UNIX AND NOT APPLE)
   find_library(ISS2000_DBUS_LIBRARY NAMES dbus-1 HINTS /home/linuxbrew/.linuxbrew/lib REQUIRED)
   target_link_libraries(iss2000 PRIVATE "${ISS2000_DBUS_LIBRARY}")
 endif()
-set_source_files_properties(src/renderer.cpp src/runtime/rt64_transform_bridge.cpp PROPERTIES COMPILE_DEFINITIONS "HLSL_CPU;FFX_GCC")
+set_source_files_properties(src/renderer.cpp src/runtime/rt64_transform_bridge.cpp src/runtime/menu_sprite_bridge.cpp src/runtime/menu_sprite_render.cpp src/runtime/rt64_shadow_bridge.cpp PROPERTIES COMPILE_DEFINITIONS "HLSL_CPU;FFX_GCC")
 
 option(ISS2000_ENABLE_INPUT_TESTING "Enable app-only virtual controller test fixture" OFF)
 if(ISS2000_ENABLE_INPUT_TESTING)

@@ -13,6 +13,16 @@ using namespace iss2000;
 using namespace iss2000::platform;
 int main(int,char** argv){GameControlsMenu menu;PortPreferences initial;
  auto tick=[&](ControlsMenuCommand c,uint32_t held=0){menu.update(c,held,Family::Nintendo,{});};
+ if(std::string(argv[1])=="restore_vibration"||std::string(argv[1])=="restore_row_vibration"){
+  initial.vibration=false;initial.bindings[0]=SDL_CONTROLLER_BUTTON_X;
+  assert(menu.open(2,initial));
+  for(int i=0;i<15;++i)tick(ControlsMenuCommand::Down);
+  tick(std::string(argv[1])=="restore_vibration"?ControlsMenuCommand::RestoreDefault:ControlsMenuCommand::Accept);
+  tick(ControlsMenuCommand::Down);bool saved=false;
+  menu.update(ControlsMenuCommand::Accept,0,Family::Xbox,[&](unsigned port,const PortPreferences& draft){
+   saved=true;assert(port==2&&!draft.vibration);assert(draft.bindings==PortPreferences{}.bindings);return true;
+  });assert(saved&&!menu.active());return 0;
+ }
  assert(!menu.open(4,initial));assert(menu.open(2,initial));assert(!menu.open(1,initial));
  assert(menu.active()&&menu.port()==2);auto lines=menu.lines(Family::Nintendo);assert(lines[0].text=="Remap Gamepad P3");
  assert(lines[2].text.find("N64 A   B")!=std::string::npos);
@@ -71,6 +81,9 @@ class GameControlsMenuTests(unittest.TestCase):
   if result.returncode:raise RuntimeError(result.stderr)
  @classmethod
  def tearDownClass(cls):cls.tmp.cleanup()
+ def test_restoring_button_bindings_preserves_vibration_preference(self):
+  for mode in ['restore_vibration','restore_row_vibration']:
+   with self.subTest(mode=mode):subprocess.run([str(self.binary),mode],check=True,timeout=10)
  def test_conflicting_draft_is_rejected_until_swap_is_completed(self):subprocess.run([str(self.binary),'conflict'],check=True,timeout=10)
  def test_restore_defaults_clears_conflict_and_preserves_axis_fallbacks(self):subprocess.run([str(self.binary),'conflict_restore'],check=True,timeout=10)
  def test_cancel_does_not_apply_draft(self):subprocess.run([str(self.binary),'cancel'],check=True,timeout=10)
@@ -110,6 +123,8 @@ extern "C" recomp_func_t* get_function(int32_t a){switch(uint32_t(a)){ORIGINAL_L
 default:std::abort();}}
 extern "C" void switch_error(const char*,uint32_t,uint32_t){std::abort();}
 extern "C" void do_break(uint32_t){std::abort();}
+template<class T>void font_height(T& line,uint8_t height){line.height=height;}
+template<class T>void font_palette(T& line,uint8_t palette){line.palette=palette;}
 void font_and_odd_register(uint8_t* ram,recomp_context* context){func_80048660_resident(ram,context);assert(context->f_odd);*context->f_odd=0xDEADBEEF;}
 int main(int,char** argv){std::ifstream file(argv[1],std::ios::binary);std::vector<uint8_t> rom((std::istreambuf_iterator<char>(file)),{}),ram(0x800000);
  for(uint32_t i=0x1000;i<0xae920;++i)ram[(i-0x1000+0x400)^3]=rom[i];
@@ -123,6 +138,37 @@ int main(int,char** argv){std::ifstream file(argv[1],std::ios::binary);std::vect
  std::array<iss2000::EngineTextLine,2> lines{{{24,32,"Remap"},{24,48,"N64 A   Cross"}}};
  assert(iss2000::draw_pal_engine_text(ram,ctx,lines,&font_and_odd_register));
  assert(std::memcmp(&original,&ctx,sizeof(ctx))==0);assert(std::memcmp(ram.data()+0xA3C00,before.data()+0xA3C00,0x400)==0);
+ // Pause hints must use four real 8-pixel rows without touching guest stack/context.
+ std::array<iss2000::EngineTextLine,4> hints{{{109,191,"LT"},{109,199,"RB"},{109,207,"LT"},{109,215,"RB"}}};
+ for(auto& line:hints)font_height(line,8);
+ auto hints_begin=get(0x8009E0C8);before=ram;original=ctx;
+ assert(iss2000::draw_pal_engine_text(ram,ctx,hints,&font_and_odd_register));
+ unsigned hint_rects=0;bool scaled_step=false;
+ for(auto pc=hints_begin;pc<get(0x8009E0C8);pc+=8){
+  const auto a=get(pc),b=get(pc+4);
+  if((a>>24)==0xE4){
+   const auto x0=(b>>12)&0xfff,y0=b&0xfff,x1=(a>>12)&0xfff,y1=a&0xfff;
+   assert(x1-x0==24&&y1-y0==32);assert(y0/4==192+(hint_rects/2)*8);++hint_rects;
+  }
+  if(a==0xF1000000&&b==0x04000600)scaled_step=true;
+ }
+ assert(hint_rects==8&&scaled_step);
+ assert(std::memcmp(&original,&ctx,sizeof(ctx))==0);
+ assert(std::memcmp(ram.data()+0xA3C00,before.data()+0xA3C00,0x400)==0);
+ font_height(hints[0],9);before=ram;
+ assert(!iss2000::draw_pal_engine_text(ram,ctx,hints,&func_80048660_resident));assert(ram==before);
+ font_height(hints[0],8);hints[0].y=232;before=ram;
+ assert(!iss2000::draw_pal_engine_text(ram,ctx,hints,&func_80048660_resident));assert(ram==before);
+ std::array<iss2000::EngineTextLine,1> dark{{{43,39,"LB"}}};
+ font_height(dark[0],8);font_palette(dark[0],4);
+ auto dark_begin=get(0x8009E0C8);before=ram;original=ctx;
+ assert(iss2000::draw_pal_engine_text(ram,ctx,dark,&font_and_odd_register));
+ bool black_tint=false;
+ for(auto pc=dark_begin;pc<get(0x8009E0C8);pc+=8)if(get(pc)==0xFA000000&&get(pc+4)==0x000000FF)black_tint=true;
+ assert(black_tint);assert(std::memcmp(&original,&ctx,sizeof(ctx))==0);
+ assert(std::memcmp(ram.data()+0xA3C00,before.data()+0xA3C00,0x400)==0);
+ font_palette(dark[0],255);before=ram;
+ assert(!iss2000::draw_pal_engine_text(ram,ctx,dark,&func_80048660_resident));assert(ram==before);
  auto original_frame=std::array<uint32_t,3>{get(0x80100004),get(0x80100008),get(0x8010000C)};
  auto clear_start=get(0x8009E0C8),fixup=get(0x800E037C);
  assert(iss2000::draw_pal_engine_text(ram,ctx,lines,&func_80048660_resident,&func_800019FC_resident));

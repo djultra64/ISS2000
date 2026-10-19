@@ -27,6 +27,8 @@ struct TransformGuestLayout {
     std::array<uint32_t,4> epoch_bytes{};
     unsigned epoch_byte_count{};
     std::optional<ReplayContinuityLayout> replay_continuity{};
+    // Optional port-owned double buffer; original banks remain valid in menus.
+    uint32_t extended_arena_base{},extended_arena_size{};
 };
 // Preserved US evidence, never a fallback for an unconfigured/PAL runtime.
 inline constexpr TransformGuestLayout us_transform_layout(){
@@ -46,6 +48,13 @@ inline void validate_transform_guest_layout(const TransformGuestLayout& layout){
     if(layout.arena_size<64 || layout.arena_size%64 ||
        !bounded(layout.arena_base,uint64_t(layout.arena_size)*2,8))
         throw std::invalid_argument("Invalid transform arena layout");
+    if(layout.extended_arena_base || layout.extended_arena_size){
+        if(layout.extended_arena_size<64 || layout.extended_arena_size%64 ||
+           !bounded(layout.extended_arena_base,uint64_t(layout.extended_arena_size)*2,8) ||
+           (layout.extended_arena_base<layout.arena_base+2*layout.arena_size &&
+            layout.arena_base<layout.extended_arena_base+2*layout.extended_arena_size))
+            throw std::invalid_argument("Invalid extended transform arena layout");
+    }
     for(auto offset:{layout.bank_selector,layout.arena_cursor,layout.arena_end})
         if(!bounded(offset,4,4))throw std::invalid_argument("Invalid transform globals layout");
     for(auto offset:layout.scene_bytes)

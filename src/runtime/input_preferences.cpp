@@ -22,9 +22,33 @@ constexpr size_t limit=16384;
 const char* family_name(platform::Family family){
     switch(family){case platform::Family::Automatic:return "auto";case platform::Family::Xbox:return "xbox";case platform::Family::PlayStation:return "playstation";case platform::Family::Nintendo:return "switch";default:throw std::invalid_argument("Invalid manual controller family");}
 }
+const char* scheme_name(ControllerScheme scheme){
+    switch(scheme){
+    case ControllerScheme::Type1:return "type1";case ControllerScheme::Type2:return "type2";
+    case ControllerScheme::Type3:return "type3";case ControllerScheme::Type4:return "type4";
+    case ControllerScheme::Type5:return "type5";case ControllerScheme::Free:return "free";
+    }
+    throw std::invalid_argument("Invalid football controller scheme");
+}
+ControllerScheme parse_scheme(std::string_view name){
+    for(auto scheme:{ControllerScheme::Type1,ControllerScheme::Type2,ControllerScheme::Type3,ControllerScheme::Type4,ControllerScheme::Type5,ControllerScheme::Free})
+        if(name==scheme_name(scheme))return scheme;
+    throw std::runtime_error("Unknown football controller scheme");
+}
+constexpr std::array<const char*,8> physical_names{"south","east","west","north","l1","r1","l2","r2"};
+const char* physical_name(PhysicalControl control){
+    if(unsigned(control)>=physical_names.size())throw std::invalid_argument("Invalid football physical control");
+    return physical_names[unsigned(control)];
+}
+PhysicalControl parse_physical(std::string_view name){
+    for(unsigned n=0;n<physical_names.size();++n)if(name==physical_names[n])return PhysicalControl(n);
+    throw std::runtime_error("Unknown football physical control");
+}
 void validate(const InputPreferences& preferences){
     for(const auto& port:preferences.ports){
         family_name(port.manual_family);
+        scheme_name(port.football_scheme);
+        if(!valid_football_bindings(port.free_football_bindings))throw std::invalid_argument("Free football controls must be a complete permutation");
         for(auto button:port.bindings)if(int(button)<-1||button>=SDL_CONTROLLER_BUTTON_MAX)throw std::invalid_argument("Invalid controller button mapping");
     }
 }
@@ -74,7 +98,21 @@ InputPreferences parse_input_preferences(std::string_view text){
     InputPreferences preferences;
     for(unsigned i=0;i<4;++i){
         const auto& port=json["ports"][i];
-        if(!port.is_object()||port.size()!=2||!port.contains("manualFamily")||!port["manualFamily"].is_string()||!port.contains("buttons")||!port["buttons"].is_array()||port["buttons"].size()!=size_t(platform::Action::Count))throw std::runtime_error("Invalid controller preferences");
+        if(!port.is_object()||!port.contains("manualFamily")||!port["manualFamily"].is_string()||!port.contains("buttons")||!port["buttons"].is_array()||port["buttons"].size()!=size_t(platform::Action::Count))throw std::runtime_error("Invalid controller preferences");
+        const bool football=port.contains("footballScheme");
+        if(football!=port.contains("freeFootballBindings")||
+           port.size()!=2+unsigned(port.contains("vibration"))+2*unsigned(football))throw std::runtime_error("Invalid controller preference fields");
+        if(football){
+            if(!port["footballScheme"].is_string()||!port["freeFootballBindings"].is_array()||port["freeFootballBindings"].size()!=8)
+                throw std::runtime_error("Invalid football controller preferences");
+            auto& output=preferences.ports[i];output.football_scheme=parse_scheme(port["footballScheme"].get<std::string>());
+            for(unsigned action=0;action<output.free_football_bindings.size();++action){
+                const auto& control=port["freeFootballBindings"][action];
+                if(!control.is_string())throw std::runtime_error("Football physical controls must be named positions");
+                output.free_football_bindings[action]=parse_physical(control.get<std::string>());
+            }
+        }
+        if(port.contains("vibration")){if(!port["vibration"].is_boolean())throw std::runtime_error("Vibration preference must be a boolean");preferences.ports[i].vibration=port["vibration"].get<bool>();}
         auto family=port["manualFamily"].get<std::string>();
         if(family=="auto")preferences.ports[i].manual_family=platform::Family::Automatic;
         else if(family=="xbox")preferences.ports[i].manual_family=platform::Family::Xbox;
@@ -87,11 +125,18 @@ InputPreferences parse_input_preferences(std::string_view text){
             preferences.ports[i].bindings[action]=SDL_GameControllerButton(value.get<int>());
         }
     }
+    validate(preferences);
     return preferences;
 }
 std::string serialize_input_preferences(const InputPreferences& preferences){
     validate(preferences);Json json{{"schemaVersion",1},{"ports",Json::array()}};
-    for(const auto& port:preferences.ports){Json buttons=Json::array();for(auto button:port.bindings)buttons.push_back(int(button));json["ports"].push_back({{"manualFamily",family_name(port.manual_family)},{"buttons",buttons}});}
+    for(const auto& port:preferences.ports){
+        Json buttons=Json::array(),football=Json::array();
+        for(auto button:port.bindings)buttons.push_back(int(button));
+        for(auto control:port.free_football_bindings)football.push_back(physical_name(control));
+        json["ports"].push_back({{"manualFamily",family_name(port.manual_family)},{"buttons",buttons},{"vibration",port.vibration},
+            {"footballScheme",scheme_name(port.football_scheme)},{"freeFootballBindings",football}});
+    }
     return json.dump(2)+"\n";
 }
 InputPreferences load_input_preferences(const std::filesystem::path& data){

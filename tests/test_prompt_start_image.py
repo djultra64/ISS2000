@@ -46,17 +46,24 @@ int main(){try{
  for(auto test:{Case{PromptGlyphFamily::Xbox,"Menu","Menu Random"},Case{PromptGlyphFamily::PlayStation,"Options","Options Random"},Case{PromptGlyphFamily::Nintendo,"+","Plus Random"},Case{PromptGlyphFamily::Keyboard,"Return","Enter Random"},Case{PromptGlyphFamily::PlayStation,"×","Cross Random"},Case{PromptGlyphFamily::Xbox,"Paddle 1","Paddle 1 Random"}}){
   auto result=guard.prepare_sprite(m,sprite,ab,c,PromptGlyphRequest{test.family,test.label});
   check(result.status==PromptSpriteStatus::TextFallback&&result.action==PromptSpriteAction::StartRandom&&result.line_count==1);
-  check(result.lines[0].x==177&&result.lines[0].y==215&&result.lines[0].text==test.text);check(ram==before);
+  check(result.lines[0].x==177&&result.lines[0].y==212&&result.lines[0].text==test.text);check(ram==before);
  }
  auto request=PromptGlyphRequest{PromptGlyphFamily::Xbox,"Menu"};
  auto reject=[&]{auto snapshot=ram;check(guard.prepare_sprite(m,sprite,ab,c,request).status==PromptSpriteStatus::RejectedKnown);check(ram==snapshot);};
- byte(tex+3,0xEE);reject();put(tex,pixels);byte(pal,0xFF);reject();put(pal,palette);byte(font+1,0xBB);reject();put(font,letters);
+ // Original I4 descriptor03030000 does not consume a palette. The normal
+ // sprite initializer leaves its unused palette override pointer atFFFFFFFF.
+ word(sprite+0x34,0xFFFFFFFF);
+ auto unpaletted=guard.prepare_sprite(m,sprite,ab,c,request);
+ check(unpaletted.status==PromptSpriteStatus::TextFallback&&unpaletted.lines[0].text=="Menu Random");
+ word(sprite+0x34,pal);byte(pal,0xFF);
+ check(guard.prepare_sprite(m,sprite,ab,c,request).status==PromptSpriteStatus::TextFallback);put(pal,palette);
+ byte(tex+3,0xEE);reject();put(tex,pixels);byte(font+1,0xBB);reject();put(font,letters);
  byte(seg,0x10);reject();byte(seg,0x90);half(seg+8,32);reject();half(seg+8,0);
  half(seg+4,178);reject();half(seg+4,177);byte(0x8013B42A,1);reject();byte(0x8013B42A,0);
  request={PromptGlyphFamily::Xbox,"Definitely not a button"};reject();request={PromptGlyphFamily::Automatic,"Menu"};reject();
  guard.restore(m);check(ram==before);
  // The other two pinned original single-sprite consumers retain exact positions.
- for(auto xy:{std::pair{188,216},std::pair{182,214}}){half(seg+4,xy.first);half(seg+6,xy.second);auto result=guard.prepare_sprite(m,sprite,ab,c,PromptGlyphRequest{PromptGlyphFamily::Keyboard,"Return"});check(result.status==PromptSpriteStatus::TextFallback&&result.lines[0].x==xy.first&&result.lines[0].y==xy.second+2);}
+ for(auto xy:{std::pair{188,216},std::pair{182,214}}){half(seg+4,xy.first);half(seg+6,xy.second);auto result=guard.prepare_sprite(m,sprite,ab,c,PromptGlyphRequest{PromptGlyphFamily::Keyboard,"Return"});check(result.status==PromptSpriteStatus::TextFallback&&result.lines[0].x==xy.first&&result.lines[0].y==xy.second-1);}
  return 0;
 }catch(const std::exception&e){std::cerr<<e.what()<<'\n';return 1;}}
 ''')

@@ -27,6 +27,11 @@ class PrepareNativeTests(unittest.TestCase):
         self.assertIn('recomp::overlays::register_overlays',metadata)
         self.assertIn('iss2000::call_service(0x80000408u, "osGetCount", &osGetCount_recomp',wrappers)
 
+    def test_registry_entries_include_the_complete_original_function_span(self):
+        _,m,s=self.fixture();metadata,_=render_sources(s,m['bindings'])
+        self.assertIn('{ 0x00000000u, &func_80000400_resident, 0x00000008u }',metadata)
+        self.assertIn('{ 0x00000008u, &func_80000408_resident, 0x00000008u }',metadata)
+
     def test_overlapping_guest_addresses_keep_distinct_section_identity(self):
         _,m,s=self.fixture(); overlay=dict(name='overlay',rom=48,vram=0x80000400,load_size=8,text_size=8,functions=[dict(name='func_80000400_overlay',vram=0x80000400,size=8,privileged=False)])
         metadata,_=render_sources(s+[overlay],m['bindings'])
@@ -71,6 +76,25 @@ class PrepareNativeTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,'ROM digest'):prepare(root/'rom',root/'sections',root/'manifest',root/'bad')
             self.assertFalse((root/'bad').exists())
 
+    def test_hashed_outputs_use_exact_bytes_under_windows_text_translation(self):
+        from unittest import mock
+        rom,manifest,sections=self.fixture()
+        original_write=Path.write_text
+        def windows_write(path,text,encoding=None,errors=None,newline=None):
+            return original_write(path,text,encoding=encoding,errors=errors,newline='\r\n')
+        with tempfile.TemporaryDirectory() as folder:
+            root=Path(folder)
+            for name,data in [('rom',rom),('manifest',json.dumps(manifest).encode()),
+                              ('sections',json.dumps(sections).encode())]:
+                (root/name).write_bytes(data)
+            with mock.patch.object(Path,'write_text',windows_write):
+                receipt=prepare(root/'rom',root/'sections',root/'manifest',root/'out')
+            for name,digest in receipt['generated_files'].items():
+                actual=(root/'out'/name).read_bytes()
+                self.assertEqual(hashlib.sha256(actual).hexdigest(),digest,name)
+                self.assertNotIn(b'\r\n',actual,name)
+            self.assertNotIn(b'\r\n',(root/'out/receipt.json').read_bytes())
+
     def test_retained_original_has_unique_callable_body_and_required_input(self):
         rom,m,s=self.fixture();m['bindings'][0]['preserve_source']=True
         original='#include "recomp.h"\nRECOMP_FUNC void func_80000408_resident(uint8_t* rdram, recomp_context* ctx) {\n// 0x80000408: addiu $v0, $zero, 7\nctx->r2=7;\n// 0x8000040C: jr $ra\n}\n'
@@ -99,3 +123,61 @@ class PrepareNativeTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,'instruction'):
                 prepare(root/'rom',root/'sections',root/'manifest',root/'wrapper',retained_sources=[root/'original.c'])
             self.assertFalse((root/'wrapper').exists())
+
+
+class FoldedTableTests(unittest.TestCase):
+    def fixture(self, root):
+        rom=bytearray(128)
+        # Original jr v0; nop. Its folded two-target table is section data.
+        rom[16:20]=(0x00400008).to_bytes(4,'big')
+        rom[48:56]=(0x80000400).to_bytes(4,'big')+(0x80000404).to_bytes(4,'big')
+        section=dict(name='resident',rom=16,vram=0x80000400,load_size=64,text_size=8,functions=[dict(name='func_80000400_resident',vram=0x80000400,size=8,privileged=False)])
+        source='RECOMP_FUNC void func_80000400_resident(uint8_t*,recomp_context*) {\n// 0x80000400: jr $v0\n// 0x80000404: nop\nswitch (index >> 2) {\ncase 0: goto L_80000400; break;\ncase 1: goto L_80000404; break;\ndefault: switch_error(__func__, 0x80000400, 0x80000420);\n}\n}\n'
+        (root/'func_80000400_resident.c').write_text(source)
+        return bytes(rom),[section],source
+
+    def test_rendered_registry_keeps_exact_folded_table_dependency(self):
+        _,m,s=PrepareNativeTests().fixture()
+        s[0]['functions'][0]['native_dependencies']=[dict(offset=24,size=8)]
+        metadata,_=render_sources(s,m['bindings'])
+        self.assertIn('&func_80000400_resident, 0x00000008u, {{ 0x00000018u, 0x00000020u }}',metadata)
+
+    def test_original_table_targets_are_verified_before_metadata_is_emitted(self):
+        from tools.prepare_native import collect_native_dependencies
+        with tempfile.TemporaryDirectory() as d:
+            root=Path(d);rom,sections,_=self.fixture(root)
+            receipt=collect_native_dependencies(rom,sections,root)
+            self.assertEqual(sections[0]['functions'][0]['native_dependencies'],[dict(offset=32,size=8)])
+            self.assertEqual(receipt['folded_jump_tables'],1)
+            corrupt=bytearray(rom);corrupt[55]^=4
+            with self.assertRaisesRegex(ValueError,'table target'):
+                collect_native_dependencies(bytes(corrupt),sections,root)
+
+    def test_missing_or_unparseable_computed_jump_source_fails_closed(self):
+        from tools.prepare_native import collect_native_dependencies
+        with tempfile.TemporaryDirectory() as d:
+            root=Path(d);rom,sections,source=self.fixture(root);path=root/'func_80000400_resident.c'
+            for altered,message in [(source.replace('case 1:', 'case 2:'),'dense'),(source.replace('case 1: goto','case 1: return; //'),'switch'),(source.replace('0x80000420','0x8000043C'),'table target'),(source.replace('// 0x80000404: nop',''),'instruction')]:
+                path.write_text(altered)
+                with self.assertRaisesRegex(ValueError,message):collect_native_dependencies(rom,sections,root)
+            path.unlink()
+            with self.assertRaisesRegex(ValueError,'Missing.*computed jump'):collect_native_dependencies(rom,sections,root)
+
+
+    def test_prepare_records_verified_dependencies_and_rejects_missing_source_before_write(self):
+        with tempfile.TemporaryDirectory() as d:
+            root=Path(d);rom,sections,_=self.fixture(root)
+            manifest=dict(schema_version=1,rom_sha256=hashlib.sha256(rom).hexdigest(),bindings=[])
+            (root/'rom').write_bytes(rom);(root/'manifest').write_text(json.dumps(manifest));(root/'sections').write_text(json.dumps(sections))
+            receipt=prepare(root/'rom',root/'sections',root/'manifest',root/'out',generated=root)
+            self.assertEqual(receipt['native_dependencies']['folded_jump_tables'],1)
+            metadata=(root/'out/native_metadata.cpp').read_text()
+            self.assertIn('&func_80000400_resident, 0x00000008u, {{ 0x00000020u, 0x00000028u }}',metadata)
+            with self.assertRaisesRegex(ValueError,'Missing.*computed jump'):
+                prepare(root/'rom',root/'sections',root/'manifest',root/'bad',generated=root/'absent')
+            self.assertFalse((root/'bad').exists())
+
+    def test_render_rejects_invalid_dependency_bounds(self):
+        for dependency in [dict(offset=28,size=8),dict(offset=1,size=4),dict(offset=24,size=0)]:
+            _,m,s=PrepareNativeTests().fixture();s[0]['functions'][0]['native_dependencies']=[dependency]
+            with self.assertRaisesRegex(ValueError,'dependency bounds'):render_sources(s,m['bindings'])

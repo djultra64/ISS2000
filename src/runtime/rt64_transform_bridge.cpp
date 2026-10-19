@@ -37,7 +37,7 @@ RT64::TransformGroup selection_group(TransformSelection choice){
     result.aspectMode=G_EX_ASPECT_AUTO;
     result.ordering=G_EX_ORDER_AUTO;
     result.editable=G_EX_EDIT_NONE;
-    result.vertexInterpolation=G_EX_COMPONENT_SKIP;
+    result.vertexInterpolation=choice.vertices?G_EX_COMPONENT_INTERPOLATE:G_EX_COMPONENT_SKIP;
     result.texcoordInterpolation=G_EX_COMPONENT_SKIP;
     result.skewInterpolation=G_EX_COMPONENT_SKIP;
     result.tileInterpolation=G_EX_COMPONENT_AUTO;

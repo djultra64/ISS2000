@@ -1,3 +1,4 @@
+#include "runtime/pal_real_names.hpp"
 // Original project work: djultra64.
 #include "platform.hpp"
 #include "renderer_settings.hpp"
@@ -6,6 +7,9 @@
 #include "runtime/rom_image.hpp"
 #include "runtime/pak_services.hpp"
 #include "runtime/input_preferences.hpp"
+#include "runtime/pal_options_skin.hpp"
+#include "runtime/pal_controller_screen.hpp"
+#include "runtime/menu_sprite_runtime.hpp"
 #include <librecomp/game.hpp>
 #include <librecomp/overlays.hpp>
 #include <ultramodern/config.hpp>
@@ -61,14 +65,20 @@ int main(int argc,char** argv){
         }
         std::filesystem::create_directories(data);
         iss2000::ensure_rom_storage(stored,image);
+#ifdef ISS2000_PAL_ENGLISH
+        if(!iss2000::pal_real_names_override().configure(image,iss2000::pal_default_real_names()))throw std::runtime_error("Historical player names do not match the supported PAL release");
+        if(!iss2000::configure_pal_options_skin(image))throw std::runtime_error("Original menu artwork does not match the supported PAL release");
+        if(!iss2000::configure_menu_sprite_runtime(image))throw std::runtime_error("Original menu sprite profile does not match the supported PAL release");
+        if(!iss2000::configure_pal_controller_screen(image))throw std::runtime_error("Original Controller artwork does not match the supported PAL release");
+#endif
         iss2000::apply_input_preferences(iss2000::load_input_preferences(data));
         const auto selected_graphics=iss2000::load_graphics_settings(data);
         iss2000::platform::set_render_settings(selected_graphics);
         if(!std::filesystem::exists(data/"graphics.json"))iss2000::save_graphics_settings(data,selected_graphics);
         #ifdef ISS2000_PAL_ENGLISH
-        iss2000::configure_paks(data/"saves"/iss2000::active_revision().id);
+        iss2000::configure_paks(data/"saves"/iss2000::active_revision().id,true);
 #else
-        iss2000::configure_paks(data/"saves");
+        iss2000::configure_paks(data/"saves",true);
 #endif
         for(unsigned port=0;port<4;++port)iss2000::set_pak_port_connected(port,
             iss2000::platform::input_callbacks().get_connected_device_info(int(port)).connected_device!=ultramodern::input::Device::None);
@@ -94,12 +104,12 @@ int main(int argc,char** argv){
         graphics.hpfb_option=ultramodern::renderer::HighPrecisionFramebuffer::Off;graphics.ds_option=1;graphics.rr_manual_value=60;
         ultramodern::renderer::set_graphics_config(graphics);
         char app[]="iss2000";char flag[]="--game";char id[]="iss2000";char* runtime_args[]={app,flag,id};
-        recomp::Configuration config{};config.argc=3;config.argv=runtime_args;config.project_version={0,0,1,"native-development"};
+        recomp::Configuration config{};config.argc=3;config.argv=runtime_args;config.project_version={0,7,0,""};
         config.window_handle=iss2000::platform::render_window();config.rsp_callbacks={iss2000::platform::rsp_microcode};
         config.renderer_callbacks=iss2000::platform::renderer_callbacks();config.audio_callbacks=iss2000::platform::audio_callbacks();
         config.input_callbacks=iss2000::platform::input_callbacks();config.gfx_callbacks=iss2000::platform::gfx_callbacks();
         config.error_handling_callbacks={iss2000::runtime_message};
-        std::fprintf(stderr,"[Launch] ISS2000 native development build; match verification in progress. Portable data: %s\n",data.string().c_str());
+        std::fprintf(stderr,"[Launch] ISS2000 1.0 | djultra64. Portable data: %s\n",data.string().c_str());
         recomp::start(config);
         iss2000::shutdown_paks();iss2000::platform::shutdown();return 0;
     }catch(const std::exception& error){

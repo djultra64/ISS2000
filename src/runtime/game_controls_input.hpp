@@ -9,8 +9,9 @@ struct ControlsMenuControllerSample {
  platform::PortPreferences preferences{};
 };
 struct ControlsMenuInputFrame {
+ bool apply_save_enabled=false;
  bool active=false,capturing=false,focused=true,any_input=false,escape=false,keyboard_active=false;
- unsigned port=0;
+ unsigned port=0,owner_token=0;
  ControlsMenuCommand keyboard_command=ControlsMenuCommand::None;
  std::array<ControlsMenuControllerSample,4> controllers{};
 };
@@ -22,8 +23,9 @@ struct ControlsMenuInputResult {
 // SDL sampling and preference persistence remain in platform.cpp. This bounded
 // state machine owns the same opening, rising-edge and closing-release rules.
 class ControlsMenuInputRouter {
- bool was_active_=false,armed_=false,await_release_=false,keyboard_=false,was_capturing_=false;
+ bool was_active_=false,armed_=false,await_release_=false,keyboard_=false,was_capturing_=false,previous_apply_=false;
  uint32_t previous_navigation_=0;
+ unsigned previous_owner_=0,previous_port_=0;
 public:
  ControlsMenuInputResult route(const ControlsMenuInputFrame& frame){
   ControlsMenuInputResult result;
@@ -34,7 +36,10 @@ public:
    result.suppress=await_release_;return result;
   }
   result.suppress=true;
-  if(!was_active_){was_active_=true;armed_=false;await_release_=true;previous_navigation_=0;keyboard_=frame.keyboard_active;}
+  if(!was_active_||previous_owner_!=frame.owner_token||previous_port_!=frame.port||previous_apply_!=frame.apply_save_enabled){
+   was_active_=true;armed_=false;await_release_=true;previous_navigation_=0;keyboard_=frame.keyboard_active;was_capturing_=false;
+  }
+  previous_owner_=frame.owner_token;previous_port_=frame.port;previous_apply_=frame.apply_save_enabled;
   if(was_capturing_&&!frame.capturing){armed_=false;previous_navigation_=0;}
   was_capturing_=frame.capturing;
   result.keyboard_navigation=keyboard_;
@@ -47,16 +52,24 @@ public:
   if(frame.capturing){if(sample.held)keyboard_=result.keyboard_navigation=false;return result;}
   auto pressed=[&](platform::Action action){auto b=sample.preferences.bindings[size_t(action)];return b>=0&&b<SDL_CONTROLLER_BUTTON_MAX&&(sample.held&(uint32_t(1)<<unsigned(b)));};
   uint32_t navigation=0;
-  if(pressed(platform::Action::A))navigation|=1;
-  if(pressed(platform::Action::B))navigation|=2;
+  // Graphics has three distinct physical actions. Legacy raw console mappings
+  // stay saved, but cannot turn its advertised WEST shortcut into Cancel.
+  if(frame.apply_save_enabled){
+   if(sample.held&(uint32_t(1)<<SDL_CONTROLLER_BUTTON_A))navigation|=1;
+   if(sample.held&(uint32_t(1)<<SDL_CONTROLLER_BUTTON_B))navigation|=2;
+  }else{
+   if(pressed(platform::Action::A))navigation|=1;
+   if(pressed(platform::Action::B))navigation|=2;
+  }
   if(pressed(platform::Action::DUp)||sample.y>.5f)navigation|=4;
   if(pressed(platform::Action::DDown)||sample.y<-.5f)navigation|=8;
   if(pressed(platform::Action::L)||pressed(platform::Action::DLeft)||sample.x<-.5f)navigation|=16;
   if(pressed(platform::Action::R)||pressed(platform::Action::DRight)||sample.x>.5f)navigation|=32;
+  if(frame.apply_save_enabled&&(sample.held&(uint32_t(1)<<SDL_CONTROLLER_BUTTON_X)))navigation|=64;
   const auto rising=navigation&~previous_navigation_;previous_navigation_=navigation;
   if(frame.keyboard_command!=ControlsMenuCommand::None){result.command=frame.keyboard_command;keyboard_=result.keyboard_navigation=true;}
   else if(rising){
-   result.command=(rising&2)?ControlsMenuCommand::Cancel:(rising&1)?ControlsMenuCommand::Accept:(rising&4)?ControlsMenuCommand::Up:(rising&8)?ControlsMenuCommand::Down:(rising&16)?ControlsMenuCommand::PreviousPage:ControlsMenuCommand::NextPage;
+   result.command=(rising&2)?ControlsMenuCommand::Cancel:(rising&64)?ControlsMenuCommand::ApplySave:(rising&1)?ControlsMenuCommand::Accept:(rising&4)?ControlsMenuCommand::Up:(rising&8)?ControlsMenuCommand::Down:(rising&16)?ControlsMenuCommand::PreviousPage:ControlsMenuCommand::NextPage;
    keyboard_=result.keyboard_navigation=false;
   }
   return result;

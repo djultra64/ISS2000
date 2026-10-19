@@ -8,16 +8,20 @@ namespace iss2000 {
 enum class AspectRatio { Original4x3, Wide16x9 };
 enum class RenderResolution { Original, P720, P900, P1080, P1440, P1800, P2160 };
 enum class RenderRefresh { Original, Hz60, Hz120 };
+enum class Filter2D { Original, Bilinear };
 struct GraphicsSettings {
     AspectRatio aspect_ratio = AspectRatio::Wide16x9;
-    RenderResolution resolution = RenderResolution::Original;
-    RenderRefresh refresh_rate = RenderRefresh::Original;
+    RenderResolution resolution = RenderResolution::P720;
+    RenderRefresh refresh_rate = RenderRefresh::Hz60;
+    bool fullscreen = false;
+    Filter2D filter_2d = Filter2D::Original;
     bool operator==(const GraphicsSettings&) const = default;
 };
-// Strict version-1 JSON. Unknown, missing, duplicate and invalid options throw.
+// Version-1 JSON; fullscreen and filter2D are optional for legacy preferences.
+// Unknown, missing required, duplicate and invalid options throw.
 GraphicsSettings parse_graphics_settings(std::string_view json);
 std::string serialize_graphics_settings(const GraphicsSettings& settings);
-// Fixed graphics.json in an existing folder; missing files return new-user defaults (16:9, native resolution/refresh).
+// Fixed graphics.json in an existing folder; missing files return new-user defaults (16:9, 720p, 60 fps limit).
 // Malformed files throw and remain unchanged. Symlink paths are rejected.
 GraphicsSettings load_graphics_settings(const std::filesystem::path& data_folder);
 // Flush an exclusively created sibling temporary, then atomically replace graphics.json.

@@ -20,6 +20,7 @@ constexpr std::size_t max_size=65536;
 [[noreturn]] void fail(const char* message){throw std::runtime_error(message);}
 const char* aspect_name(AspectRatio a){switch(a){case AspectRatio::Original4x3:return "4:3";case AspectRatio::Wide16x9:return "16:9";}fail("Invalid aspect ratio");}
 const char* resolution_name(RenderResolution a){switch(a){case RenderResolution::Original:return "Original";case RenderResolution::P720:return "720";case RenderResolution::P900:return "900";case RenderResolution::P1080:return "1080";case RenderResolution::P1440:return "1440";case RenderResolution::P1800:return "1800";case RenderResolution::P2160:return "2160";}fail("Invalid resolution");}
+const char* filter_name(Filter2D value){switch(value){case Filter2D::Original:return "Original";case Filter2D::Bilinear:return "Bilinear";}fail("Invalid 2D filter");}
 const char* refresh_name(RenderRefresh a){switch(a){case RenderRefresh::Original:return "Original";case RenderRefresh::Hz60:return "60";case RenderRefresh::Hz120:return "120";}fail("Invalid refresh rate");}
 std::filesystem::path checked_folder(const std::filesystem::path& input){
  auto folder=std::filesystem::absolute(input).lexically_normal();
@@ -89,10 +90,18 @@ GraphicsSettings parse_graphics_settings(std::string_view text){
   if(event==Json::parse_event_t::key && !keys.insert(value.get<std::string>()).second)fail("Duplicate graphics settings key");
   return true;
  });
- if(!parsed.is_object()||parsed.size()!=4||!parsed.contains("schemaVersion")||!parsed.contains("aspectRatio")||!parsed.contains("resolution")||!parsed.contains("refreshRate"))fail("Invalid graphics settings schema");
+ if(!parsed.is_object()||!parsed.contains("schemaVersion")||!parsed.contains("aspectRatio")||!parsed.contains("resolution")||!parsed.contains("refreshRate"))fail("Invalid graphics settings schema");
+ for(auto it=parsed.begin();it!=parsed.end();++it)if(it.key()!="schemaVersion"&&it.key()!="aspectRatio"&&it.key()!="resolution"&&it.key()!="refreshRate"&&it.key()!="fullscreen"&&it.key()!="filter2D")fail("Unknown graphics settings option");
  if(!parsed["schemaVersion"].is_number_integer()||parsed["schemaVersion"]!=1)fail("Unsupported graphics settings schema version");
  for(const char* key:{"aspectRatio","resolution","refreshRate"})if(!parsed[key].is_string())fail("Graphics settings options must be strings");
  GraphicsSettings result;
+ if(parsed.contains("filter2D")){
+  if(!parsed["filter2D"].is_string())fail("2D filter must be a string");
+  const auto filter=parsed["filter2D"].get<std::string>();
+  if(filter=="Bilinear")result.filter_2d=Filter2D::Bilinear;
+  else if(filter!="Original")fail("Unsupported 2D filter");
+ }
+ if(parsed.contains("fullscreen")){if(!parsed["fullscreen"].is_boolean())fail("Fullscreen must be a boolean");result.fullscreen=parsed["fullscreen"].get<bool>();}
  auto a=parsed["aspectRatio"].get<std::string>();
  if(a=="4:3")result.aspect_ratio=AspectRatio::Original4x3;else if(a=="16:9")result.aspect_ratio=AspectRatio::Wide16x9;else fail("Unsupported aspect ratio");
  auto r=parsed["resolution"].get<std::string>();
@@ -102,7 +111,11 @@ GraphicsSettings parse_graphics_settings(std::string_view text){
  return result;
 }
 std::string serialize_graphics_settings(const GraphicsSettings& s){
- return Json{{"schemaVersion",1},{"aspectRatio",aspect_name(s.aspect_ratio)},{"resolution",resolution_name(s.resolution)},{"refreshRate",refresh_name(s.refresh_rate)}}.dump(2)+"\n";
+ Json json{{"schemaVersion",1},{"aspectRatio",aspect_name(s.aspect_ratio)},{"resolution",resolution_name(s.resolution)},{"refreshRate",refresh_name(s.refresh_rate)}};
+ if(s.fullscreen)json["fullscreen"]=true;
+ const auto filter=filter_name(s.filter_2d);
+ if(s.filter_2d!=Filter2D::Original)json["filter2D"]=filter;
+ return json.dump(2)+"\n";
 }
 GraphicsSettings load_graphics_settings(const std::filesystem::path& data_folder){
  auto path=checked_folder(data_folder)/"graphics.json";

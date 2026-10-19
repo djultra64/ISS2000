@@ -144,10 +144,11 @@ void plug_service(uint8_t* rdram,recomp_context* ctx){
     MEM_B(0,pointer)=store?(store->plugged_mask()&connection_mask):0;ctx->r2=0;
 }
 }
-void configure_paks(const std::filesystem::path& directory){
+void configure_paks(const std::filesystem::path& directory,bool automatic){
     std::lock_guard guard(store_mutex);
     if(store)throw std::runtime_error("Controller Pak storage is already initialized");
     auto path=directory/"controller-paks.json";auto choices=load_choices(path);
+    if(automatic)choices.fill(PakAccessory::Controller);
     auto candidate=std::make_unique<ControllerPakStore>(directory);
     for(unsigned n=0;n<4;++n)candidate->set_accessory(n,choices[n]);
     if(!std::filesystem::exists(path))save_choices(path,choices);
@@ -181,4 +182,22 @@ recomp_func_t* pak_service_lookup(uint32_t address){
     return nullptr;
 }
 std::string pak_storage_error(){std::lock_guard guard(store_mutex);return store?store->last_error():std::string{};}
+void run_pak_file_write(uint8_t* rdram,recomp_context* ctx,recomp_func_t* original){
+    gpr pointer{};unsigned port=4;bool begun=false;
+    if(rdram&&ctx->r6==1&&region(ctx->r4,0x68,4,pointer)){
+        port=uint32_t(MEM_W(8,pointer));
+        std::lock_guard lock(store_mutex);
+        if(store&&port<4&&connected[port])begun=store->begin_file_write(port)==0;
+    }
+    try{original(rdram,ctx);}catch(...){
+        if(begun){std::lock_guard lock(store_mutex);if(store)store->finish_file_write(port,false);}throw;
+    }
+    if(begun){
+        std::lock_guard lock(store_mutex);
+        const bool success=ctx->r2==0&&store&&connected[port];
+        const int result=store?store->finish_file_write(port,success):4;
+        if(ctx->r2==0&&(!success||result))ctx->r2=gpr(S32(result?result:4));
+    }
+}
+
 }

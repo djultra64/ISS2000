@@ -10,3 +10,6 @@ build/
 *.sav
 *.sra
 *.eep
+
+# Portable deliveries and user-imported ROM/config/saves stay local.
+/portable/

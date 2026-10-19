@@ -29,6 +29,7 @@ public:
     TransformRuntime& operator=(const TransformRuntime&)=delete;
     void observe_allocation(uint64_t record);
     void observe_release(uint64_t record);
+    std::optional<TransformTag> lookup_record(uint64_t record)const;
     void observe_frame(std::span<const uint8_t> ram);
     void invalidate_scene();
     // Use only around a verified original correction routine. Its ordinary
@@ -45,6 +46,7 @@ public:
 void configure_transform_runtime(const TransformGuestLayout&);
 void observe_transform_allocation(uint64_t record);
 void observe_transform_release(uint64_t record);
+std::optional<TransformTag> lookup_transform_record(uint64_t record);
 void observe_transform_frame(std::span<const uint8_t> ram);
 // Call after an independently verified original scene/cut/stage setter.
 void notify_transform_discontinuity();

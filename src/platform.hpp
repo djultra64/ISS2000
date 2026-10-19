@@ -1,8 +1,10 @@
 // Original project work: djultra64.
 #pragma once
 #include <array>
+#include <cstdint>
 #include <string>
 #include <string_view>
+#include "runtime/controller_schemes.hpp"
 #ifndef SDL_MAIN_HANDLED
 #define SDL_MAIN_HANDLED
 #endif
@@ -58,8 +60,12 @@ constexpr std::string_view button_label(Family family,SDL_GameControllerButton b
     }
 }
 struct PortPreferences {
+    bool vibration=true;
     Family manual_family=Family::Automatic;
     ButtonBindings bindings=[] {ButtonBindings result{};for(unsigned i=0;i<result.size();++i)result[i]=default_binding(Action(i));return result;}();
+    // Football controls are independent of raw menu bindings; retain Free while a preset is selected.
+    ControllerScheme football_scheme=ControllerScheme::Type1;
+    FootballBindings free_football_bindings=default_football_bindings;
     bool operator==(const PortPreferences&)const=default;
 };
 SDL_GameControllerButton get_binding(int port,Action action);
@@ -67,7 +73,25 @@ Family controller_family(int port);
 std::string physical_button_label(int port,SDL_GameControllerButton button);
 std::array<PortPreferences,4> port_preferences();
 void apply_port_preferences(const std::array<PortPreferences,4>& preferences);
+// Independent physical positions. Neither getter consumes a sample. The SI
+// sequence advances only at the genuine runtime get_input callback.
+struct FootballPhysicalInput {
+    uint16_t held=0;
+    bool start=false,cancel=false,up=false,down=false;
+    bool gamepad=false;
+    bool operator==(const FootballPhysicalInput&)const=default;
+};
+struct FootballSiInput {
+    uint16_t held=0,pressed=0;
+    uint64_t sequence=0;
+    bool gamepad=false;
+    bool operator==(const FootballSiInput&)const=default;
+};
+FootballPhysicalInput football_physical_input(unsigned port);
+FootballSiInput football_si_input(unsigned port);
 struct Prompt { std::string name; std::string glyph; Family family; };
+struct MainExitPrompts {std::array<Prompt,3> prompts;unsigned port;};
+MainExitPrompts main_exit_prompts();
 struct ControlsHelp { std::array<Prompt,3> prompts; Family manual_family; };
 int submit_audio(uint8_t* rdram,uint32_t address,uint32_t bytes);
 uint32_t audio_length();
@@ -84,7 +108,9 @@ ultramodern::input::callbacks_t input_callbacks();
 ultramodern::gfx_callbacks_t gfx_callbacks();
 void set_family(int port, Family family);
 void bind_button(int port, Action action, SDL_GameControllerButton button);
+// Last meaningful input event; keyboard and disconnected-controller fallback use P1.
+unsigned active_input_port();
 Prompt prompt(int port, Action action);
-// One input-lock snapshot for visible A/B/Start prompts and F6 override status.
+// One input-lock snapshot for physical action prompts and the manual family preference.
 ControlsHelp controls_help(int port);
 }

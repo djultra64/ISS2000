@@ -1,11 +1,18 @@
+#include "runtime/filter_2d.hpp"
 // Original project work: djultra64.
 // Integrates the public RT64 Application interface with N64ModernRuntime.
 // API usage follows the generic upstream RecompFrontend RT64 adapter; its
 // original author notices and licenses remain in the dependency checkouts.
 #include "platform.hpp"
+#ifdef _WIN32
+#include <objidl.h>
+#endif
 #include "renderer_settings.hpp"
 #include "runtime/transform_runtime.hpp"
 #include "runtime/rt64_transform_bridge.hpp"
+#include "runtime/menu_sprite_bridge.hpp"
+#include "runtime/menu_sprite_render.hpp"
+#include "runtime/rt64_shadow_bridge.hpp"
 #include "runtime/rt64_presentation_policy.hpp"
 #include <mutex>
 #include <algorithm>
@@ -28,18 +35,32 @@
 
 namespace iss2000::render_evidence {
 namespace {
+struct EvidenceRegion {uint32_t x{},y{},width{},height{};};
+EvidenceRegion evidence_region(uint32_t width,uint32_t height,bool small,bool radar){
+    if(radar){
+        // Lower central fifth/quarter includes the actual field radar; scale
+        // against the offscreen target, which can be taller than the window.
+        const auto w=std::min(width,std::max(1u,width/5));
+        const auto h=std::min(height,std::max(1u,height/4));
+        return {(width-w)/2,height-h,w,h};
+    }
+    const auto w=small?std::min(width,256u):width;
+    const auto h=small?std::min(height,256u):height;
+    return {(width-w)/2,(height-h)/2,w,h};
+}
 struct Log {
     std::mutex mutex;
     std::ofstream stream;
     std::chrono::steady_clock::time_point start=std::chrono::steady_clock::now();
     uint64_t frames{},readbacks{};
     std::filesystem::path gate;
-    bool gpu{};
+    bool gpu{},small_region{},radar_region{};
     Log(){
         const char* path=std::getenv("ISS2000_RENDER_EVIDENCE");
         if(!path || !*path)return;
         stream.open(path,std::ios::out|std::ios::trunc);
         gpu=std::getenv("ISS2000_RENDER_EVIDENCE_GPU") && std::string_view(std::getenv("ISS2000_RENDER_EVIDENCE_GPU"))=="1";
+        if(const char* region=std::getenv("ISS2000_RENDER_EVIDENCE_ROI")){small_region=std::string_view(region)=="256";radar_region=std::string_view(region)=="radar";}
         if(const char* value=std::getenv("ISS2000_RENDER_EVIDENCE_GPU_GATE"))gate=value;
         if(stream)stream<<"{\"event\":\"start\",\"schema\":1,\"gpu_readback_requested\":"<<(gpu?"true":"false")
             <<",\"physical_refresh_proven\":false,\"capture_limit\":240,\"capture_affects_performance\":true}\n"<<std::flush;
@@ -62,14 +83,21 @@ void display(uint32_t rate,uint32_t width,uint32_t height,uint32_t requested){
     std::ostringstream s;s<<"\"event\":\"display\",\"detected_hz\":"<<rate<<",\"width\":"<<width
         <<",\"height\":"<<height<<",\"requested_hz\":"<<requested;out.write(s.str());
 }
-void display_list(const TransformTaskSnapshot* snapshot,const TransformBridgeStats& stats,bool installed){
+void display_list(const TransformTaskSnapshot* snapshot,const TransformBridgeStats& stats,bool installed,const MenuSpriteTaskSnapshot* menu){
     auto& out=log();if(!out.enabled())return;std::lock_guard lock(out.mutex);
+    size_t radar_commands=0;
+    if(menu)for(const auto& ownership:menu->radar)for(const auto& command:ownership.capture.commands())
+        if(menu->commands.contains(command.pc&0x7fffffu))++radar_commands;
     std::ostringstream s;s<<"\"event\":\"display_list\",\"snapshot\":"<<(snapshot?"true":"false")
         <<",\"bridge\":"<<(installed?"true":"false")<<",\"sequence\":"<<(snapshot?snapshot->sequence:0)
         <<",\"scene\":"<<(snapshot?snapshot->scene_token:0)<<",\"epoch\":"<<(snapshot?snapshot->scene_epoch:0)
         <<",\"matrix_calls\":"<<stats.matrix_calls<<",\"model_groups\":"<<stats.model_groups
         <<",\"camera_groups\":"<<stats.camera_groups<<",\"inherited_groups\":"<<stats.inherited_groups
-        <<",\"ignored_groups\":"<<stats.ignored_groups;out.write(s.str());
+        <<",\"ignored_groups\":"<<stats.ignored_groups
+        <<",\"menu_snapshot\":"<<(menu?"true":"false")
+        <<",\"menu_commands\":"<<(menu?menu->commands.size():0)
+        <<",\"radar_captures\":"<<(menu?menu->radar.size():0)
+        <<",\"radar_commands\":"<<radar_commands;out.write(s.str());
 }
 }
 extern "C" bool iss2000_render_evidence_enabled(){return iss2000::render_evidence::log().enabled();}
@@ -81,6 +109,11 @@ extern "C" void iss2000_render_evidence_frame(RT64::RenderWorker* worker,RT64::R
     std::lock_guard lock(out.mutex);
     std::string digest;const char* capture="not_requested";uint64_t bytes=0;
     const uint32_t width=target?target->width:0,height=target?target->height:0;
+    // A fixed center crop reduces diagnostic copy/hash cost. It samples the
+    // completed real target; it never changes rendering or interpolation.
+    const auto region=render_evidence::evidence_region(width,height,out.small_region,out.radar_region);
+    const uint32_t capture_width=region.width,capture_height=region.height;
+    const uint32_t capture_x=region.x,capture_y=region.y;
     // The private generator holds RT64's workload and worker mutexes here.
     // This is the completed normal offscreen image; swapchain images do not
     // advertise transfer-source usage and must never be read back this way.
@@ -90,7 +123,7 @@ extern "C" void iss2000_render_evidence_frame(RT64::RenderWorker* worker,RT64::R
         auto* commands=dynamic_cast<VulkanCommandList*>(worker->commandList.get());
         if(texture && commands && target->multisampling.sampleCount==1 &&
            (target->format==RenderFormat::R8G8B8A8_UNORM || target->format==RenderFormat::R16G16B16A16_UNORM)){
-            bytes=uint64_t(width)*height*RenderFormatSize(target->format);
+            bytes=uint64_t(capture_width)*capture_height*RenderFormatSize(target->format);
             auto buffer=worker->device->createBuffer(RenderBufferDesc::ReadbackBuffer(bytes));
             auto* destination=dynamic_cast<VulkanBuffer*>(buffer.get());
             if(destination && destination->vk!=VK_NULL_HANDLE){
@@ -98,7 +131,9 @@ extern "C" void iss2000_render_evidence_frame(RT64::RenderWorker* worker,RT64::R
                 worker->commandList->begin();
                 worker->commandList->barriers(RenderBarrierStage::COPY,RenderTextureBarrier(texture,RenderTextureLayout::COPY_SOURCE));
                 VkBufferImageCopy copy{};copy.imageSubresource.aspectMask=VK_IMAGE_ASPECT_COLOR_BIT;
-                copy.imageSubresource.layerCount=1;copy.imageExtent={width,height,1};
+                copy.imageSubresource.layerCount=1;
+                copy.imageOffset={int32_t(capture_x),int32_t(capture_y),0};
+                copy.imageExtent={capture_width,capture_height,1};
                 vkCmdCopyImageToBuffer(commands->vk,texture->vk,VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,destination->vk,1,&copy);
                 VkBufferMemoryBarrier host{};host.sType=VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
                 host.srcAccessMask=VK_ACCESS_TRANSFER_WRITE_BIT;host.dstAccessMask=VK_ACCESS_HOST_READ_BIT;
@@ -116,11 +151,17 @@ extern "C" void iss2000_render_evidence_frame(RT64::RenderWorker* worker,RT64::R
             }else capture="allocation_failed";
         }
     }
+    const auto menu=iss2000::menu_rect_render_stats();
     std::ostringstream s;s<<"\"event\":\"render\",\"ordinal\":"<<++out.frames<<",\"workload\":"<<workload
         <<",\"present\":"<<present<<",\"frame\":"<<frame<<",\"planned\":"<<planned
         <<",\"weight\":"<<weight<<",\"previous_weight\":"<<previous<<",\"target_hz\":"<<target_hz
         <<",\"original_hz\":"<<original_hz<<",\"matched\":"<<(matched?"true":"false")
+        <<",\"menu_rectangles\":"<<menu.rectangles<<",\"menu_matches\":"<<menu.matches
+        <<",\"menu_moved\":"<<menu.moved<<",\"menu_fades\":"<<menu.fades<<",\"menu_fractional\":"<<(menu.fractional?"true":"false")
         <<",\"width\":"<<width<<",\"height\":"<<height<<",\"bytes\":"<<bytes
+        <<",\"capture_x\":"<<capture_x<<",\"capture_y\":"<<capture_y
+        <<",\"capture_width\":"<<capture_width<<",\"capture_height\":"<<capture_height
+        <<",\"capture_format\":"<<(target?uint32_t(target->format):0)
         <<",\"capture\":\""<<capture<<"\",\"pixel_sha256\":\""<<digest<<"\"";
     out.write(s.str());
 }
@@ -220,7 +261,6 @@ public:
         }
         chosen_api=ultramodern::renderer::GraphicsApi::Vulkan;
         if(setup_result!=ultramodern::renderer::SetupResult::Success){app.reset();return;}
-        app->setFullScreen(c.wm_option==ultramodern::renderer::WindowMode::Fullscreen);
         {
             const auto& resources=*app->sharedQueueResources;
             std::lock_guard lock(app->sharedQueueResources->configurationMutex);
@@ -236,10 +276,14 @@ public:
         const TransformTaskFingerprint fingerprint{.data_ptr=uint32_t(task->t.data_ptr),
             .ucode=uint32_t(task->t.ucode),.ucode_data=uint32_t(task->t.ucode_data),.data_size=task->t.data_size};
         const auto snapshot=consume_transform_metadata(fingerprint);
+        const auto menu_snapshot=consume_menu_sprite_metadata(fingerprint,{app->core.RDRAM,0x800000});
+        const auto shadow_snapshot=consume_pal_shadow_metadata(fingerprint);
         const bool interpolate=applied_settings.refresh_rate!=RenderRefresh::Original;
         RT64TransformBridge tracking(app->state.get(),app->interpreter->hleGBI,snapshot,interpolate);
+        RT64ShadowBridge shadow_tracking(app->state.get(),app->interpreter->hleGBI,shadow_snapshot,interpolate);
+        MenuSpriteBridge menu_tracking(app->state.get(),app->interpreter->hleGBI,menu_snapshot,interpolate);
         app->processDisplayLists(app->core.RDRAM,task->t.data_ptr&0x3FFFFFF,0,true);
-        render_evidence::display_list(snapshot.get(),tracking.stats(),tracking.installed());
+        render_evidence::display_list(snapshot.get(),tracking.stats(),tracking.installed(),menu_snapshot.get());
     }
     void send_dummy_workload(uint32_t address)override{
         app->state->listProcessBegin();
@@ -252,7 +296,6 @@ public:
     void shutdown()override{if(app)app->end();}
     bool update_config(const ultramodern::renderer::GraphicsConfig& old,const ultramodern::renderer::GraphicsConfig& next)override{
         if(old==next)return false;config(next);
-        if(old.wm_option!=next.wm_option)app->setFullScreen(next.wm_option==ultramodern::renderer::WindowMode::Fullscreen);
         app->updateUserConfig(true);app->updateEnhancementConfig();if(old.msaa_option!=next.msaa_option)app->updateMultisampling();return true;
     }
     void enable_instant_present()override{
@@ -271,3 +314,5 @@ void set_render_settings(const GraphicsSettings& settings){std::lock_guard lock(
 GraphicsSettings render_settings(){std::lock_guard lock(settings_mutex);return active_settings;}
 ultramodern::renderer::callbacks_t renderer_callbacks(){return {create,nullptr};}
 }
+
+extern "C" bool iss2000_filter_2d_enabled(){return iss2000::platform::render_settings().filter_2d==iss2000::Filter2D::Bilinear;}

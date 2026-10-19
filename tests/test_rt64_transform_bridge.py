@@ -30,7 +30,7 @@ int main(){
  assert(choose(0x12340,false,false).kind==TransformSelection::Kind::Inherit);
  assert(choose(0x12340,false,false,false).kind==TransformSelection::Kind::Ignore);
  auto menu=*snapshot;menu.scene_token=0x607;
- assert(select_rt64_transform(&menu,true,0xAA128,false,true,true).kind==TransformSelection::Kind::Ignore);
+ assert(select_rt64_transform(&menu,true,0xAA128,false,true,true).kind==TransformSelection::Kind::Model);
  assert(select_rt64_transform(nullptr,true,0xAA128,false,true,true).kind==TransformSelection::Kind::Ignore);
  auto phase=*snapshot;phase.scene_token=0x12340604;
  assert(select_rt64_transform(&phase,true,0xAA128,false,true,true).id==tag.id);
@@ -113,7 +113,7 @@ int main(){
  matrix(0x12340,2);assert(rsp.extended.modelMatrixIdStack[2].matrixId==0);
  pop(1);assert(rsp.originalPopCalls==1&&rsp.modelMatrixStackSize==2&&rsp.extended.modelMatrixIdStackSize==2&&rsp.extended.modelMatrixIdStack[1].matrixId==tag.id);
  pop(999);assert(rsp.originalPopCalls==2&&rsp.modelMatrixStackSize==1&&rsp.extended.modelMatrixIdStackSize==1);
- rsp.perspective=false;matrix(0xAA128,2);assert(rsp.extended.modelMatrixIdStack[0].matrixId==0);
+ rsp.perspective=false;matrix(0xAA128,2);assert(rsp.extended.modelMatrixIdStack[0].matrixId==tag.id);
  rsp.perspective=true;matrix(0xAA128,2);assert(rsp.extended.modelMatrixIdStack[0].matrixId==tag.id);
  for(int i=0;i<40;++i)matrix(0x12340,1);
  assert(rsp.modelMatrixStackSize==32&&rsp.extended.modelMatrixIdStackSize==32);
@@ -121,6 +121,17 @@ int main(){
  assert(gbi.map[0xDA]==originalMatrix&&gbi.map[0xD8]==originalPop);
  try{RT64TransformBridge bridge(&state,&gbi,snapshot,false);assert(bridge.installed());matrix(0xAA128,2);assert(rsp.extended.modelMatrixIdStack[rsp.extended.modelMatrixIdStackSize-1].matrixId==0);throw std::runtime_error("unwind");}catch(const std::runtime_error&){}
  assert(gbi.map[0xDA]==originalMatrix&&gbi.map[0xD8]==originalPop);
+ // A verified menu cloth owns vertex interpolation without UV interpolation;
+ // unrelated menu matrices, multiplies and the camera stay excluded.
+ auto cloth=std::make_shared<TransformTaskSnapshot>(*snapshot);cloth->scene_token=0x607;
+ cloth->model_scope=TransformModelScope{};cloth->model_scope->scene=0x607;
+ cloth->model_scope->vertex_models[0]={tag.record,123,456};
+ {RT64TransformBridge bridge(&state,&gbi,cloth,true);matrix(0xAA128,2);
+  const auto&g=rsp.extended.modelMatrixIdStack[rsp.extended.modelMatrixIdStackSize-1];
+  assert(g.matrixId==123&&g.vertexInterpolation==G_EX_COMPONENT_INTERPOLATE&&g.texcoordInterpolation==G_EX_COMPONENT_SKIP);
+  matrix(0xAA128,0);assert(rsp.extended.modelMatrixIdStack[rsp.extended.modelMatrixIdStackSize-1].matrixId==0);
+  matrix(0xC43A0,6);assert(rsp.extended.viewProjMatrixIdStack[0].matrixId==0);
+ }
  RT64TransformBridge mismatch(&otherState,&gbi,snapshot,true);assert(!mismatch.installed());
 }
 '''

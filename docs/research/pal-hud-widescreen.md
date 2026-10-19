@@ -2,7 +2,14 @@
 
 Original project work: djultra64.
 
-The match HUD uses explicit screen-edge origins for the score, clock and player
+Current High Training refinement: radar background and all original player/ball
+markers move down28 logical pixels; both player panels move by the same amount
+while retaining their horizontal centers. Ordinary matches, Low and4:3 retain
+the preceding placement. See [Training render corrections](pal-training-render-corrections.md)
+for the exact visible524-row VI anchor, original marker producer and CPU tests.
+The earlier placement descriptions below apply to the baseline/ordinary match.
+
+The match HUD uses explicit screen origins for the score, clock and player
 panels in 16:9. Original sprites, fonts, scale and UV commands are retained. The
 radar stays centered. At 4:3, the helper makes no writes.
 
@@ -40,15 +47,37 @@ indices are excluded. The private evidence also records each selected object's
 original descriptor, segment ROM offset/hash and bounds. Inactive unverified
 central animation indices 15..19 and 22..23 are deliberately outside these groups.
 
+The original clock updater `801DBD88` also has a numeric mode. Its resource
+`BA`/`BB` changes objects 37/38 to native panel descriptor `80076F7C`, while
+object 39 becomes the numeric separator at `80076EF8`. Resource `BD`/`BE`
+changes object 43 to the period label at `80076F28`, using exact segment
+`80261D30`/`80261D3C`. These alternatives are part of the same clock group.
+The saved field09 snapshot independently confirms every active tuple. The
+previous circular-only guards omitted them, leaving the `1st` label separated
+from the shifted digits; the numeric variants now receive the identical
+clock origin and offset. Their texture/segment bytes remain original. An
+unrelated nearby segment is rejected, and 4:3 still declines without writes.
+
 ## Positioning and scope
 
-The safe margin is 16 original low-resolution pixels. Relative to the original
-HUD envelope, score translation is`(-6,+1)`, clock`(-1,+3)`, left player panel
-`(-10,-7)`, and right player panel`(+10,-7)`. The score and left panel use the left
-screen origin; the clock and right panel use the right screen origin. The common
-vertical/horizontal rectangle offsets move each complete group without changing
-rectangle width, height, UVs or derivatives. Actual RT64 viewport rounding can
-quantize an explicit-origin edge by up to one original pixel at fractional scales.
+The score and clock retain a 16-pixel native safe margin with translations
+`(-6,+1)` and `(-1,+3)` from their original envelopes. Following the user's
+latest layout refinement, each complete player-name panel is centered in the
+space between its screen edge and the unchanged radar, rather than attached
+to the same outer margin. Its vertical translation remains `-7`.
+
+The original radar spans native x120..200. The complete left/right player
+panel envelopes are x26..120 and x199..293, with centers73/246 and width94.
+Quarter-screen extended origins256/768 correspond to original x80/240.
+The RDP first adds the native origin80/240 to rectangle coordinates.
+Using pre-origin translations -93/-226 therefore gives net shifts -13/+14
+and places the panel centers at viewport coordinates60/260.
+The actual RT64 viewport then maps those centers to the exact midpoint of
+each radar-to-edge space at any expansion ratio, including the PAL VI crop.
+Both the original sprite components and name text share that group placement;
+width, height, UVs and derivatives remain original. RT64 edge quantization
+can differ by up to one original pixel at fractional scales. Score, clock and
+radar placement are unchanged by this refinement.
 
 `PalHudScope` writes 48 bytes before the original draw: the pinned extension
 enable, a scissor push, a wide scissor and the group's rectangle alignment. The
@@ -67,12 +96,15 @@ calculation proves 4:3 untagged draws remain unchanged. Menus, center overlays,
 world-position markers and the radar do not receive a HUD scope.
 
 Runtime recognition requires the exact PAL context/table pointers, scene 6/4,
-no UI bypass, match phase 0 or 1, original low-resolution guest video mode, exact
-selected sprite/text record addresses, layer/kind and descriptor identities,
-unit original sprite scale and bounded original segment lists. Unknown layouts,
-replay/UI phases or the original guest high-resolution video mode decline
-without writes. Host 720 through2160 rendering is independent of that original
-guest video-mode guard.
+no UI bypass, match phase 0 or 1, exact selected sprite/text record addresses,
+layer/kind and descriptor identities, unit original sprite scale and bounded
+original segment lists. The original Low path is preserved. High additionally
+requires640×544, depth buffer80700000 and the complete original807AA008 emitter
+hash. Its original sprite/font/flag coordinates double; HUD translations double
+and scissor height is544, with unchanged origins. Unknown layouts and unrelated
+UI phases decline without writes. Host720 through2160 rendering is independent
+of this original guest video-mode guard. High CPU chains pass; real High visual
+acceptance is still pending.
 
 ## Integration and verification
 
@@ -94,8 +126,8 @@ or asset redistribution is necessary.
 `tests/test_pal_hud_widescreen.py` exercises exact recognition/phase/pointer
 rejection,4:3 preservation, balanced commands against the actual pinned GBI
 macros, no writes outside the original Gfx allocation/cursor, nested/capacity
-rejection, and original E4/UV preservation. It also compiles the actual upstream
-viewport function to check margins/scale at integer and fractional resolutions,
+rejection, and original E4/UV preservation. It also compiles the actual upstream RDP `movedFromOrigin` and
+viewport functions to check margins/scale and radar-to-edge panel midpoints at integer and fractional resolutions,
 untagged centering and4:3 equivalence. An additional regression executes the
 actual original compositor, original setup and both original inner emitter
 calls against the pinned saved `field06.rdram`. It compiles the actual native
@@ -112,3 +144,16 @@ the actual snapshot, selected original segment bytes and helper/test hashes.
 Its audit and offline saved-snapshot classifier execute no game code. Visible
 integrated 16:9/4:3 captures, moving clock/name updates and continued menu/central
 animation behavior remain root acceptance tasks.
+
+## Hidden integrated centering acceptance
+
+Actual native build36 captures328/329 show both player plates centered between
+the unchanged radar and their screen edges. In the1280x720 private compositor,
+radar edges are518/762; left panel130..390 has center260 versus available-space
+midpoint259; right panel887..1148 has center1017.5 versus midpoint1021.
+The difference is within native pixel/grid quantization. Name text, player
+number/position, bars and tactics plate share the move. Score and clock retain
+their previously requested corner placement. Capture328 was embedded in chat.
+The actual GPU target is the2160 profile downsampled by the private compositor;
+physical4K display output is not claimed. Private receipt:
+`.local/pal-hud-center-acceptance-01/receipt.json`.
