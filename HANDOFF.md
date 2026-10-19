@@ -1,3 +1,37 @@
+# Version 0.7 release — 2026-10-18
+
+Original project work: **djultra64**. One worker, no agents.
+GitHub: https://github.com/djultra64/ISS2000 — tag `v0.7.0`.
+User-requested README status: **In development... SO-MANY-ALIGNMENT-ISSUES!**
+
+Final Linux: `portable/ISS2000-Linux-0.7.0-final/launch.sh`.
+SHA-256: `2a82788d3e69d60d83c9dda9a2573218fee4d3cb72323e1635ec21eee7efd5fa`.
+Final Windows: `portable/ISS2000-Windows-0.7.0/iss2000.exe`.
+SHA-256: `123c7ff51fdcc0c5f58b955b6f4cbc64ab385e7dd529c02707b00b8d33b92adb`.
+Both ZIPs and combined checksums are in `portable/`. All Linux 49 / Windows 51
+manifest files verify; each includes 43 notices, and fresh data is empty.
+Older packages/data are preserved. Original ROM/assets are not distributed.
+
+Windows compiled after fixing explicit roster UTF-8 decoding and a local `small`
+macro collision. Focused tests pass; the macro rename left Linux byte-identical.
+The final startup log now says 0.7.0. A disposable Windows copy rendered the real
+3D introduction on a never-switched desktop; the exact final exe passed ROM
+validation. Its normal WM_CLOSE did not finish and a post-close capture stalled;
+the authenticated private test/task set was cancelled. Do not claim normal-exit,
+Windows audio or full interactive gameplay acceptance. All those limits and the
+general-suite/follow-up results are in `docs/releases/0.7.0.md`.
+
+The machine recovered from the initial HA blocker. Own reservation:
+`iss2000-07-resume-d4ea7d57-65ae-479e-8020-b442b47427af`.
+All own Windows builds/tests ended and archives/evidence were retrieved before
+requesting graceful helper-off. Windows offline, Sonoff off, 0 W and automation
+idle were then confirmed; the own reservation was released. The power receipt is in
+`.local/release-0.7-preparation/maquinita-final.json`; do not infer power-off
+from helper-off alone. Private logs/captures remain under that ignored folder.
+**Early development release; not accepted as 1.0.** Historical records follow.
+
+---
+
 # Version 0.7 preparation — 2026-10-18
 
 Original project work: **djultra64**. One worker, no agents.

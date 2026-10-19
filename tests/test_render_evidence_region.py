@@ -16,6 +16,6 @@ int main(){
 }
 '''
   with tempfile.TemporaryDirectory()as d:
-   p=Path(d);(p/'test.cpp').write_text('#include <algorithm>\n#include <cstdint>\n#include <cassert>\n'+body+test)
+   p=Path(d);(p/'test.cpp').write_text('#include <algorithm>\n#include <cstdint>\n#include <cassert>\n#define small char\n'+body+'\n#undef small\n'+test)
    q=subprocess.run(['c++','-std=c++20',str(p/'test.cpp'),'-o',str(p/'test')],capture_output=True,text=True);self.assertEqual(q.returncode,0,q.stderr)
    q=subprocess.run([str(p/'test')],capture_output=True,text=True);self.assertEqual(q.returncode,0,q.stderr)

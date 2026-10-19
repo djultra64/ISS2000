@@ -56,7 +56,7 @@ class PalRealNamesTests(unittest.TestCase):
    result=subprocess.run([str(p/'test'),str(rom)],capture_output=True,text=True);self.assertEqual(result.returncode,0,result.stderr)
 
  def test_complete_sourced_dataset_special_provenance_and_explicit_exceptions(self):
-  data=json.loads(DATA.read_text());self.assertEqual(generate(data),OUTPUT.read_bytes())
+  data=json.loads(DATA.read_text(encoding="utf-8"));self.assertEqual(generate(data),OUTPUT.read_bytes())
   self.assertEqual(len(data['players']),2332)
   self.assertEqual(sum(p['periodException']for p in data['players'][:2200]),24)
   for mutate in [lambda d:d['players'].pop(),lambda d:d['players'][0].update(displayName='Too long name'),lambda d:d['players'][0].update(source=''),lambda d:d['players'][100*22].update(displayName='Foreign'),lambda d:d.update(ordinaryPeriodExceptions=0)]:

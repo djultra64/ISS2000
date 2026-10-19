@@ -55,5 +55,7 @@ hashes; packaging by itself does not establish runtime acceptance.
 
 The prepared Linux binary requires GLIBC 2.38 / GLIBCXX 3.4.32 or newer.
 Windows uses the pinned Microsoft/LLVM toolchain and authentic redistribution
-notices for the selected dependencies. Windows 0.7 compilation is still pending;
-no successful Windows 0.7 build or runtime claim is made here.
+notices for the selected dependencies. Windows 0.7 compiled with clang-cl 20.1.8 and the installed Visual Studio 2022
+x64 SDK toolchain. The factual roster generator explicitly reads UTF-8, and the
+renderer avoids the Windows SDK `small` macro. See the release record for the
+bounded hidden-desktop smoke test and its unresolved close behavior.

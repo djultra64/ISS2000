@@ -28,7 +28,7 @@ def not_1999_2000(years):
  if not years or any(type(y)is not int or y<1900 or y>2002 for y in years):raise ValueError('Invalid historical evidence years')
  return not any(y in(1999,2000)for y in years)
 if __name__=='__main__':
- p=argparse.ArgumentParser(description=__doc__);p.add_argument('--data',type=Path,default=DATA);p.add_argument('--output',type=Path,default=OUTPUT);p.add_argument('--check',action='store_true');a=p.parse_args();generated=generate(json.loads(a.data.read_text()))
+ p=argparse.ArgumentParser(description=__doc__);p.add_argument('--data',type=Path,default=DATA);p.add_argument('--output',type=Path,default=OUTPUT);p.add_argument('--check',action='store_true');a=p.parse_args();generated=generate(json.loads(a.data.read_text(encoding="utf-8")))
  if a.check:
   if not a.output.is_file()or a.output.read_bytes()!=generated:raise SystemExit('Historical name table is stale')
  else:a.output.write_bytes(generated)

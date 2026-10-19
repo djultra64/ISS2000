@@ -100,3 +100,17 @@ and preflight after recovery; never bypass the helper or substitute an old build
 All player names use documented 1999–2000 internationals where possible, with
 nearby-year exceptions explicitly approved and listed in the name research record.
 No agents: keep execution in this worker. Documentation remains English.
+
+
+## Final 0.7 publication update — latest 2026-10-18
+
+The machine recovered from the HA blocker. Windows 0.7 compiled in a fresh
+workspace after UTF-8 and SDK-macro corrections; the inspected hidden test
+rendered the introduction. Normal window-close did not finish in that environment,
+so only the authenticated disposable test/tasks were cancelled. Do not claim
+Windows normal-exit, audio or complete interactive gameplay acceptance. The final
+startup log is 0.7.0. Both portable archives are verified with empty data and
+English AI/legal notices. The user explicitly requests publication as release
+0.7 (`v0.7.0`) and this exact README status: In development... SO-MANY-ALIGNMENT-ISSUES!
+Power finalization is separately receipted under ignored release preparation;
+consult it and the machine skill before any later machine use.

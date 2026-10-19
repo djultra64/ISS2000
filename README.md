@@ -4,11 +4,13 @@
 
 A community native PC port of **International Superstar Soccer 2000** for Nintendo 64, using static recompilation with [N64Recomp](https://github.com/N64Recomp/N64Recomp), [N64ModernRuntime](https://github.com/N64Recomp/N64ModernRuntime), and [RT64](https://github.com/rt64/rt64).
 
-**Version 0.7.0 is being prepared for Linux and Windows x86-64.** Linux packaging and bounded visual checks are complete. Windows compilation and publication are pending; no Windows 0.7 package is available yet. See the [0.7 preparation record](docs/releases/0.7.0.md) for the current status. Packages will appear under [Releases](https://github.com/djultra64/ISS2000/releases) when published.
+**Version 0.7.0 — Linux and Windows x86-64.** Download the portable packages from [Releases](https://github.com/djultra64/ISS2000/releases/tag/v0.7.0). This is an early development release; see the [0.7 release record](docs/releases/0.7.0.md) for tested scenarios and remaining issues.
 
 Independent fan project. Not affiliated with, sponsored by, or endorsed by Konami or Nintendo.
 
 Project direction, original port work, and playtesting: **djultra64**.
+
+**Status:** In development... SO-MANY-ALIGNMENT-ISSUES!
 
 ## Features
 
@@ -58,6 +60,8 @@ On the keyboard, the default menu controls include arrow keys, `Z` to select, `X
 Validation applies to the specific builds and scenarios recorded in the release notes and [acceptance record](docs/releases/1.0-acceptance.md). Version 0.7.0 is not an accepted 1.0 release. Full gameplay completion and physical testing of every controller family remain separate from automated checks.
 
 Bilinear filtering softens the original artwork; some tiled menu plates can still show faint seams. Original filtering remains available and is the default.
+
+Windows compiled successfully and rendered the original introduction during a hidden-desktop smoke test. Its window-close request did not complete in that test environment, so the disposable test was cancelled. Full interactive Windows gameplay, audio, and normal-exit acceptance remain pending.
 
 Goal-replay effects and some goal overlays still need broader visual review. Do not interpret an interpolated-frame counter or a successful native build as proof that every game mode is correct.
 

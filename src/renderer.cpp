@@ -36,7 +36,7 @@
 namespace iss2000::render_evidence {
 namespace {
 struct EvidenceRegion {uint32_t x{},y{},width{},height{};};
-EvidenceRegion evidence_region(uint32_t width,uint32_t height,bool small,bool radar){
+EvidenceRegion evidence_region(uint32_t width,uint32_t height,bool small_region,bool radar){
     if(radar){
         // Lower central fifth/quarter includes the actual field radar; scale
         // against the offscreen target, which can be taller than the window.
@@ -44,8 +44,8 @@ EvidenceRegion evidence_region(uint32_t width,uint32_t height,bool small,bool ra
         const auto h=std::min(height,std::max(1u,height/4));
         return {(width-w)/2,height-h,w,h};
     }
-    const auto w=small?std::min(width,256u):width;
-    const auto h=small?std::min(height,256u):height;
+    const auto w=small_region?std::min(width,256u):width;
+    const auto h=small_region?std::min(height,256u):height;
     return {(width-w)/2,(height-h)/2,w,h};
 }
 struct Log {
