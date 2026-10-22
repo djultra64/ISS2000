@@ -1,3 +1,18 @@
+# Version0.7.1 release preparation —2026-10-21
+
+User explicitly authorized Windows compilation and GitHub publication.
+Prepare a0.7.1 patch release, preserving published0.7.0. Linux version-only
+rebuild/package/ZIP verification passed; see `docs/releases/0.7.1.md`.
+Windows has NOT started: another task retains the common machine reservation.
+A user clarification is pending; do not delete or claim that reservation,
+contact Windows, or issue power orders until ownership is resolved. No physical
+order was sent by this task. Private checkpoint and frozen inputs:
+`.local/release-0.7.1-preparation/`. The shared-lock owner identity is recorded
+there, not in public release notes. README still identifies the published0.7.0
+until0.7.1 is ready. No new normal release is claimed by this preparation.
+
+---
+
 # Post-0.7 correction pass — 2026-10-21
 
 Original project work: djultra64. Single worker, no agents.

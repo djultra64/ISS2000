@@ -109,7 +109,7 @@ int main(int argc,char** argv){
         config.renderer_callbacks=iss2000::platform::renderer_callbacks();config.audio_callbacks=iss2000::platform::audio_callbacks();
         config.input_callbacks=iss2000::platform::input_callbacks();config.gfx_callbacks=iss2000::platform::gfx_callbacks();
         config.error_handling_callbacks={iss2000::runtime_message};
-        std::fprintf(stderr,"[Launch] ISS2000 0.7.0 | djultra64. Portable data: %s\n",data.string().c_str());
+        std::fprintf(stderr,"[Launch] ISS2000 0.7.1 | djultra64. Portable data: %s\n",data.string().c_str());
         recomp::start(config);
         iss2000::shutdown_paks();iss2000::platform::shutdown();return 0;
     }catch(const std::exception& error){
