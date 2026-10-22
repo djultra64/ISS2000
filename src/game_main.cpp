@@ -104,12 +104,12 @@ int main(int argc,char** argv){
         graphics.hpfb_option=ultramodern::renderer::HighPrecisionFramebuffer::Off;graphics.ds_option=1;graphics.rr_manual_value=60;
         ultramodern::renderer::set_graphics_config(graphics);
         char app[]="iss2000";char flag[]="--game";char id[]="iss2000";char* runtime_args[]={app,flag,id};
-        recomp::Configuration config{};config.argc=3;config.argv=runtime_args;config.project_version={0,7,0,""};
+        recomp::Configuration config{};config.argc=3;config.argv=runtime_args;config.project_version={0,7,1,""};
         config.window_handle=iss2000::platform::render_window();config.rsp_callbacks={iss2000::platform::rsp_microcode};
         config.renderer_callbacks=iss2000::platform::renderer_callbacks();config.audio_callbacks=iss2000::platform::audio_callbacks();
         config.input_callbacks=iss2000::platform::input_callbacks();config.gfx_callbacks=iss2000::platform::gfx_callbacks();
         config.error_handling_callbacks={iss2000::runtime_message};
-        std::fprintf(stderr,"[Launch] ISS2000 0.7.0 | djultra64. Portable data: %s\n",data.string().c_str());
+        std::fprintf(stderr,"[Launch] ISS2000 0.7.1 | djultra64. Portable data: %s\n",data.string().c_str());
         recomp::start(config);
         iss2000::shutdown_paks();iss2000::platform::shutdown();return 0;
     }catch(const std::exception& error){

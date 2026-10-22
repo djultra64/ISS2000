@@ -94,6 +94,31 @@ int main(){
   }
  }
  assert(badBefore>0&&badAfter==0);std::printf("Original edge samples differ:%u; corrected:%u\n",badBefore,badAfter);
+ // One-cycle rectangles use exclusive right/bottom endpoints. The original
+ // repair strips overlap the next sprite chunk, doubling translucent borders.
+ {Bytes r(0x800000);auto ctx=context(r);put(r,0x8013C538,0x04026642);half(r,0x800BDB26,2);
+  ctx.r6=40*4;put(r,0x807ff010,212*4);put(r,0x807ff01c,1024);
+  auto before=r,after=r;auto x=ctx,y=ctx;
+  func_807AA008_overlay_515890_807aa000(before.data(),&x);iss2000_pal_high_sprite_edges(after.data(),&y);
+  assert(std::memcmp(&x,&y,sizeof x)==0);
+  unsigned differences=0;
+  for(uint32_t at=0;at<0x800000;at+=4)if(word(before,at)!=word(after,at)){
+   assert(at==0xd0328+24||at==0xd0328+48);++differences;
+  }
+  assert(differences==2);
+  auto rect=[&](const Bytes&ram,unsigned offset){auto a=word(ram,0x800D0328+offset),b=word(ram,0x800D0328+offset+4);
+   return FixedRect{int((b>>12)&4095),int(b&4095),int((a>>12)&4095),int(a&4095)};};
+  assert(rect(before,0).left(true)==64&&rect(before,0).right(true)==80);
+  assert(rect(before,24).left(true)==80&&rect(before,24).right(true)==81);
+  assert(rect(after,24).left(true)==80&&rect(after,24).right(true)==80);
+  assert(rect(after,48).top(true)==424&&rect(after,48).bottom(true)==424);
+  // Every main rectangle word and all ST/derivative words stay identical.
+  for(unsigned i=0;i<72;i+=4)if(i!=24&&i!=48)assert(word(before,0x800D0328+i)==word(after,0x800D0328+i));
+  for(float scale:{1.f,1080.f/524,2160.f/524})for(bool vertical:{false,true}){
+   auto a=convertViewportRect(rect(after,vertical?48:24),{scale,scale},640,1,1,0,G_EX_ORIGIN_NONE,G_EX_ORIGIN_NONE);
+   assert((vertical?a.height:a.width)==0);
+  }
+ }
  // Foreign modes, Low, wrong frame identity/dimensions, foreign head pointer,
  // unaligned/insufficient reservations preserve the whole original result.
  for(int variant=0;variant<10;++variant){Bytes r(0x800000);uint32_t head=0x800D0328,ptr=0x8009E0C8;

@@ -65,3 +65,43 @@ uses `--rom`, `--source` and `--output`, exporting
 active original `807AA008` identity. Actual hidden GPU comparison remains the
 parent's integration acceptance step; CPU/numerical checks alone do not claim
 that the visible defect is resolved.
+
+## 2026-10-21: verified one-cycle POINT scoreboard material
+
+The copy-only restriction above records revision1. The resolution audit found
+that the score panel uses original sprite mode2 (`0x04026642`) and material
+`8009CC20`, selected by table entry `80085F98`. Its pinned original list selects
+one-cycle rendering and POINT filtering. Its High leaf emits the same72-byte
+body/right/bottom pattern, with right/bottom starts one quarter texel before
+the final source column/row. The initial hypothesis was that their sampling caused the repeated bright dots; integrated GPU comparison rejected that hypothesis.
+
+Revision2 admits exactly mode0/cache0 and mode2/cache2, verifies the original
+material2 cycle/filter words in the ROM, and applies the same four edge-word
+changes. Format19 and all other modes/cache mismatches retain their original
+results. The new original-CPU regression first failed on the uncorrected mode2
+edge rates, then passed with full context and8MiB difference checks and sample
+comparisons through2160 output. Existing COPY controls and guard negatives pass.
+The immutable build directory is now `pal-high-sprites-v2`; revision1 output is
+retained. This paragraph records CPU proof; the audit record separately records
+actual integrated GPU verification and any remaining limits.
+
+
+### Revision3: one-cycle duplicate coverage
+
+Actual `pixel05-integrated-2160` retained the bright dots after revision2.
+Its authentic emitted commands confirm revision2 did run (edge dS=0), so this
+was a failed visible fix, not an unexecuted patch. The score panel main chunk
+covers native x44 through92 exclusively; its right strip covers92 through93,
+while the next chunk starts at92. Another join repeats the overlap at108.
+The translucent top border is therefore blended twice at these joins. The
+source atlas contains a uniform border rather than those bright marks.
+
+Revision3 keeps COPY's four sampling-word corrections. For verified mode2
+one-cycle POINT only, it instead makes right and bottom repair strips empty by
+setting each strip's far endpoint equal to its near endpoint. Only two geometry
+words change; the main rectangle, every source coordinate/derivative, the72-byte
+command body length, CPU context and cursor remain. The original-CPU regression first
+failed against revision2, then passed against revision3. Real RT64 rectangle
+conversion gives zero strip width/height at native,1080 and2160 scales. The
+immutable stage is `pal-high-sprites-v3`; earlier stages remain private and
+unchanged. Integrated GPU comparison in `pixel06-point-v3-2160` confirms the top-border bright dots are absent over both crowd and green-field backgrounds. The precise candidate and remaining1080p checks are recorded in `pal-resolution-audit.md`.

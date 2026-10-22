@@ -1,3 +1,57 @@
+# Version 0.7.1 delivery — 2026-10-21
+
+Original project work: **djultra64**. Single worker; no agents.
+Release target: https://github.com/djultra64/ISS2000/releases/tag/v0.7.1.
+Published 0.7.0 and all older portable data remain preserved.
+
+Final folders: `portable/ISS2000-Linux-0.7.1-final/launch.sh` and
+`portable/ISS2000-Windows-0.7.1-final/iss2000.exe`.
+Linux executable SHA256 `b1ab9d3a98ef961f28bfbfd3742189bae9691d7e702fb40b7be4d1ce56a7fc62`.
+Windows executable SHA256 `b90b69c472ce4f13799eb333ad5319fdf7a0ef63a11bb0325ebffa8de69bb500`.
+Final archives/checksums are in `portable/`. All Linux 49 / Windows 51 manifest
+files and GitHub draft asset digests verify; fresh data is empty. Full build,
+validation and runtime limits: `docs/releases/0.7.1.md`.
+
+Windows compiled with all corrected SPIR-V/DXIL variants and matching consumer.
+Final ROM validation exited0. The exact final package rendered the title on a
+never-switched hidden desktop, using dummy audio. A prior same-renderer build
+also reached an attract match. Hidden normal WM_CLOSE remains unaccepted; only
+owned disposable test processes were cancelled. No Windows audio or complete
+interactive/high-resolution menu acceptance is claimed. Goal Kick is pending.
+
+The user explicitly handed this task use of the machine after the earlier
+reservation clarification. All own Windows jobs/tasks ended; artifacts and
+private evidence were retrieved. Graceful helper-off completed: Windows
+network offline, helper/Sonoff off,0W and automation current0. The matching own
+reservation was released. Receipt: `.local/release-0.7.1-preparation/maquinita-final.json`.
+No Windows work or shutdown is pending.
+
+---
+
+# Post-0.7 correction pass — 2026-10-21
+
+Original project work: djultra64. Single worker, no agents.
+Original filtering remains default. Super-xBR2x/4x direction approved; written
+specification awaits review in `docs/superpowers/specs/2026-10-21-super-xbr-design.md`.
+No Super-xBR implementation is claimed.
+
+Normal Linux build now fixes magnified POINT atlas-boundary rounding and
+verified High mode2 duplicate-alpha repair strips. Actual4K comparisons remove
+Stadium Select Weather/Clear cuts, stadium-preview black lines, the white score
+join in End of1st Half and scoreboard flag-top dots. CPU tests execute the
+original leaf and pinned sampler math. See `docs/research/pal-resolution-audit.md`
+for coverage, rejected hypotheses and remaining checks, especially Goal Kick.
+Current local candidate: `portable/ISS2000-Linux-0.7.0-pixel-fixes-v3-20261021/launch.sh`.
+SHA256 `0218bfe297d3c64b99c6edef5781cf9d2b2df5a96c3e0bf034520506484e0add`.
+All49 manifest files verify; data empty. Older candidate without v3 in its name
+is superseded. Final candidate1080p Stadium/HUD checks pass. Final suite:522 tests, exit0,12 expected skips. End-of-half is clean at1080p/4K. Goal Kick transient coverage remains pending.
+
+Additional European ROM revisions are a documented backlog; no unknown-ROM
+validation bypass. Linux-first: no new publication or Windows power order was
+made. Windows shader build/runtime remains unverified in this pass.
+
+---
+
 # Version 0.7 release — 2026-10-18
 
 Original project work: **djultra64**. One worker, no agents.

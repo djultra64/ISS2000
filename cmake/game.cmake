@@ -166,7 +166,7 @@ if(ISS2000_ROM_REVISION STREQUAL "iss2000-pal-en-de-rev0")
     WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}" VERBATIM)
   add_dependencies(iss2000 iss2000_verify_pal_native_pace)
   target_sources(iss2000 PRIVATE "${ISS2000_PAL_NATIVE_PACE}/pal_native_frame_pace.cpp")
-  set(ISS2000_PAL_HIGH_SPRITES "${CMAKE_CURRENT_BINARY_DIR}/pal-high-sprites-v1")
+  set(ISS2000_PAL_HIGH_SPRITES "${CMAKE_CURRENT_BINARY_DIR}/pal-high-sprites-v3")
   set(ISS2000_PAL_HIGH_SPRITES_COMMAND "${Python3_EXECUTABLE}" -m tools.prepare_pal_high_sprites
     --rom "${ISS2000_PAL_ROM}" --source "${ISS2000_GAME_GENERATED}/func_807AA008_overlay_515890_807aa000.c"
     --output "${ISS2000_PAL_HIGH_SPRITES}")
@@ -357,6 +357,10 @@ if(ISS2000_ROM_REVISION STREQUAL "iss2000-pal-en-de-rev0")
     set_property(SOURCE "${ISS2000_FILTER_2D}/rt64_state.cpp" APPEND PROPERTY COMPILE_OPTIONS /std:c++17)
   else()
     set_property(SOURCE "${ISS2000_FILTER_2D}/rt64_state.cpp" APPEND PROPERTY COMPILE_OPTIONS -std=c++17)
+  endif()
+
+  if(NOT APPLE)
+    include("${CMAKE_CURRENT_LIST_DIR}/point_precision.cmake")
   endif()
 
   set(ISS2000_SPRITE_PHASE "${CMAKE_CURRENT_BINARY_DIR}/rt64-sprite-phase-v5")
