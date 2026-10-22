@@ -229,3 +229,18 @@ Final sessions `pixel06-point-v3-2160` and `pixel07-point-v3-1080` both exited
 through Escape with actual game exit0. Their owned game groups, audio monitors,
 null sinks and private runtimes were cleaned. No game remains running for this
 audit; no Windows machine was started.
+
+
+## Subsequent Windows delivery stage: 0.7.1
+
+The user later authorized Windows compilation and GitHub publication, then
+explicitly released the machine for this task. Both platforms compiled the
+same correction source with consistent0.7.1 metadata. The exact final Windows
+package validated its ROM with exit0 and rendered the title on a never-visible
+desktop; the preceding renderer-identical build reached an attract match.
+This is bounded Windows smoke coverage, not a Windows1080p/4K menu audit. Dummy
+audio and the existing hidden normal-close limitation are recorded in
+`../releases/0.7.1.md`. Final manifest/ZIP and GitHub asset digests match. All
+owned Windows jobs ended, evidence was retrieved, graceful machine shutdown was
+confirmed and the matching reservation was released. No private captures or
+original game data were added to public source or release packages.

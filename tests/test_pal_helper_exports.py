@@ -49,7 +49,16 @@ class PalHelperExportTests(unittest.TestCase):
                 cases.append((profile['entry'], module.derive(
                     (generated / (profile['original'] + '.c')).read_bytes(), key)))
         module=load("prepare_pal_auto_storage_ui")
-        cases.append((module.UPDATE_ENTRY,module.derive_update((generated/(module.UPDATE_ORIGINAL+".c")).read_bytes())))
+        # The callback is compiled together with its initializer and startup
+        # helpers in production. Its COFF linkage macro is supplied by that
+        # complete unit; an isolated inline fragment is not a build fixture.
+        rom=ROOT/'.local/inputs/pal-en-de/rom.z64'
+        if not rom.is_file():
+            self.skipTest('Private PAL ROM required for the production storage unit')
+        with tempfile.TemporaryDirectory(prefix='iss2000-storage-exports-') as staging:
+            output=Path(staging)/'source'
+            module.prepare(rom,generated/(module.ORIGINAL+'.c'),output)
+            cases.append((module.UPDATE_ENTRY,(output/'pal_automatic_storage_ui.cpp').read_bytes()))
         self.assertEqual(len(cases), 16)
         with tempfile.TemporaryDirectory(prefix='iss2000-pal-exports-') as folder:
             folder = Path(folder)

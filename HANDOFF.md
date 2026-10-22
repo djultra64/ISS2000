@@ -1,15 +1,30 @@
-# Version0.7.1 release preparation —2026-10-21
+# Version 0.7.1 delivery — 2026-10-21
 
-User explicitly authorized Windows compilation and GitHub publication.
-Prepare a0.7.1 patch release, preserving published0.7.0. Linux version-only
-rebuild/package/ZIP verification passed; see `docs/releases/0.7.1.md`.
-Windows has NOT started: another task retains the common machine reservation.
-A user clarification is pending; do not delete or claim that reservation,
-contact Windows, or issue power orders until ownership is resolved. No physical
-order was sent by this task. Private checkpoint and frozen inputs:
-`.local/release-0.7.1-preparation/`. The shared-lock owner identity is recorded
-there, not in public release notes. README still identifies the published0.7.0
-until0.7.1 is ready. No new normal release is claimed by this preparation.
+Original project work: **djultra64**. Single worker; no agents.
+Release target: https://github.com/djultra64/ISS2000/releases/tag/v0.7.1.
+Published 0.7.0 and all older portable data remain preserved.
+
+Final folders: `portable/ISS2000-Linux-0.7.1-final/launch.sh` and
+`portable/ISS2000-Windows-0.7.1-final/iss2000.exe`.
+Linux executable SHA256 `b1ab9d3a98ef961f28bfbfd3742189bae9691d7e702fb40b7be4d1ce56a7fc62`.
+Windows executable SHA256 `b90b69c472ce4f13799eb333ad5319fdf7a0ef63a11bb0325ebffa8de69bb500`.
+Final archives/checksums are in `portable/`. All Linux 49 / Windows 51 manifest
+files and GitHub draft asset digests verify; fresh data is empty. Full build,
+validation and runtime limits: `docs/releases/0.7.1.md`.
+
+Windows compiled with all corrected SPIR-V/DXIL variants and matching consumer.
+Final ROM validation exited0. The exact final package rendered the title on a
+never-switched hidden desktop, using dummy audio. A prior same-renderer build
+also reached an attract match. Hidden normal WM_CLOSE remains unaccepted; only
+owned disposable test processes were cancelled. No Windows audio or complete
+interactive/high-resolution menu acceptance is claimed. Goal Kick is pending.
+
+The user explicitly handed this task use of the machine after the earlier
+reservation clarification. All own Windows jobs/tasks ended; artifacts and
+private evidence were retrieved. Graceful helper-off completed: Windows
+network offline, helper/Sonoff off,0W and automation current0. The matching own
+reservation was released. Receipt: `.local/release-0.7.1-preparation/maquinita-final.json`.
+No Windows work or shutdown is pending.
 
 ---
 
