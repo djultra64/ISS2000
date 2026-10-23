@@ -1,0 +1,22 @@
+{
+  "$schema": "https://recomp.fyi/schema/v1.json",
+  "game": "International Superstar Soccer 2000",
+  "system": "N64",
+  "type": "recomp",
+  "original": {
+    "region": "Europe (English/German)",
+    "revision": "0"
+  },
+  "project": "ISS2000 Recompiled",
+  "status": "released",
+  "targets": ["Linux", "Windows"],
+  "toolchain": "N64recomp",
+  "approach": "Static recompilation with N64Recomp, N64ModernRuntime and RT64 rendering.",
+  "maintainers": [
+    {
+      "name": "djultra64",
+      "link": "https://github.com/djultra64"
+    }
+  ],
+  "notes": "Early development release for Linux and Windows x86-64. In development... SO-MANY-ALIGNMENT-ISSUES! Supports widescreen, enhanced resolutions, interpolated presentation, portable saves and device-aware controller prompts. Full game-mode completion, sustained 120 fps, all physical controller families, and Windows audio and normal-exit acceptance remain pending."
+}
